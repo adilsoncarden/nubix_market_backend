@@ -1,7 +1,7 @@
 spring.application.name=market-backend
 
 # Configuración de Aiven usando variables de entorno
-spring.datasource.url=jdbc:mysql://nubix-db-nubix-market.j.aivencloud.com:12469/defaultdb?ssl-mode=REQUIRED
+spring.datasource.url=jdbc:mysql://nubix-db-nubix-market.j.aivencloud.com:12469/nubix_market_db?ssl-mode=REQUIRED
 spring.datasource.username=avnadmin
 spring.datasource.password=
 
