@@ -19,6 +19,20 @@
 *.tar.gz
 *.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# Build folders
+target/
+
+# === CONFIGURACIÓN SENSIBLE (Spring Boot) ===
+application.properties
+application.yml
+
+# === IDEs (IntelliJ, VS Code) ===
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+
+# Virtual machine crash logs
 hs_err_pid*
 replay_pid*
