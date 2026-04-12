@@ -16,7 +16,7 @@ public class JwtUtils {
     private final long EXPIRATION_TIME = 86400000; // 24 horas en milisegundos
 
     // Genera una clave segura a partir del String
-    private Key getSigningKey() {
+    public Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
 
