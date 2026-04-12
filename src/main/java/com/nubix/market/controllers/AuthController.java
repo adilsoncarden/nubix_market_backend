@@ -3,12 +3,14 @@ package com.nubix.market.controllers;
 import com.nubix.market.dto.AuthResponse;
 import com.nubix.market.dto.LoginRequest;
 import com.nubix.market.dto.RegisterRequest;
+import com.nubix.market.services.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
 
 
 @RestController
