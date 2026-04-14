@@ -23,18 +23,18 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
-            return new AuthResponse(false, "El nombre de usuario ya está en uso", null);
+            return new AuthResponse(false, "El nombre de usuario ya existe", null);
         }
         if (usuarioRepository.existsByEmail(request.getEmail())) {
-            return new AuthResponse(false, "El correo ya está registrado", null);
+            return new AuthResponse(false, "El correo electronico ya existe", null);
         }
 
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setUsername(request.getUsername());
         nuevoUsuario.setEmail(request.getEmail());
-        
+
         // ¡Magia aquí! Encriptamos la contraseña antes de guardarla
-        nuevoUsuario.setPassword(passwordEncoder.encode(request.getPassword())); 
+        nuevoUsuario.setPassword(passwordEncoder.encode(request.getPassword()));
 
         usuarioRepository.save(nuevoUsuario);
 
@@ -42,7 +42,14 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(request.getUsername());
+        Optional<Usuario> usuarioOpt = Optional.empty();
+
+        if (request.getUsername() != null && !request.getUsername().isBlank()) {
+            usuarioOpt = usuarioRepository.findByUsername(request.getUsername());
+        }
+        if (usuarioOpt.isEmpty() && request.getEmail() != null && !request.getEmail().isBlank()) {
+            usuarioOpt = usuarioRepository.findByEmail(request.getEmail());
+        }
 
         if (usuarioOpt.isEmpty()) {
             return new AuthResponse(false, "Usuario no encontrado", null);
@@ -57,8 +64,6 @@ public class AuthService {
 
         // ¡Login exitoso! Generamos el JWT
         String token = jwtUtils.generateToken(usuario.getUsername());
-
-        // Devolvemos el token en el campo "message" temporalmente, o puedes agregarlo a tu DTO AuthResponse
-        return new AuthResponse(true, token, usuario.getUsername());
+        return new AuthResponse(true, "Login exitoso", usuario.getUsername(), token);
     }
 }
