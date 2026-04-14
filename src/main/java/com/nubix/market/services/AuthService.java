@@ -23,10 +23,10 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
-            return new AuthResponse(false, "El nombre de usuario ya está en uso", null);
+            return new AuthResponse(false, "El nombre de usuario ya existe", null);
         }
         if (usuarioRepository.existsByEmail(request.getEmail())) {
-            return new AuthResponse(false, "El correo ya está registrado", null);
+            return new AuthResponse(false, "El correo electronico ya existe", null);
         }
 
         Usuario nuevoUsuario = new Usuario();
