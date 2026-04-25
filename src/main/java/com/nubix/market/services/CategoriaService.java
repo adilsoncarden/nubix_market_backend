@@ -10,20 +10,20 @@ import java.util.Optional;
 
 
 @Service
-public class Categoria {
+public class CategoriaService {
 
     @Autowired 
     private CategoriaRepository categoriaRepository;
 
-    public List<Categoria> obtenerTodas() {
+    public List<CategoriaService> obtenerTodas() {
         return categoriaRepository.findAll();
     }
 
-    public Optional<Categoria> obtenerPorId(Integer id){
+    public Optional<CategoriaService> obtenerPorId(Integer id){
         return categoriaRepository.findById(id);
     }
 
-    public Categoria guardar(Categoria categoria){
+    public CategoriaService guardar(CategoriaService categoria){
         if (categoriaRepository.existsByNombre(categoria.getNombre())){
             throw new RuntimeException("El nombre de la categoria ya está en uso");
         }
@@ -33,7 +33,7 @@ public class Categoria {
         return categoriaRepository.save(categoria);
     }
     
-    public Categoria actualizar(Integer id, Categoria detalles) {
+    public CategoriaService actualizar(Integer id, CategoriaService detalles) {
         return categoriaRepository.findById(id).map(categoriaExistente -> {
             
             // validar que el nuevo nombre
