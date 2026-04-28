@@ -27,9 +27,6 @@ public class CategoriaService {
         if (categoriaRepository.existsByNombre(categoria.getNombre())){
             throw new RuntimeException("El nombre de la categoria ya está en uso");
         }
-        if (categoriaRepository.existsBySlug(categoria.getSlug())) {
-            throw new RuntimeException("El slug (URL) ya está en uso");
-        }
         return categoriaRepository.save(categoria);
     }
     
@@ -42,13 +39,7 @@ public class CategoriaService {
                 categoriaRepository.existsByNombre(detalles.getNombre())) {
                 throw new RuntimeException("El nombre de la categoría ya está en uso");
             }
-            // validar el slug
-            if (!categoriaExistente.getSlug().equals(detalles.getSlug()) && 
-                categoriaRepository.existsBySlug(detalles.getSlug())) {
-                throw new RuntimeException("El slug (URL) ya está en uso");
-            }
             categoriaExistente.setNombre(detalles.getNombre());
-            categoriaExistente.setSlug(detalles.getSlug());
             categoriaExistente.setDescription(detalles.getDescription());
 
             return categoriaRepository.save(categoriaExistente);

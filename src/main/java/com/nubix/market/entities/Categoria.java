@@ -17,9 +17,6 @@ public class Categoria {
     @Column(nullable = false, length = 100)
     private String nombre;
 
-    @Column(nullable = false, unique = true, length = 150)
-    private String slug;
-
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -44,12 +41,6 @@ public class Categoria {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     } 
-    public String getSlug() {
-        return slug;
-    }
-    public void setSlug(String slug) {
-        this.slug = slug;
-    }
     public String getDescription(){ 
         return description;
     }
