@@ -23,7 +23,6 @@ public class CategoriaController {
     private CategoriaResponse mapToResponse(Categoria categoria) {
         return new CategoriaResponse(categoria.getId(),
                                      categoria.getNombre(),
-                                     categoria.getSlug(),
                                      categoria.getDescription());
     }
 
@@ -43,7 +42,6 @@ public class CategoriaController {
         try {
             Categoria categoria = new Categoria();
             categoria.setNombre(request.getNombre());
-            categoria.setSlug(request.getSlug());
             categoria.setDescription(request.getDescripcion());
             Categoria guardada = categoriaService.guardar(categoria);
 
@@ -67,7 +65,6 @@ public class CategoriaController {
         try {
             Categoria categoria = new Categoria();
             categoria.setNombre(request.getNombre());
-            categoria.setSlug(request.getSlug());
             categoria.setDescription(request.getDescripcion());
             Categoria actualizada = categoriaService.actualizar(id, categoria);
 
