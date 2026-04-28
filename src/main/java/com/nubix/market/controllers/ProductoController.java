@@ -8,7 +8,6 @@ import com.nubix.market.services.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
@@ -22,31 +21,24 @@ public class ProductoController {
     private ProductoService productoService;
 
     private ProductoResponse mapToProductoResponse(Producto producto) {
-        ProductoResponse response = new ProductoResponse();
-        response.setId(producto.getId());
-        response.setCodigo(producto.getCodigo());
-        response.setNombre(producto.getNombre());
-        response.setDescripcion(producto.getDescripcion());
-        response.setPrecioCompra(producto.getPrecioCompra());
-        response.setPrecioVenta(producto.getPrecioVenta());
-        response.setStock(producto.getStock());
-        response.setCategoriaNombre(producto.getCategoria().getNombre());
+        ProductoResponse response = new ProductoResponse(
+                                        producto.getId(), producto.getCodigo(), 
+                                        producto.getNombre(), producto.getDescripcion(), 
+                                        producto.getPrecioCompra(), producto.getPrecioVenta(), 
+                                        producto.getStock(), producto.getCategoria().getNombre());
         
-        List<ProductoResponse.ImagenDTO> imagenDTO = producto.getImagenes().stream()
-                .map(img -> {
-                    ProductoResponse.ImagenDTO imgDTO = new ProductoResponse.ImagenDTO();
-                    imgDTO.setId(img.getId());
-                    imgDTO.setUrl(img.getUrl());
-                })
+        List<ProductoResponse.ImagenDTO> imagenes = producto.getImagenes().stream()
+                .map(img -> new ProductoResponse.ImagenDTO(img.getId(), img.getUrl()))
                 .collect(Collectors.toList());
-                response.setImagenes(imagenDTO);
+        response.setImagenes(imagenes);
+
         return response;
     }
 
     // GET Listar productos
     @GetMapping("/productos")
     public ResponseEntity<List<ProductoResponse>> index() {
-        List<Producto> productos = productoService.obtenerTodos().stream()
+        List<ProductoResponse> productos = productoService.obtenerTodos().stream()
                 .map(this::mapToProductoResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(productos);
@@ -86,10 +78,10 @@ public class ProductoController {
     }
 
     // DELETE Eliminar producto
-    @DeleteMapping("/productos/delete/{id}")
+    @DeleteMapping("/productos/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         try {
-            Producto producto = productoService.eliminar(id);
+            productoService.eliminar(id);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
                 return ResponseEntity.notFound().build();
@@ -115,8 +107,9 @@ public class ProductoController {
             return ResponseEntity.ok(imagen);
         } catch (RuntimeException e) {
             if (e.getMessage().equals("Imagen no encontrada")) {
-                return ResponseEntity.badRequest().body(e.getMessage());
+                return ResponseEntity.notFound().build();
             }
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

@@ -11,9 +11,9 @@ public class ProductoResponse {
     private Double precioVenta;
     private Integer stock;
     private String categoriaNombre;
-    private List<String> imagenes;
+    private List<ImagenDTO> imagenes;
 
-    public ProductoResponse(Integer id, String codigo, String nombre, String descripcion, Double precioCompra, Double precioVenta, Integer stock, String categoriaNombre, List<String> imagenes) {
+    public ProductoResponse(Integer id, String codigo, String nombre, String descripcion, Double precioCompra, Double precioVenta, Integer stock, String categoriaNombre) {
         this.id = id;
         this.codigo = codigo;
         this.nombre = nombre;
@@ -22,7 +22,6 @@ public class ProductoResponse {
         this.precioVenta = precioVenta;
         this.stock = stock;
         this.categoriaNombre = categoriaNombre;
-        this.imagenes = imagenes;
     }
 
     // Getters y Setters
@@ -42,8 +41,8 @@ public class ProductoResponse {
     public void setStock(Integer stock) {this.stock = stock;}
     public String getCategoriaNombre() {return categoriaNombre;}
     public void setCategoriaNombre(String categoriaNombre) {this.categoriaNombre = categoriaNombre;}
-    public List<String> getImagenes() {return imagenes;}
-    public void setImagenes(List<String> imagenes) {this.imagenes = imagenes;}
+    public List<ImagenDTO> getImagenes() {return imagenes;}
+    public void setImagenes(List<ImagenDTO> imagenes) {this.imagenes = imagenes;}
 
     // Sub-DTO para imágenes
     public static class ImagenDTO {

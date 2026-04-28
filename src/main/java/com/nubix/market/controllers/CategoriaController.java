@@ -11,11 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController
-@RequestMapping("/api/admin/categorias")
+@RequestMapping("/api/admin")
 @CrossOrigin(origins = "*")
 public class CategoriaController {
     @Autowired
@@ -25,13 +24,13 @@ public class CategoriaController {
         return new CategoriaResponse(categoria.getId(),
                                      categoria.getNombre(),
                                      categoria.getSlug(),
-                                     categoria.getDescripcion());
+                                     categoria.getDescription());
     }
 
     // GET: Listar todas las categorías
-    @GetMapping
+    @GetMapping("/categorias")
     public ResponseEntity<List<CategoriaResponse>> index() {
-        List<CategoriaResponse> categorias = categoriaService.getAllCategorias()
+        List<CategoriaResponse> categorias = categoriaService.obtenerTodas()
                 .stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
@@ -39,13 +38,13 @@ public class CategoriaController {
     }
 
     // POST: Crear una nueva categoría
-    @PostMapping("/create")
+    @PostMapping("/categorias/create")
     public ResponseEntity<?> create(@RequestBody CategoriaRequest request) {
         try {
             Categoria categoria = new Categoria();
             categoria.setNombre(request.getNombre());
             categoria.setSlug(request.getSlug());
-            categoria.setDescripcion(request.getDescripcion());
+            categoria.setDescription(request.getDescripcion());
             Categoria guardada = categoriaService.guardar(categoria);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(guardada));
@@ -55,21 +54,21 @@ public class CategoriaController {
     }
 
     // GET: Obtener una categoría por ID
-    @GetMapping("/{id}")
+    @GetMapping("/categorias/{id}")
     public ResponseEntity<CategoriaResponse> show(@PathVariable Integer id) {
-        return categoriaService.getCategoriaById(id)
+        return categoriaService.obtenerPorId(id)
                 .map(categoria -> ResponseEntity.ok(mapToResponse(categoria)))
                 .orElse(ResponseEntity.notFound().build());
     }
 
     // POST: Actualizar una categoría existente
-    @PostMapping("/{id}/update")
+    @PostMapping("/categorias/{id}/update")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody CategoriaRequest request) {
         try {
             Categoria categoria = new Categoria();
             categoria.setNombre(request.getNombre());
             categoria.setSlug(request.getSlug());
-            categoria.setDescripcion(request.getDescripcion());
+            categoria.setDescription(request.getDescripcion());
             Categoria actualizada = categoriaService.actualizar(id, categoria);
 
             return ResponseEntity.ok(mapToResponse(actualizada));
@@ -82,7 +81,7 @@ public class CategoriaController {
     }
 
     // DELETE: Eliminar una categoría por ID
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/categorias/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         try {
             categoriaService.eliminar(id);

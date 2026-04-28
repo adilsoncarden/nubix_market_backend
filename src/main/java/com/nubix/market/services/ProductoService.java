@@ -71,8 +71,7 @@ public class ProductoService {
 
             producto.setCodigo(detalles.getCodigo());
             producto.setNombre(detalles.getNombre());
-            producto.setDescripcionCorta(detalles.getDescripcionCorta());
-            producto.setDescripcionLarga(detalles.getDescripcionLarga());
+            producto.setDescripcion(detalles.getDescripcion());
             producto.setPrecioCompra(detalles.getPrecioCompra());
             producto.setPrecioVenta(detalles.getPrecioVenta());
             producto.setStock(detalles.getStock());
@@ -110,7 +109,7 @@ public class ProductoService {
     // ACTUALIZAR IMAGEN
    
     public ProductoImagen actualizarImagen(Integer imagenId, MultipartFile nuevoArchivo) {
-        ProductoImagen imagenExistente = imagenRepository.findById(imagenId)
+        ProductoImagen imagenExistente = ImagenRepository.findById(imagenId)
         .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
 
         // en producción, aqui deberiamos incluir el código borrar
@@ -121,15 +120,15 @@ public class ProductoService {
         String nuevaRuta = "http://localhost:8080/uploads/" + nombreArchivo;
 
         imagenExistente.setUrl(nuevaRuta);
-        return imagenRepository.save(imagenExistente);
+        return ImagenRepository.save(imagenExistente);
     }
 
 
 
     public void eliminarImagen(Integer imagenId) {
-        if (!imagenRepository.existsById(imagenId)) {
+        if (!ImagenRepository.existsById(imagenId)) {
             throw new RuntimeException("Imagen no encontrada");
         }
-        imagenRepository.deleteById(imagenId);
+        ImagenRepository.deleteById(imagenId);
     }
 }

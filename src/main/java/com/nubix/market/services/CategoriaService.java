@@ -15,15 +15,15 @@ public class CategoriaService {
     @Autowired 
     private CategoriaRepository categoriaRepository;
 
-    public List<CategoriaService> obtenerTodas() {
+    public List<Categoria> obtenerTodas() {
         return categoriaRepository.findAll();
     }
 
-    public Optional<CategoriaService> obtenerPorId(Integer id){
+    public Optional<Categoria> obtenerPorId(Integer id){
         return categoriaRepository.findById(id);
     }
 
-    public CategoriaService guardar(CategoriaService categoria){
+    public Categoria guardar(Categoria categoria){
         if (categoriaRepository.existsByNombre(categoria.getNombre())){
             throw new RuntimeException("El nombre de la categoria ya está en uso");
         }
@@ -33,7 +33,7 @@ public class CategoriaService {
         return categoriaRepository.save(categoria);
     }
     
-    public CategoriaService actualizar(Integer id, CategoriaService detalles) {
+    public Categoria actualizar(Integer id, Categoria detalles) {
         return categoriaRepository.findById(id).map(categoriaExistente -> {
             
             // validar que el nuevo nombre
@@ -49,17 +49,16 @@ public class CategoriaService {
             }
             categoriaExistente.setNombre(detalles.getNombre());
             categoriaExistente.setSlug(detalles.getSlug());
-            categoriaExistente.setDescripcion(detalles.getDescripcion());
+            categoriaExistente.setDescription(detalles.getDescription());
 
             return categoriaRepository.save(categoriaExistente);
         }).orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
 }
 
-public void eliminar(Integer id) {
-    if (!categoriaRepository.existsById(id)) {
+    public void eliminar(Integer id) {
+        if (!categoriaRepository.existsById(id)) {
         throw new RuntimeException("Categoría no encontrada");
     }
-    categoriaRepository.deleteById(id);
-}
-
+        categoriaRepository.deleteById(id);
+    }
 }

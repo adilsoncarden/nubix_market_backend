@@ -50,11 +50,11 @@ public class Categoria {
     public void setSlug(String slug) {
         this.slug = slug;
     }
-    public String getDescripcion(){ 
-        return descripcion;
+    public String getDescription(){ 
+        return description;
     }
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion; 
+    public void setDescription(String description) {
+        this.description = description; 
     }
     public List<Producto> getProductos() {
         return productos;
