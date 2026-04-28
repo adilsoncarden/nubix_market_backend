@@ -1,0 +1,94 @@
+package com.nubix.market.controllers;
+
+import com.nubix.market.dto.CategoriaRequest;
+import com.nubix.market.dto.CategoriaResponse;
+import com.nubix.market.entities.Categoria;
+import com.nubix.market.services.CategoriaService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+
+@RestController
+@RequestMapping("/api/admin/categorias")
+@CrossOrigin(origins = "*")
+public class CategoriaController {
+    @Autowired
+    private CategoriaService categoriaService;
+
+    private CategoriaResponse mapToResponse(Categoria categoria) {
+        return new CategoriaResponse(categoria.getId(),
+                                     categoria.getNombre(),
+                                     categoria.getSlug(),
+                                     categoria.getDescripcion());
+    }
+
+    // GET: Listar todas las categorías
+    @GetMapping
+    public ResponseEntity<List<CategoriaResponse>> index() {
+        List<CategoriaResponse> categorias = categoriaService.getAllCategorias()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categorias);
+    }
+
+    // POST: Crear una nueva categoría
+    @PostMapping("/create")
+    public ResponseEntity<?> create(@RequestBody CategoriaRequest request) {
+        try {
+            Categoria categoria = new Categoria();
+            categoria.setNombre(request.getNombre());
+            categoria.setSlug(request.getSlug());
+            categoria.setDescripcion(request.getDescripcion());
+            Categoria guardada = categoriaService.guardar(categoria);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(guardada));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // GET: Obtener una categoría por ID
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoriaResponse> show(@PathVariable Integer id) {
+        return categoriaService.getCategoriaById(id)
+                .map(categoria -> ResponseEntity.ok(mapToResponse(categoria)))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // POST: Actualizar una categoría existente
+    @PostMapping("/{id}/update")
+    public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody CategoriaRequest request) {
+        try {
+            Categoria categoria = new Categoria();
+            categoria.setNombre(request.getNombre());
+            categoria.setSlug(request.getSlug());
+            categoria.setDescripcion(request.getDescripcion());
+            Categoria actualizada = categoriaService.actualizar(id, categoria);
+
+            return ResponseEntity.ok(mapToResponse(actualizada));
+        } catch (RuntimeException e) {
+            if (e.getMessage().equals("Categoria no encontrada")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    // DELETE: Eliminar una categoría por ID
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Integer id) {
+        try {
+            categoriaService.eliminar(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+                return ResponseEntity.notFound().build();
+        }
+    }
+}
