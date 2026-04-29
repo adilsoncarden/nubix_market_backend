@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 
-
 @RestController
 @RequestMapping("/api/admin")
 @CrossOrigin(origins = "*")
@@ -22,8 +21,8 @@ public class CategoriaController {
 
     private CategoriaResponse mapToResponse(Categoria categoria) {
         return new CategoriaResponse(categoria.getId(),
-                                     categoria.getNombre(),
-                                     categoria.getDescription());
+                categoria.getNombre(),
+                categoria.getDescription());
     }
 
     // GET: Listar todas las categorías
@@ -42,7 +41,7 @@ public class CategoriaController {
         try {
             Categoria categoria = new Categoria();
             categoria.setNombre(request.getNombre());
-            categoria.setDescription(request.getDescripcion());
+            categoria.setDescription(request.getDescription());
             Categoria guardada = categoriaService.guardar(categoria);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(guardada));
@@ -65,7 +64,7 @@ public class CategoriaController {
         try {
             Categoria categoria = new Categoria();
             categoria.setNombre(request.getNombre());
-            categoria.setDescription(request.getDescripcion());
+            categoria.setDescription(request.getDescription());
             Categoria actualizada = categoriaService.actualizar(id, categoria);
 
             return ResponseEntity.ok(mapToResponse(actualizada));
@@ -84,7 +83,7 @@ public class CategoriaController {
             categoriaService.eliminar(id);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-                return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound().build();
         }
     }
 }
