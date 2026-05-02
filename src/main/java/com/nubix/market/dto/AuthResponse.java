@@ -5,9 +5,10 @@ public class AuthResponse {
     private String message;
     private String username;
     private String token;
+    private String rol;
 
     public AuthResponse(boolean success, String message, String username) {
-        this(success, message, username, null);
+        this(success, message, username, null, rol: null);
     }
 
     public AuthResponse(boolean success, String message, String username, String token) {
@@ -15,6 +16,7 @@ public class AuthResponse {
         this.message = message;
         this.username = username;
         this.token = token;
+        this.rol = rol;
     }
 
     // Getters y Setters
@@ -48,5 +50,13 @@ public class AuthResponse {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getRol() {
+        return rol;
+    }
+
+    public void setRol(String rol) {
+        this.rol = rol;
     }
 }
