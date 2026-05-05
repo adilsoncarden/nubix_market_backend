@@ -17,6 +17,8 @@ public class Rol {
     public Rol(String nombre){
         this.nombre = nombre;
     }
+
+    public Rol(){}
  
 
     // Getters y Setters

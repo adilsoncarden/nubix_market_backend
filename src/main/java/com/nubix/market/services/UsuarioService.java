@@ -53,7 +53,7 @@ public class UsuarioService {
     //Metodo para obtener usuarios Empleados y Admins
     public List<Usuario> obtenerEmpleadosYAdmins() {
         //return usuarioRepository.findByRolNombreIn(Arrays.asList("EMPLEADO", "ADMIN"));
-        return usuarioRepository.findRolNombreIn(List.of("EMPLEADO", "ADMIN"));
+        return usuarioRepository.findByRol_NombreIn(Arrays.asList("EMPLEADO", "ADMIN"));
     }
 
     public Usuario guardarEmpleado(UsuarioRequest request){
