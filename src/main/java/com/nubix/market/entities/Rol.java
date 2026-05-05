@@ -12,7 +12,7 @@ public class Rol {
     private Integer id;
 
     @Column(nullable = false, unique= true)
-    private Integer nombre;
+    private String nombre;
 
     public Rol(String nombre){
         this.nombre = nombre;

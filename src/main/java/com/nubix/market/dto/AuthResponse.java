@@ -8,10 +8,10 @@ public class AuthResponse {
     private String rol;
 
     public AuthResponse(boolean success, String message, String username) {
-        this(success, message, username, null, rol: null);
+        this(success, message, username, null, null);
     }
 
-    public AuthResponse(boolean success, String message, String username, String token) {
+    public AuthResponse(boolean success, String message, String username, String token, String rol) {
         this.success = success;
         this.message = message;
         this.username = username;
