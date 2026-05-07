@@ -21,5 +21,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
 
     List<Usuario> findByRolNombre(String nombreRol);
 
-    List<Usuario> findRolNombreIn(List<String> nombresRol);
+    List<Usuario> findByRol_NombreIn(List<String> nombresRol);
 }

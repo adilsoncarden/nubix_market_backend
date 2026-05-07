@@ -24,7 +24,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Desactivamos CSRF para poder usar Postman/ThunderClient
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Sin sesiones en memoria usaremos JWT
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/register", "/api/auth/login").permitAll() // Rutas públicas
+                        .requestMatchers("/api/auth/register", "/api/auth/login", "/api/auth/admin-login").permitAll() // Rutas públicas
                         .anyRequest().authenticated() // El resto requiere estar logueado
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class); // Agregamos el filtro JWT
