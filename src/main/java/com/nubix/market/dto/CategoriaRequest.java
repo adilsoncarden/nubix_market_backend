@@ -3,7 +3,7 @@ package com.nubix.market.dto;
 public class CategoriaRequest {
     private String nombre;
     private String slug;
-    private String description;
+    private String descripcion;
 
     // Getters y Setters
     public String getNombre() {
@@ -22,11 +22,11 @@ public class CategoriaRequest {
         this.slug = slug;
     }
 
-    public String getDescription() {
-        return description;
+    public String getDescripcion() {
+        return descripcion;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }
