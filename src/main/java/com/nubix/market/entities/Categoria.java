@@ -18,7 +18,7 @@ public class Categoria {
     private String nombre;
 
     @Column(columnDefinition = "TEXT")
-    private String description;
+    private String descripcion;
 
     // Relación: Una categoría tiene muchos
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, fetch= FetchType.LAZY)
@@ -41,11 +41,11 @@ public class Categoria {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     } 
-    public String getDescription(){ 
-        return description;
+    public String getDescripcion(){ 
+        return descripcion;
     }
-    public void setDescription(String description) {
-        this.description = description; 
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion; 
     }
     public List<Producto> getProductos() {
         return productos;

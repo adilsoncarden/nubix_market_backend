@@ -40,7 +40,7 @@ public class CategoriaService {
                 throw new RuntimeException("El nombre de la categoría ya está en uso");
             }
             categoriaExistente.setNombre(detalles.getNombre());
-            categoriaExistente.setDescription(detalles.getDescription());
+            categoriaExistente.setDescripcion(detalles.getDescripcion());
 
             return categoriaRepository.save(categoriaExistente);
         }).orElseThrow(() -> new RuntimeException("Categoria no encontrada"));
