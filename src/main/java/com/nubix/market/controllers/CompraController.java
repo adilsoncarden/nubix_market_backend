@@ -19,7 +19,8 @@ public class CompraController {
         return ResponseEntity.ok(compraService.obtenerTodas());
     }
 
-    @PostMapping("/compras/crear")
+
+    @PostMapping("/compras/create")
     public ResponseEntity<?> crearCompra(@RequestBody CompraRequest request) {
         try {
             return ResponseEntity.ok(compraService.crearCompra(request));

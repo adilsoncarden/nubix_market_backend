@@ -36,7 +36,7 @@ public class ProveedorController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/proveedores/crear")
+    @PostMapping("/proveedores/create")
     public ResponseEntity<?> crearProveedor(@RequestBody ProveedorRequest request) {
         Proveedor proveedor = proveedorService.guardar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(proveedor));
