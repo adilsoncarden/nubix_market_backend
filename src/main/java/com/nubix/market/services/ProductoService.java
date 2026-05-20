@@ -10,7 +10,9 @@ import com.nubix.market.repositories.ProductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
+import java.nio.file.StandardCopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -92,38 +94,35 @@ public class ProductoService {
 
 
     // LÓGICA DE IMAGENES
-
     public ProductoImagen subirImagen(Integer productoId, MultipartFile archivo) {
+        try {
+            String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename();
+            Path rutaArchivo = Path.of("imagenes");
+            if (!Files.exists(rutaArchivo)) {
+                Files.createDirectories(rutaArchivo);
+            }
+
+            Files.copy(archivo.getInputStream(), rutaArchivo.resolve(nombreArchivo), StandardCopyOption.REPLACE_EXISTING);
+
+            ProductoImagen nuevaImagen = new ProductoImagen();
+            nuevaImagen.setArchivo(nombreArchivo);
+
+            ProductoImagen imagenGuardada = ImagenRepository.save(nuevaImagen);
+            return imagenGuardada;
+        } catch (Exception e) {
+            throw new RuntimeException("Error al subir la imagen: " + e.getMessage());
+        }
+    }
+
+    public Producto asignarImagenProducto(Integer productoId, Integer imagenId) {
         Producto producto = productoRepository.findById(productoId)
-        .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        ProductoImagen imagen = ImagenRepository.findById(imagenId)
+                .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
 
-    // lógica de guardado simulada (en producción se usaria AWS o una carpeta local estática)
-    String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename();
-    String rutaFalsa = "http://localhost:8080/uploads/" + nombreArchivo;
-
-    ProductoImagen nuevaImagen = new ProductoImagen(rutaFalsa, producto);
-    return ImagenRepository.save(nuevaImagen);
+        producto.setImagen(imagen);
+        return productoRepository.save(producto);
     }
-
-
-    // ACTUALIZAR IMAGEN
-   
-    public ProductoImagen actualizarImagen(Integer imagenId, MultipartFile nuevoArchivo) {
-        ProductoImagen imagenExistente = ImagenRepository.findById(imagenId)
-        .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
-
-        // en producción, aqui deberiamos incluir el código borrar
-        // el archivo físico anterior del server o de AWS para no acumular basura.
-
-        //Simulamos el guardado del nuevo archivo
-        String nombreArchivo = java.util.UUID.randomUUID().toString() + "_" + nuevoArchivo.getOriginalFilename();
-        String nuevaRuta = "http://localhost:8080/uploads/" + nombreArchivo;
-
-        imagenExistente.setUrl(nuevaRuta);
-        return ImagenRepository.save(imagenExistente);
-    }
-
-
 
     public void eliminarImagen(Integer imagenId) {
         if (!ImagenRepository.existsById(imagenId)) {

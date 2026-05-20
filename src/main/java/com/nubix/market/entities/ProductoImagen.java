@@ -1,11 +1,9 @@
 package com.nubix.market.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "producto_imagenes" )
-
 public class ProductoImagen {
     
     @Id
@@ -13,26 +11,17 @@ public class ProductoImagen {
     private Integer id;
 
     @Column(nullable = false)
-    private String url;   // guardamos la ruta local o la URL de AWS
-
-    // relación: Muchas imagenes pertenecen a un Producto
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "producto_id", nullable = false)
-    @JsonIgnore // evita los bucles infinitos
-    private Producto producto;
+    private String archivo;   // guardamos la ruta local o la URL de AWS
 
     public ProductoImagen() {}
 
-    public ProductoImagen(String url, Producto producto) {
-        this.url = url;
-        this.producto = producto;
+    public ProductoImagen(String archivo, Producto producto) {
+        this.archivo = archivo;
     }
 
     // getters and setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
-    public String getUrl() { return url; }
-    public void setUrl(String url) { this.url = url; }
-    public Producto getProducto() { return producto; }
-    public void setProducto(Producto producto) { this.producto = producto; }
+    public String getArchivo() { return archivo; }
+    public void setArchivo(String archivo) { this.archivo = archivo; }
 }

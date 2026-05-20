@@ -1,7 +1,5 @@
 package com.nubix.market.dto;
 
-import java.util.List;
-
 public class ProductoResponse {
     private Integer id;
     private String codigo;
@@ -11,7 +9,7 @@ public class ProductoResponse {
     private Double precioVenta;
     private Integer stock;
     private String categoriaNombre;
-    private List<ImagenDTO> imagenes;
+    private ImagenDTO imagen;
 
     public ProductoResponse(Integer id, String codigo, String nombre, String descripcion, Double precioCompra, Double precioVenta, Integer stock, String categoriaNombre) {
         this.id = id;
@@ -41,20 +39,20 @@ public class ProductoResponse {
     public void setStock(Integer stock) {this.stock = stock;}
     public String getCategoriaNombre() {return categoriaNombre;}
     public void setCategoriaNombre(String categoriaNombre) {this.categoriaNombre = categoriaNombre;}
-    public List<ImagenDTO> getImagenes() {return imagenes;}
-    public void setImagenes(List<ImagenDTO> imagenes) {this.imagenes = imagenes;}
+    public ImagenDTO getImagen() {return imagen;}
+    public void setImagen(ImagenDTO imagen) {this.imagen = imagen;}
 
     // Sub-DTO para imágenes
     public static class ImagenDTO {
         private Integer id;
-        private String url;
+        private String archivo;
 
-        public ImagenDTO(Integer id, String url) {
+        public ImagenDTO(Integer id, String archivo) {
             this.id = id;
-            this.url = url;
+            this.archivo = archivo;
         }
 
         public Integer getId() {return id;}
-        public String getUrl() {return url;}
+        public String getArchivo() {return archivo;}
     }
 }

@@ -1,8 +1,6 @@
 package com.nubix.market.entities;
 
 import jakarta.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(name = "productos")
@@ -34,8 +32,9 @@ public class Producto {
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ProductoImagen> imagenes = new ArrayList<>();
+    @ManyToOne
+    @JoinColumn(name = "id_imagen")
+    private ProductoImagen imagen;
 
     public Producto() {
     }
@@ -57,6 +56,6 @@ public class Producto {
     public void setStock(Integer stock) {this.stock = stock;}
     public Categoria getCategoria() {return categoria;}
     public void setCategoria(Categoria categoria) {this.categoria = categoria;}
-    public List<ProductoImagen> getImagenes() {return imagenes;}
-    public void setImagenes(List<ProductoImagen> imagenes) {this.imagenes = imagenes;}
+    public ProductoImagen getImagen() {return imagen;}
+    public void setImagen(ProductoImagen imagen) {this.imagen = imagen;}
 }

@@ -57,6 +57,4 @@ public Integer getStock() {
 public void setStock(Integer stock) {
     this.stock = stock;
 }
- 
-
 }

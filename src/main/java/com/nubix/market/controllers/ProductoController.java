@@ -27,11 +27,10 @@ public class ProductoController {
                                         producto.getPrecioCompra(), producto.getPrecioVenta(), 
                                         producto.getStock(), producto.getCategoria().getNombre());
         
-        List<ProductoResponse.ImagenDTO> imagenes = producto.getImagenes().stream()
-                .map(img -> new ProductoResponse.ImagenDTO(img.getId(), img.getUrl()))
-                .collect(Collectors.toList());
-        response.setImagenes(imagenes);
-
+        ProductoImagen imagen = producto.getImagen();
+        if (imagen != null) {
+            response.setImagen(new ProductoResponse.ImagenDTO(imagen.getId(), imagen.getArchivo()));
+        }
         return response;
     }
 
@@ -88,33 +87,29 @@ public class ProductoController {
         }
     }
 
-    // POST Agregar imagen a producto
-    @PostMapping("/productos/{id}/upload_imagene")
-    public ResponseEntity<?> uploadImage(@PathVariable Integer id, @RequestParam("file") MultipartFile file) {
-        try {
-            ProductoImagen imagen = productoService.subirImagen(id, file);
-            return ResponseEntity.ok(imagen);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    // POST Cargar imagen de producto
+    @PostMapping("/productos/imagenes/upload")
+    public ResponseEntity<?> uploadImage(@RequestParam("archivo") MultipartFile archivo) {
+        ProductoImagen imagen = productoService.subirImagen(null, archivo);
+        return ResponseEntity.ok(imagen);
     }
 
-    // PUT Actualizar imagen de producto
-    @PutMapping("/producto/imagen/{imagenId}/update_imagen")
-    public ResponseEntity<?> updateImage(@PathVariable Integer imagenId, @RequestParam("file") MultipartFile file) {
+    // POST Asignar imagen a producto
+    @PutMapping("/productos/{productoId}")
+    public ResponseEntity<?> asignarImagen(@PathVariable Integer productoId, @RequestParam Integer imagenId) {
         try {
-            ProductoImagen imagen = productoService.actualizarImagen(imagenId, file);
-            return ResponseEntity.ok(imagen);
+            Producto producto = productoService.asignarImagenProducto(productoId, imagenId);
+            return ResponseEntity.ok(mapToProductoResponse(producto));
         } catch (RuntimeException e) {
-            if (e.getMessage().equals("Imagen no encontrada")) {
+            if (e.getMessage().contains("no encontrado")) {
                 return ResponseEntity.notFound().build();
             }
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    
     // DELETE Eliminar imagen de producto
-    @DeleteMapping("/producto/imagen/{imagenId}/delete_imagen")
+    @DeleteMapping("/producto/imagenes/{imagenId}")
     public ResponseEntity<?> deleteImage(@PathVariable Integer imagenId) {
         try {
             productoService.eliminarImagen(imagenId);
