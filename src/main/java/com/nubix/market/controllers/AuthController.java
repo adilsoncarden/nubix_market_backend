@@ -61,7 +61,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/verify-code")
+    @PostMapping("/verify-code/")
     public ResponseEntity<?> verificarCodigo(@RequestBody VerficarCodigoRequest request) {
         boolean valid = recuperaciónContraseñaService.verificarCodigo(request.getEmail(), request.getCodigo());
         if (!valid) {
