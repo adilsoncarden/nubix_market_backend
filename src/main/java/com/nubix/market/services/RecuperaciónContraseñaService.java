@@ -60,7 +60,7 @@ public class RecuperaciónContraseñaService {
             return false;
         }
 
-        if (!codigo.equals(token.getCodigo())) {
+        if (codigo.equals(token.getCodigo())) {
             token.setUtilizado(true);
             reseteoContraseñaRepository.save(token);
             return true;
