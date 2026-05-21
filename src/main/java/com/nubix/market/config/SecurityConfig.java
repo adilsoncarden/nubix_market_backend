@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig {   
 
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
