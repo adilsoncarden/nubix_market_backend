@@ -8,6 +8,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 
 @Entity
 @Table(name = "ventas")
@@ -47,15 +49,18 @@ public class Venta {
 
     // Relación con Usuario (Cliente) rol CLIENTE (3)
     @ManyToOne
+    @JsonIgnoreProperties({"venta", "hibernateLazyInitializer", "handler"})
     @JoinColumn(name = "cliente_id", nullable = false)
     private Usuario cliente;
 
     // Relación con Usuario (Vendedor) rol VENDEDOR (1 o 2)
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonIgnoreProperties({"venta", "hibernateLazyInitializer", "handler"})
     private Usuario vendedor;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties({"venta"}) // Evita que el detalle vuelva a llamar a la venta
     private List<DetalleVenta> detalles = new ArrayList<>();
 
     public Venta() {
