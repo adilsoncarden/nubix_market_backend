@@ -48,8 +48,7 @@ public class RecuperaciónContraseñaService {
         }
         Usuario usuario = usuarioOpt.get();
 
-        Optional<ContraseñaResetToken> codigoOpt =
-        reseteoContraseñaRepository.findTopByUsuarioAndUtilizadoFalseOrderByIdDesc(usuario);
+        Optional<ContraseñaResetToken> codigoOpt = reseteoContraseñaRepository.findTopByUsuarioAndUtilizadoFalseOrderByIdDesc(usuario);
         if (codigoOpt.isEmpty()) {
             return false;
         }
@@ -57,27 +56,43 @@ public class RecuperaciónContraseñaService {
         ContraseñaResetToken token = codigoOpt.get();
 
         if (token.getFechaExpiracion().isBefore(LocalDateTime.now())) {
-            return false;
+            return false;   // el token ha expirado, no se permite ingresar a la siguiente pantalla para ingresar la nueva contraseña
         }
 
-        if (!codigo.equals(token.getCodigo())) {
-            token.setUtilizado(true);
-            reseteoContraseñaRepository.save(token);
-            return true;
+        if (codigo.trim().equals(token.getCodigo().trim())) {
+            return true;   // esto está correcto, se deja pasar a la siguiente pantalla para ingresar la nueva contraseña
         }
 
-        return false;
+        return false; // es falso
     }
 
-    public boolean resetearContraseña(String email, String nuevaContraseña){
+    public boolean resetearContraseña(String email, String nuevaContraseña, String codigo){
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isEmpty()){
             return false;
         }
-
         Usuario usuario = usuarioOpt.get();
+
+        Optional<ContraseñaResetToken> codigoOpt = reseteoContraseñaRepository.findTopByUsuarioAndUtilizadoFalseOrderByIdDesc(usuario);
+        if (codigoOpt.isEmpty()) {
+            return false;
+        }
+        ContraseñaResetToken token = codigoOpt.get();
+        
+        //validamos por última vez por seguridad
+        if (token.getFechaExpiracion().isBefore(LocalDateTime.now()) || !codigo.trim().equals(token.getCodigo().trim())) {  
+            return false; 
+        }
+
+        // éxito, cambiamos la clave
         usuario.setPassword(passwordEncoder.encode(nuevaContraseña));
         usuarioRepository.save(usuario);
+
+
+        token.setUtilizado(true);
+        reseteoContraseñaRepository.save(token);
+
         return true;
     }
 }
+    

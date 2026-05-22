@@ -1,5 +1,6 @@
 package com.nubix.market.controllers;
 
+import jakarta.validation.Valid;
 import com.nubix.market.dto.AuthResponse;
 import com.nubix.market.dto.LoginRequest;
 import com.nubix.market.dto.RegisterRequest;
@@ -70,8 +71,13 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody NuevaContraseñaRequest request) {
-        boolean success = recuperaciónContraseñaService.resetearContraseña(request.getEmail(), request.getNuevaContraseña());
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody NuevaContraseñaRequest request) {
+        //corregido: agrego request.getCodigo()
+        boolean success = recuperaciónContraseñaService.resetearContraseña(
+            request.getEmail(),
+            request.getNuevaContraseña(),
+            request.getCodigo()
+      );
         if (!success) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
