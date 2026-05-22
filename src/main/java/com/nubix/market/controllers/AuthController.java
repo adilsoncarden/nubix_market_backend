@@ -15,8 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
-
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*")
@@ -35,7 +33,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
-    
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
@@ -44,16 +42,16 @@ public class AuthController {
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
-    }   
+    }
 
-      @PostMapping("/admin-login")
+    @PostMapping("/admin-login")
     public ResponseEntity<AuthResponse> adminLogin(@RequestBody LoginRequest request) {
         AuthResponse response = authService.adminLogin(request);
-         if(response.isSuccess()) {
+        if (response.isSuccess()) {
             return ResponseEntity.ok(response);
-         } else {
+        } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
-         }
+        }
     }
 
     @PostMapping("/forgot-password")
@@ -62,7 +60,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/verify-code/")
+    @PostMapping("/verify-code")
     public ResponseEntity<?> verificarCodigo(@RequestBody VerficarCodigoRequest request) {
         boolean valid = recuperaciónContraseñaService.verificarCodigo(request.getEmail(), request.getCodigo());
         if (!valid) {
@@ -73,12 +71,11 @@ public class AuthController {
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody NuevaContraseñaRequest request) {
-        //corregido: agrego request.getCodigo()
+        // corregido: agrego request.getCodigo()
         boolean success = recuperaciónContraseñaService.resetearContraseña(
-            request.getEmail(),
-            request.getNuevaContraseña(),
-            request.getCodigo()
-      );
+                request.getEmail(),
+                request.getNuevaContraseña(),
+                request.getCodigo());
         if (!success) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
