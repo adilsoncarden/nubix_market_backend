@@ -21,8 +21,7 @@ public class CategoriaController {
 
     private CategoriaResponse mapToResponse(Categoria categoria) {
         return new CategoriaResponse(categoria.getId(),
-                categoria.getNombre(),
-                categoria.getDescripcion());
+                categoria.getNombre());
     }
 
     // GET: Listar todas las categorías
@@ -41,7 +40,6 @@ public class CategoriaController {
         try {
             Categoria categoria = new Categoria();
             categoria.setNombre(request.getNombre());
-            categoria.setDescripcion(request.getDescripcion());
             Categoria guardada = categoriaService.guardar(categoria);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(guardada));
@@ -64,7 +62,6 @@ public class CategoriaController {
         try {
             Categoria categoria = new Categoria();
             categoria.setNombre(request.getNombre());
-            categoria.setDescripcion(request.getDescripcion());
             Categoria actualizada = categoriaService.actualizar(id, categoria);
 
             return ResponseEntity.ok(mapToResponse(actualizada));
