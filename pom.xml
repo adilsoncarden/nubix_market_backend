@@ -95,8 +95,8 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupvalidaId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tion-test</artifactId>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -166,3 +166,4 @@
 		</plugins>
 	</build>
 </project>
+
