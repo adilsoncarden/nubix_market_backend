@@ -107,15 +107,4 @@ public class ProductoController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
-    // DELETE Eliminar imagen de producto
-    @DeleteMapping("/producto/imagenes/{imagenId}")
-    public ResponseEntity<?> deleteImage(@PathVariable Integer imagenId) {
-        try {
-            productoService.eliminarImagen(imagenId);
-            return ResponseEntity.ok("Imagen eliminada exitosamente");
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
 }
