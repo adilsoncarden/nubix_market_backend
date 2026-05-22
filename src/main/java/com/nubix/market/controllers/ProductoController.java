@@ -23,8 +23,7 @@ public class ProductoController {
     private ProductoResponse mapToProductoResponse(Producto producto) {
         ProductoResponse response = new ProductoResponse(
                                         producto.getId(), producto.getCodigo(), 
-                                        producto.getNombre(), producto.getDescripcion(), 
-                                        producto.getPrecioCompra(), producto.getPrecioVenta(), 
+                                        producto.getNombre(),producto.getPrecioCompra(), producto.getPrecioVenta(), 
                                         producto.getStock(), producto.getCategoria().getNombre());
         
         ProductoImagen imagen = producto.getImagen();

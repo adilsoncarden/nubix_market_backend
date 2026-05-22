@@ -46,7 +46,6 @@ public class ProductoService {
         Producto producto = new Producto();
         producto.setCodigo(request.getCodigo());
         producto.setNombre(request.getNombre());
-        producto.setDescripcion(request.getDescripcion());
         producto.setPrecioCompra(request.getPrecioCompra());
         producto.setPrecioVenta(request.getPrecioVenta());
         producto.setStock(request.getStock());
@@ -73,7 +72,6 @@ public class ProductoService {
 
             producto.setCodigo(detalles.getCodigo());
             producto.setNombre(detalles.getNombre());
-            producto.setDescripcion(detalles.getDescripcion());
             producto.setPrecioCompra(detalles.getPrecioCompra());
             producto.setPrecioVenta(detalles.getPrecioVenta());
             producto.setStock(detalles.getStock());
