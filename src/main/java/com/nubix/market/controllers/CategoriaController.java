@@ -38,11 +38,8 @@ public class CategoriaController {
     @PostMapping("/categorias/create")
     public ResponseEntity<?> create(@RequestBody CategoriaRequest request) {
         try {
-            Categoria categoria = new Categoria();
-            categoria.setNombre(request.getNombre());
-            Categoria guardada = categoriaService.guardar(categoria);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(guardada));
+            Categoria categoria = categoriaService.guardar(request);
+            return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(categoria));
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -60,11 +57,8 @@ public class CategoriaController {
     @PostMapping("/categorias/{id}/update")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody CategoriaRequest request) {
         try {
-            Categoria categoria = new Categoria();
-            categoria.setNombre(request.getNombre());
-            Categoria actualizada = categoriaService.actualizar(id, categoria);
-
-            return ResponseEntity.ok(mapToResponse(actualizada));
+            Categoria categoria = categoriaService.actualizar(id, request);
+            return ResponseEntity.ok(mapToResponse(categoria));
         } catch (RuntimeException e) {
             if (e.getMessage().equals("Categoria no encontrada")) {
                 return ResponseEntity.notFound().build();
