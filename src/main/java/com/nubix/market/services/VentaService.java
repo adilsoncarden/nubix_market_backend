@@ -32,11 +32,11 @@ public class VentaService {
         return ventaRepository.findAll();
     }
 
-    //Metodo para crear venta por mientras se desarrolla el proceso de compra
+    // Metodo para crear venta por mientras se desarrolla el proceso de compra
     public Venta crearVenta(VentaRequest request) {
         Usuario cliente = usuarioRepository.findById(request.getClienteId())
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
-        
+
         Usuario vendedor = usuarioRepository.findById(request.getVendedorId())
                 .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
 
@@ -46,14 +46,14 @@ public class VentaService {
         venta.setMetodoPago(request.getMetodoPago());
         venta.setTipoEntrega(TipoEntrega.PRESENCIAL);
 
-        //Logica de EstadoPago
+        // Logica de EstadoPago
         if (request.getMetodoPago() == MetodoPago.CREDITO) {
             venta.setEstadoPago(EstadoPago.PENDIENTE);
         } else {
             venta.setEstadoPago(EstadoPago.PAGADO);
         }
 
-        //Logica de Entrega
+        // Logica de Entrega
         if (request.getTipoEntrega() == TipoEntrega.DELIVERY) {
             venta.setDireccionEntrega(request.getDireccionEntrega());
         } else {
@@ -62,17 +62,17 @@ public class VentaService {
 
         double total = 0.0;
 
-        //Procesar detalles de venta y descontar stock
+        // Procesar detalles de venta y descontar stock
         for (VentaRequest.DetalleVentaRequest item : request.getDetalles()) {
             Producto producto = productoRepository.findById(item.getProductoId())
                     .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-            
-            //Verificar stock
+
+            // Verificar stock
             if (producto.getStock() < item.getCantidad()) {
                 throw new RuntimeException("Stock insuficiente para el producto: " + producto.getNombre());
             }
 
-            //Descontar stock
+            // Descontar stock
             producto.setStock(producto.getStock() - item.getCantidad());
             productoRepository.save(producto);
 
@@ -88,7 +88,7 @@ public class VentaService {
 
             venta.getDetalles().add(detalle);
         }
-        
+
         venta.setTotal(total);
         return ventaRepository.save(venta);
     }
@@ -103,14 +103,14 @@ public class VentaService {
     public Venta RegistrarCredito(Integer ventaId) {
         Venta venta = ventaRepository.findById(ventaId)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
-        
+
         if (venta.getMetodoPago() != MetodoPago.CREDITO) {
             throw new RuntimeException("La venta no es a crédito");
         }
         if (venta.getEstadoPago() == EstadoPago.PAGADO) {
             throw new RuntimeException("La venta ya ha sido pagada");
         }
-        
+
         venta.setEstadoPago(EstadoPago.PAGADO);
         return ventaRepository.save(venta);
     }

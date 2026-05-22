@@ -9,6 +9,7 @@ import com.nubix.market.dto.VerficarCodigoRequest;
 import com.nubix.market.dto.NuevaContraseñaRequest;
 import com.nubix.market.services.AuthService;
 import com.nubix.market.services.RecuperaciónContraseñaService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +27,7 @@ public class AuthController {
     private RecuperaciónContraseñaService recuperaciónContraseñaService;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
         if (response.isSuccess()) {
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -61,7 +62,7 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/verify-code")
+    @PostMapping("/verify-code/")
     public ResponseEntity<?> verificarCodigo(@RequestBody VerficarCodigoRequest request) {
         boolean valid = recuperaciónContraseñaService.verificarCodigo(request.getEmail(), request.getCodigo());
         if (!valid) {

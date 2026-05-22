@@ -29,13 +29,22 @@ public class SecurityConfig {
         http
                 // 1. Habilitamos CORS con la configuración que definimos abajo
                 .cors(Customizer.withDefaults())
+                // Deshabilitamos CSRF porque usamos tokens JWT
                 .csrf(csrf -> csrf.disable())
+                // Configuración de sesión sin estado (Stateless)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Usamos un patrón más limpio para rutas públicas
+                        // Rutas públicas de autenticación
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/error").permitAll()  
-                        .anyRequest().authenticated())
+
+                        // IMPORTANTE: Permitir el endpoint de error por defecto de Spring Boot.
+                        // Esto evita que un error 404 o 500 se disfrace de un error 403 (Forbidden).
+                        .requestMatchers("/error").permitAll()
+
+                        // Cualquier otra ruta requerirá autenticación
+                        .anyRequest().authenticated()
+                )
+                // Filtro JWT antes del filtro de autenticación por usuario/contraseña
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -48,13 +57,13 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Permitimos el origen de tu frontend
+        // Permitimos el origen de tu frontend en desarrollo
         configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
-        // Métodos permitidos
+        // Métodos HTTP permitidos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        // Headers necesarios para JWT y contenido JSON
+        // Headers permitidos y necesarios para intercambiar el Token JWT
         configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
-        // Permitir que el navegador envíe credenciales si fuera necesario
+        // Permitir envío de credenciales/cookies si fuera necesario
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
