@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfig {   
 
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
@@ -36,11 +36,14 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas de autenticación
                         .requestMatchers("/api/auth/**").permitAll()
+
                         // IMPORTANTE: Permitir el endpoint de error por defecto de Spring Boot.
                         // Esto evita que un error 404 o 500 se disfrace de un error 403 (Forbidden).
                         .requestMatchers("/error").permitAll()
+
                         // Cualquier otra ruta requerirá autenticación
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated()
+                )
                 // Filtro JWT antes del filtro de autenticación por usuario/contraseña
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

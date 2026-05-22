@@ -44,7 +44,7 @@ public class VentaService {
         venta.setCliente(cliente);
         venta.setVendedor(vendedor);
         venta.setMetodoPago(request.getMetodoPago());
-        venta.setTipoEntrega(request.getTipoEntrega());
+        venta.setTipoEntrega(TipoEntrega.PRESENCIAL);
 
         // Logica de EstadoPago
         if (request.getMetodoPago() == MetodoPago.CREDITO) {

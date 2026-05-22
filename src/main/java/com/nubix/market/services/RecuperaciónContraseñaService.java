@@ -14,12 +14,16 @@ import com.nubix.market.repositories.UsuarioRepository;
 
 @Service
 public class RecuperaciónContraseñaService {
+
     @Autowired
     private UsuarioRepository usuarioRepository;
+
     @Autowired
     private ReseteoContraseñaRepository reseteoContraseñaRepository;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     @Autowired
     private EmailService emailService;
 
@@ -30,12 +34,15 @@ public class RecuperaciónContraseñaService {
         }
 
         Usuario usuario = usuarioOpt.get();
-        String codigo = String.format("%06d",new Random().nextInt(999999));
+
+        String codigo = String.format("%06d", new Random().nextInt(999999));
+
         ContraseñaResetToken resetCodigo = new ContraseñaResetToken();
         resetCodigo.setUsuario(usuario);
         resetCodigo.setCodigo(codigo);
         resetCodigo.setFechaExpiracion(LocalDateTime.now().plusMinutes(5));
         resetCodigo.setUtilizado(false);
+
         reseteoContraseñaRepository.save(resetCodigo);
 
         emailService.enviarCodigoRecuperacion(email, codigo);
@@ -46,38 +53,64 @@ public class RecuperaciónContraseñaService {
         if (usuarioOpt.isEmpty()) {
             return false;
         }
+
         Usuario usuario = usuarioOpt.get();
 
         Optional<ContraseñaResetToken> codigoOpt =
-        reseteoContraseñaRepository.findTopByUsuarioAndUtilizadoFalseOrderByIdDesc(usuario);
+                reseteoContraseñaRepository.findTopByUsuarioAndUtilizadoFalseOrderByIdDesc(usuario);
+
         if (codigoOpt.isEmpty()) {
             return false;
         }
 
         ContraseñaResetToken token = codigoOpt.get();
 
+        // Validamos expiración
         if (token.getFechaExpiracion().isBefore(LocalDateTime.now())) {
             return false;
         }
 
-        if (codigo.equals(token.getCodigo())) {
-            token.setUtilizado(true);
-            reseteoContraseñaRepository.save(token);
+        // ✔ Solo validamos, NO consumimos el token aquí (flujo correcto)
+        if (codigo != null && token.getCodigo() != null &&
+            codigo.trim().equals(token.getCodigo().trim())) {
             return true;
         }
 
         return false;
     }
 
-    public boolean resetearContraseña(String email, String nuevaContraseña){
+    public boolean resetearContraseña(String email, String nuevaContraseña, String codigo){
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isEmpty()){
             return false;
         }
 
         Usuario usuario = usuarioOpt.get();
+
+        Optional<ContraseñaResetToken> codigoOpt =
+                reseteoContraseñaRepository.findTopByUsuarioAndUtilizadoFalseOrderByIdDesc(usuario);
+
+        if (codigoOpt.isEmpty()) {
+            return false;
+        }
+
+        ContraseñaResetToken token = codigoOpt.get();
+
+        // Validación final (expiración + coincidencia de código)
+        if (token.getFechaExpiracion().isBefore(LocalDateTime.now()) ||
+            codigo == null ||
+            !codigo.trim().equals(token.getCodigo().trim())) {
+            return false;
+        }
+
+        // ✔ Cambio de contraseña
         usuario.setPassword(passwordEncoder.encode(nuevaContraseña));
         usuarioRepository.save(usuario);
+
+        // ✔ Aquí sí consumimos el token (uso único real)
+        token.setUtilizado(true);
+        reseteoContraseñaRepository.save(token);
+
         return true;
     }
 }

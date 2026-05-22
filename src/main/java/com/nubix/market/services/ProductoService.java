@@ -124,10 +124,4 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
-    public void eliminarImagen(Integer imagenId) {
-        if (!ImagenRepository.existsById(imagenId)) {
-            throw new RuntimeException("Imagen no encontrada");
-        }
-        ImagenRepository.deleteById(imagenId);
-    }
 }
