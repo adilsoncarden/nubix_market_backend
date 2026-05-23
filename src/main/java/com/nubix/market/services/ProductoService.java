@@ -130,7 +130,18 @@ public class ProductoService {
                 .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
 
         producto.setImagen(imagen);
+        ProductoImagen imagenAnterior = new ProductoImagen();
+        
+        if (imagenAnterior != null) {
+            try {
+                Path ruta = Path.of(System.getProperty("user.dir"),"uploads", imagenAnterior.getArchivo());
+
+                Files.deleteIfExists(ruta);
+                ImagenRepository.delete(imagenAnterior);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         return productoRepository.save(producto);
     }
-
 }
