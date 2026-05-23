@@ -7,6 +7,7 @@ import com.nubix.market.entities.ProductoImagen;
 import com.nubix.market.repositories.CategoriaRepository;
 import com.nubix.market.repositories.ProductoImagenRepository;
 import com.nubix.market.repositories.ProductoRepository;
+import com.nubix.market.config.CryptoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import javax.crypto.SecretKey;
 
 
 @Service
@@ -100,7 +102,10 @@ public class ProductoService {
                 Files.createDirectories(rutaArchivo);
             }
 
-            Files.copy(archivo.getInputStream(), rutaArchivo.resolve(nombreArchivo), StandardCopyOption.REPLACE_EXISTING);
+            byte[] contenido = archivo.getBytes();
+            SecretKey clave = CryptoUtil.generarClave();
+            byte[] datosEncriptados = CryptoUtil.encriptar(contenido, clave);
+            Files.write(rutaArchivo.resolve(nombreArchivo), datosEncriptados);
 
             ProductoImagen nuevaImagen = new ProductoImagen();
             nuevaImagen.setArchivo(nombreArchivo);
