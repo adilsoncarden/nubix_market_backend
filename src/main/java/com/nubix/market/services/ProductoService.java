@@ -37,6 +37,11 @@ public class ProductoService {
         return productoRepository.findById(id);
     }
 
+    // OBTENER TODAS LAS IMÁGENES
+    public List<ProductoImagen> obtenerImagenes() {
+        return ImagenRepository.findAll();
+    }
+
     public Producto guardar(ProductoRequest request) {
         if (productoRepository.existsByCodigo(request.getCodigo())) {
             throw new RuntimeException("El código del producto ya existe");
@@ -123,21 +128,32 @@ public class ProductoService {
         }
     }
 
-    public Producto asignarImagenProducto(Integer productoId, Integer imagenId) {
+    public Producto asignarImagenProducto(Integer productoId,Integer imagenId
+
+    ) {
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-        ProductoImagen imagen = ImagenRepository.findById(imagenId)
+        ProductoImagen nuevaImagen = ImagenRepository.findById(imagenId)
                 .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
 
-        producto.setImagen(imagen);
-        ProductoImagen imagenAnterior = new ProductoImagen();
-        
+        // OBTENER LA IMAGEN ANTERIOR
+        ProductoImagen imagenAnterior = producto.getImagen();
+
+        // ASIGNAR NUEVA IMAGEN 
+        producto.setImagen(nuevaImagen);
+
+        // ELIMINAR IMAGEN ANTERIOR
         if (imagenAnterior != null) {
             try {
-                Path ruta = Path.of(System.getProperty("user.dir"),"uploads", imagenAnterior.getArchivo());
+                Path rutaImagenAnterior = Path.of(
+                    System.getProperty("user.dir"),"uploads", imagenAnterior.getArchivo());
 
-                Files.deleteIfExists(ruta);
+                //  eliminar archivo físico
+                Files.deleteIfExists(rutaImagenAnterior);
+
+                // eliminar registro BD
                 ImagenRepository.delete(imagenAnterior);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }

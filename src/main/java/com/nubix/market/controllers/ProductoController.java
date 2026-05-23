@@ -42,6 +42,13 @@ public class ProductoController {
         return ResponseEntity.ok(productos);
     }
 
+    // GET LISTAR IMÁGENES
+    @GetMapping("/productos/imagenes")
+    public ResponseEntity<List<ProductoImagen>> obtenerImagenes() {
+        List<ProductoImagen> imagenes = productoService.obtenerImagenes();
+        return ResponseEntity.ok(imagenes);
+}
+
     // POST Crear producto
     @PostMapping("/productos/create")
     public ResponseEntity<?> create(@RequestBody ProductoRequest request) {
