@@ -97,7 +97,7 @@ public class ProductoService {
     public ProductoImagen subirImagen(Integer productoId, MultipartFile archivo) {
         try {
             String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename();
-            Path rutaArchivo = Path.of("imagenes");
+            Path rutaArchivo = Path.of(System.getProperty("user.dir"), "uploads");
             if (!Files.exists(rutaArchivo)) {
                 Files.createDirectories(rutaArchivo);
             }
@@ -107,6 +107,12 @@ public class ProductoService {
             byte[] datosEncriptados = CryptoUtil.encriptar(contenido, clave);
             Files.write(rutaArchivo.resolve(nombreArchivo), datosEncriptados);
 
+            /*Files.copy(
+                archivo.getInputStream(),
+                rutaArchivo.resolve(nombreArchivo), 
+                StandardCopyOption.REPLACE_EXISTING
+            );*/
+            
             ProductoImagen nuevaImagen = new ProductoImagen();
             nuevaImagen.setArchivo(nombreArchivo);
 

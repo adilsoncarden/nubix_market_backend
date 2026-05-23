@@ -9,6 +9,7 @@ private String nombre;
 private Double precioCompra; 
 private Double precioVenta;
 private Integer stock;
+private Integer imagenId;
 
 
 
@@ -49,5 +50,10 @@ public Integer getStock() {
 }
 public void setStock(Integer stock) {
     this.stock = stock;
+}
+public Integer getImagenId(){
+    return imagenId;}
+public void setImagen(Integer imagenId){
+    this.imagenId = imagenId;
 }
 }
