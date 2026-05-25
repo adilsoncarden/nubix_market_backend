@@ -6,10 +6,10 @@ public class ProductoRequest {
 private Integer categoriaId;  // solo pedimos el ID de la categoría
 private String codigo;
 private String nombre;
-private String descripcion;
 private Double precioCompra; 
 private Double precioVenta;
 private Integer stock;
+private Integer imagenId;
 
 
 
@@ -33,12 +33,6 @@ public String getNombre() {
 public void setNombre(String nombre) {
     this.nombre = nombre;
 }
-public String getDescripcion() {
-    return descripcion;
-}
-public void setDescripcion(String descripcion) {
-    this.descripcion = descripcion;
-}
 public Double getPrecioCompra() {
     return precioCompra;
 }
@@ -56,5 +50,10 @@ public Integer getStock() {
 }
 public void setStock(Integer stock) {
     this.stock = stock;
+}
+public Integer getImagenId(){
+    return imagenId;}
+public void setImagenId(Integer imagenId) {
+    this.imagenId = imagenId;
 }
 }
