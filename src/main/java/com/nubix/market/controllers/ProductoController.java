@@ -22,10 +22,10 @@ public class ProductoController {
 
     private ProductoResponse mapToProductoResponse(Producto producto) {
         ProductoResponse response = new ProductoResponse(
-                                        producto.getId(), producto.getCodigo(), 
-                                        producto.getNombre(),producto.getPrecioCompra(), producto.getPrecioVenta(), 
-                                        producto.getStock(), producto.getCategoria().getNombre());
-        
+                producto.getId(), producto.getCodigo(),
+                producto.getNombre(), producto.getPrecioCompra(), producto.getPrecioVenta(),
+                producto.getStock(), producto.getCategoria().getNombre());
+
         ProductoImagen imagen = producto.getImagen();
         if (imagen != null) {
             response.setImagen(new ProductoResponse.ImagenDTO(imagen.getId(), imagen.getArchivo()));
@@ -33,7 +33,6 @@ public class ProductoController {
         return response;
     }
 
-    // GET Listar productos
     @GetMapping("/productos")
     public ResponseEntity<List<ProductoResponse>> index() {
         List<ProductoResponse> productos = productoService.obtenerTodos().stream()
@@ -42,14 +41,6 @@ public class ProductoController {
         return ResponseEntity.ok(productos);
     }
 
-    // GET LISTAR IMÁGENES
-    @GetMapping("/productos/imagenes")
-    public ResponseEntity<List<ProductoImagen>> obtenerImagenes() {
-        List<ProductoImagen> imagenes = productoService.obtenerImagenes();
-        return ResponseEntity.ok(imagenes);
-}
-
-    // POST Crear producto
     @PostMapping("/productos/create")
     public ResponseEntity<?> create(@RequestBody ProductoRequest request) {
         try {
@@ -60,7 +51,6 @@ public class ProductoController {
         }
     }
 
-    // GET Obtener producto por ID
     @GetMapping("/productos/{id}")
     public ResponseEntity<ProductoResponse> show(@PathVariable Integer id) {
         return productoService.obtenerPorId(id)
@@ -68,7 +58,6 @@ public class ProductoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // PUT Actualizar producto
     @PutMapping("/productos/update/{id}")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody ProductoRequest request) {
         try {
@@ -82,29 +71,35 @@ public class ProductoController {
         }
     }
 
-    // DELETE Eliminar producto
     @DeleteMapping("/productos/{id}")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         try {
             productoService.eliminar(id);
             return ResponseEntity.ok().build();
         } catch (RuntimeException e) {
-                return ResponseEntity.notFound().build();
+            return ResponseEntity.notFound().build();
         }
     }
 
-    // POST Cargar imagen de producto
-    @PostMapping("/productos/imagenes/upload")
-    public ResponseEntity<?> uploadImage(@RequestParam("archivo") MultipartFile archivo) {
-        ProductoImagen imagen = productoService.subirImagen(null, archivo);
-        return ResponseEntity.ok(imagen);
+    @PostMapping("/productos/{id}/imagen")
+    public ResponseEntity<?> uploadProductImage(
+            @PathVariable Integer id,
+            @RequestParam("archivo") MultipartFile archivo) {
+        try {
+            Producto producto = productoService.subirImagenProducto(id, archivo);
+            return ResponseEntity.ok(mapToProductoResponse(producto));
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("no encontrado")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
-    // POST Asignar imagen a producto
-    @PutMapping("/productos/{productoId}")
-    public ResponseEntity<?> asignarImagen(@PathVariable Integer productoId, @RequestParam Integer imagenId) {
+    @DeleteMapping("/productos/{id}/imagen")
+    public ResponseEntity<?> deleteProductImage(@PathVariable Integer id) {
         try {
-            Producto producto = productoService.asignarImagenProducto(productoId, imagenId);
+            Producto producto = productoService.eliminarImagenProducto(id);
             return ResponseEntity.ok(mapToProductoResponse(producto));
         } catch (RuntimeException e) {
             if (e.getMessage().contains("no encontrado")) {

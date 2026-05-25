@@ -53,7 +53,7 @@ public void setStock(Integer stock) {
 }
 public Integer getImagenId(){
     return imagenId;}
-public void setImagen(Integer imagenId){
+public void setImagenId(Integer imagenId) {
     this.imagenId = imagenId;
 }
 }

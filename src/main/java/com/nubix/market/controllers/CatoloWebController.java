@@ -1,15 +1,57 @@
 package com.nubix.market.controllers;
 
+import com.nubix.market.dto.CategoriaResponse;
+import com.nubix.market.dto.ProductoResponse;
+import com.nubix.market.entities.Producto;
+import com.nubix.market.entities.ProductoImagen;
+import com.nubix.market.services.CategoriaService;
+import com.nubix.market.services.ProductoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/catalogo")
+@CrossOrigin(origins = "*")
 public class CatoloWebController {
-    
-    // Pagina de catalogo, se muestra el catalogo de productos, con su nombre, precio y una imagen, ademas de un boton para agregar al carrito
-    // Antes de agregar un producto al carrito, se debe verificar que el producto tenga stock disponible
-    // Además el usuario debe estar autenticado para poder agregar productos al carrito, si no lo está, se le redirige a la página de login
-    // Tambien tendra un buscador para buscar productos por nombre o categoria, y un filtro para filtrar por precio o categoria
+
+    @Autowired
+    private ProductoService productoService;
+
+    @Autowired
+    private CategoriaService categoriaService;
+
+    private ProductoResponse mapToProductoResponse(Producto producto) {
+        ProductoResponse response = new ProductoResponse(
+                producto.getId(), producto.getCodigo(),
+                producto.getNombre(), producto.getPrecioCompra(), producto.getPrecioVenta(),
+                producto.getStock(), producto.getCategoria().getNombre());
+
+        ProductoImagen imagen = producto.getImagen();
+        if (imagen != null) {
+            response.setImagen(new ProductoResponse.ImagenDTO(imagen.getId(), imagen.getArchivo()));
+        }
+        return response;
+    }
+
+    @GetMapping("/productos")
+    public ResponseEntity<List<ProductoResponse>> listarProductos() {
+        List<ProductoResponse> productos = productoService.obtenerTodos().stream()
+                .map(this::mapToProductoResponse)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(productos);
+    }
+
+    @GetMapping("/categorias")
+    public ResponseEntity<List<CategoriaResponse>> listarCategorias() {
+        List<CategoriaResponse> categorias = categoriaService.obtenerTodas().stream()
+                .map(c -> new CategoriaResponse(c.getId(), c.getNombre()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(categorias);
+    }
 }

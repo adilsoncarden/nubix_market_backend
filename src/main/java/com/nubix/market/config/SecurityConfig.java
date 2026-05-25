@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas de autenticación
-                        .requestMatchers("/api/auth/**","/uploads/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/catalogo/**", "/uploads/**").permitAll()
 
                         // IMPORTANTE: Permitir el endpoint de error por defecto de Spring Boot.
                         // Esto evita que un error 404 o 500 se disfrace de un error 403 (Forbidden).
@@ -62,7 +62,12 @@ public class SecurityConfig {
         // Métodos HTTP permitidos
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         // Headers permitidos y necesarios para intercambiar el Token JWT
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Cache-Control",
+                "Pragma"));
         // Permitir envío de credenciales/cookies si fuera necesario
         configuration.setAllowCredentials(true);
 

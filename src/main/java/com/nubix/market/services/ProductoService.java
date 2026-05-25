@@ -7,48 +7,44 @@ import com.nubix.market.entities.ProductoImagen;
 import com.nubix.market.repositories.CategoriaRepository;
 import com.nubix.market.repositories.ProductoImagenRepository;
 import com.nubix.market.repositories.ProductoRepository;
-import com.nubix.market.config.CryptoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.nio.file.StandardCopyOption;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import javax.crypto.SecretKey;
-
 
 @Service
 public class ProductoService {
- 
+
+    private static final String UPLOAD_SUBDIR = "productos";
+
     @Autowired
     private ProductoRepository productoRepository;
     @Autowired
     private CategoriaRepository categoriaRepository;
     @Autowired
-    private ProductoImagenRepository ImagenRepository;
+    private ProductoImagenRepository imagenRepository;
 
-    public List<Producto> obtenerTodos(){
+    public List<Producto> obtenerTodos() {
         return productoRepository.findAll();
     }
+
     public Optional<Producto> obtenerPorId(Integer id) {
         return productoRepository.findById(id);
-    }
-
-    // OBTENER TODAS LAS IMÁGENES
-    public List<ProductoImagen> obtenerImagenes() {
-        return ImagenRepository.findAll();
     }
 
     public Producto guardar(ProductoRequest request) {
         if (productoRepository.existsByCodigo(request.getCodigo())) {
             throw new RuntimeException("El código del producto ya existe");
         }
-    
+
         Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
-             .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
         Producto producto = new Producto();
         producto.setCodigo(request.getCodigo());
@@ -58,106 +54,110 @@ public class ProductoService {
         producto.setStock(request.getStock());
         producto.setCategoria(categoria);
 
+        if (request.getImagenId() != null) {
+            ProductoImagen imagen = imagenRepository.findById(request.getImagenId())
+                    .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
+            producto.setImagen(imagen);
+        }
+
         return productoRepository.save(producto);
     }
 
-
-    // ACTUALIZAR Y ELIMINAR
-
-     public Producto actualizar(Integer id, ProductoRequest detalles) {
+    public Producto actualizar(Integer id, ProductoRequest detalles) {
         Producto producto = productoRepository.findById(id)
-                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
-        //validar si el código cambió y tambien si existe
         if (!producto.getCodigo().equals(detalles.getCodigo()) &&
-            productoRepository.existsByCodigo(detalles.getCodigo())) {
-                throw new RuntimeException("El nuevo código de producto ya está en uso");
-            }
-
-            Categoria categoria = categoriaRepository.findById(detalles.getCategoriaId())
-            .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
-
-            producto.setCodigo(detalles.getCodigo());
-            producto.setNombre(detalles.getNombre());
-            producto.setPrecioCompra(detalles.getPrecioCompra());
-            producto.setPrecioVenta(detalles.getPrecioVenta());
-            producto.setStock(detalles.getStock());
-            producto.setCategoria(categoria);
-
-            return productoRepository.save(producto);
-     }
-
-     public void eliminar(Integer id) {
-        if (!productoRepository.existsById(id)){
-            throw new RuntimeException("Producto no encontrado");
+                productoRepository.existsByCodigo(detalles.getCodigo())) {
+            throw new RuntimeException("El nuevo código de producto ya está en uso");
         }
-        // gracias al "cascade = CascadeType.ALL" --> en la entidad Producto.
-        // eliminar el producto borrará automaticamente todas sus imagenes de la base de datos 
-        productoRepository.deleteById(id);
-     }
 
+        Categoria categoria = categoriaRepository.findById(detalles.getCategoriaId())
+                .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
+        producto.setCodigo(detalles.getCodigo());
+        producto.setNombre(detalles.getNombre());
+        producto.setPrecioCompra(detalles.getPrecioCompra());
+        producto.setPrecioVenta(detalles.getPrecioVenta());
+        producto.setStock(detalles.getStock());
+        producto.setCategoria(categoria);
 
-    // LÓGICA DE IMAGENES
-    public ProductoImagen subirImagen(Integer productoId, MultipartFile archivo) {
+        return productoRepository.save(producto);
+    }
+
+    public void eliminar(Integer id) {
+        Producto producto = productoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
+        if (producto.getImagen() != null) {
+            eliminarImagenFisicaYRegistro(producto.getImagen());
+        }
+
+        productoRepository.delete(producto);
+    }
+
+    public Producto subirImagenProducto(Integer productoId, MultipartFile archivo) {
+        Producto producto = productoRepository.findById(productoId)
+                .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+
         try {
-            String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename();
-            Path rutaArchivo = Path.of(System.getProperty("user.dir"), "uploads");
-            if (!Files.exists(rutaArchivo)) {
-                Files.createDirectories(rutaArchivo);
+            String nombreArchivo = UUID.randomUUID() + "_" + archivo.getOriginalFilename();
+            String rutaRelativa = UPLOAD_SUBDIR + "/" + nombreArchivo;
+
+            Path directorio = obtenerDirectorioUpload();
+            Files.copy(
+                    archivo.getInputStream(),
+                    directorio.resolve(nombreArchivo),
+                    StandardCopyOption.REPLACE_EXISTING);
+
+            ProductoImagen imagenAnterior = producto.getImagen();
+
+            ProductoImagen nuevaImagen = new ProductoImagen();
+            nuevaImagen.setArchivo(rutaRelativa);
+            ProductoImagen imagenGuardada = imagenRepository.save(nuevaImagen);
+
+            producto.setImagen(imagenGuardada);
+            Producto productoActualizado = productoRepository.save(producto);
+
+            if (imagenAnterior != null) {
+                eliminarImagenFisicaYRegistro(imagenAnterior);
             }
 
-            byte[] contenido = archivo.getBytes();
-            SecretKey clave = CryptoUtil.generarClave();
-            byte[] datosEncriptados = CryptoUtil.encriptar(contenido, clave);
-            Files.write(rutaArchivo.resolve(nombreArchivo), datosEncriptados);
-
-            /*Files.copy(
-                archivo.getInputStream(),
-                rutaArchivo.resolve(nombreArchivo), 
-                StandardCopyOption.REPLACE_EXISTING
-            );*/
-            
-            ProductoImagen nuevaImagen = new ProductoImagen();
-            nuevaImagen.setArchivo(nombreArchivo);
-
-            ProductoImagen imagenGuardada = ImagenRepository.save(nuevaImagen);
-            return imagenGuardada;
-        } catch (Exception e) {
+            return productoActualizado;
+        } catch (IOException e) {
             throw new RuntimeException("Error al subir la imagen: " + e.getMessage());
         }
     }
 
-    public Producto asignarImagenProducto(Integer productoId,Integer imagenId
-
-    ) {
+    public Producto eliminarImagenProducto(Integer productoId) {
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-        ProductoImagen nuevaImagen = ImagenRepository.findById(imagenId)
-                .orElseThrow(() -> new RuntimeException("Imagen no encontrada"));
 
-        // OBTENER LA IMAGEN ANTERIOR
-        ProductoImagen imagenAnterior = producto.getImagen();
-
-        // ASIGNAR NUEVA IMAGEN 
-        producto.setImagen(nuevaImagen);
-
-        // ELIMINAR IMAGEN ANTERIOR
-        if (imagenAnterior != null) {
-            try {
-                Path rutaImagenAnterior = Path.of(
-                    System.getProperty("user.dir"),"uploads", imagenAnterior.getArchivo());
-
-                //  eliminar archivo físico
-                Files.deleteIfExists(rutaImagenAnterior);
-
-                // eliminar registro BD
-                ImagenRepository.delete(imagenAnterior);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+        ProductoImagen imagen = producto.getImagen();
+        if (imagen != null) {
+            eliminarImagenFisicaYRegistro(imagen);
+            producto.setImagen(null);
+            return productoRepository.save(producto);
         }
-        return productoRepository.save(producto);
+
+        return producto;
+    }
+
+    private Path obtenerDirectorioUpload() throws IOException {
+        Path directorio = Path.of(System.getProperty("user.dir"), "uploads", UPLOAD_SUBDIR);
+        if (!Files.exists(directorio)) {
+            Files.createDirectories(directorio);
+        }
+        return directorio;
+    }
+
+    private void eliminarImagenFisicaYRegistro(ProductoImagen imagen) {
+        try {
+            Path rutaImagen = Path.of(System.getProperty("user.dir"), "uploads", imagen.getArchivo());
+            Files.deleteIfExists(rutaImagen);
+            imagenRepository.delete(imagen);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al eliminar la imagen: " + e.getMessage());
+        }
     }
 }
