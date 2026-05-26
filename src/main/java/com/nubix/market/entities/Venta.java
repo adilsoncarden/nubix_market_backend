@@ -26,6 +26,12 @@ public class Venta {
     @Column(nullable = false)
     private Double total;
 
+    @Column(nullable = true)
+    private Double subtotal = 0.0;
+
+    @Column(nullable = true)
+    private Double igv = 0.0;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CanalVenta canal = CanalVenta.PRESENCIAL;
@@ -124,6 +130,22 @@ public class Venta {
 
     public void setTotal(Double total) {
         this.total = total;
+    }
+
+    public Double getSubtotal() {
+        return subtotal;
+    }
+
+    public void setSubtotal(Double subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public Double getIgv() {
+        return igv;
+    }
+
+    public void setIgv(Double igv) {
+        this.igv = igv;
     }
 
     public CanalVenta getCanal() {

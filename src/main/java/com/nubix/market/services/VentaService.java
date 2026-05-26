@@ -18,6 +18,7 @@ import com.nubix.market.repositories.ProductoRepository;
 import com.nubix.market.repositories.UsuarioRepository;
 import com.nubix.market.repositories.VentaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -25,6 +26,8 @@ import java.util.UUID;
 
 @Service
 public class VentaService {
+    private static final double IGV_RATE = 0.13;
+
 
     @Autowired
     private VentaRepository ventaRepository;
@@ -44,21 +47,30 @@ public class VentaService {
 
     @Transactional
     public Venta crearVenta(VentaRequest request) {
+        // Forzar siempre venta presencial tipo cajero
+        request.setCanal(CanalVenta.PRESENCIAL);
+        request.setTipoEntrega(TipoEntrega.PRESENCIAL);
+
         validarRequestPresencial(request);
         Venta venta = construirVentaBase(request);
-        venta.setCanal(request.getCanal() != null ? request.getCanal() : CanalVenta.PRESENCIAL);
-        venta.setVendedor(obtenerVendedor(request.getVendedorId()));
+        venta.setCanal(CanalVenta.PRESENCIAL);
+        venta.setVendedor(obtenerUsuarioActual());
         asignarClienteSiCorresponde(venta, request.getClienteId(), request.getTipoComprobante());
         aplicarComprobante(venta, request.getTipoComprobante(), request.getNombreComprobante(),
                 request.getDni(), request.getRuc(), request.getRazonSocial(),
                 request.getEmailComprobante(), request.getDireccionFiscal());
         double subtotal = procesarDetallesYStock(venta, request.getDetalles());
         double envio = request.getCostoEnvio() != null ? request.getCostoEnvio() : 0.0;
+        double igv = round2(subtotal * IGV_RATE);
         venta.setCostoEnvio(envio);
-        venta.setTotal(subtotal + envio);
+        venta.setSubtotal(round2(subtotal));
+        venta.setIgv(igv);
+        venta.setTotal(round2(subtotal + igv + envio));
         configurarEntrega(venta, request.getTipoEntrega(), request.getDireccionEntrega(),
                 request.getDistrito(), request.getReferencia());
         configurarPago(venta, request.getMetodoPago(), venta.getTotal());
+        // Venta presencial de cajero se considera entregada por defecto
+        venta.setEstadoPedido(EstadoPedido.ENTREGADO);
         return ventaRepository.save(venta);
     }
 
@@ -75,8 +87,11 @@ public class VentaService {
                 request.getEmailComprobante(), request.getDireccionFiscal());
         double subtotal = procesarDetallesYStock(venta, request.getDetalles());
         double envio = request.getCostoEnvio() != null ? request.getCostoEnvio() : 0.0;
+        double igv = round2(subtotal * IGV_RATE);
         venta.setCostoEnvio(envio);
-        venta.setTotal(subtotal + envio);
+        venta.setSubtotal(round2(subtotal));
+        venta.setIgv(igv);
+        venta.setTotal(round2(subtotal + igv + envio));
         configurarEntrega(venta, request.getTipoEntrega(), request.getDireccionEntrega(),
                 request.getDistrito(), request.getReferencia());
         configurarPago(venta, request.getMetodoPago(), venta.getTotal());
@@ -137,9 +152,6 @@ public class VentaService {
     }
 
     private void validarRequestPresencial(VentaRequest request) {
-        if (request.getVendedorId() == null) {
-            throw new RuntimeException("El vendedor es obligatorio");
-        }
         if (request.getDetalles() == null || request.getDetalles().isEmpty()) {
             throw new RuntimeException("La venta debe tener al menos un producto");
         }
@@ -147,7 +159,7 @@ public class VentaService {
                 ? request.getTipoComprobante()
                 : TipoComprobante.TICKET;
         validarComprobante(tipo, request.getClienteId(), request.getNombreComprobante(),
-                request.getDni(), request.getRuc(), request.getRazonSocial());
+                request.getDni(), request.getRuc(), request.getRazonSocial(), request.getDireccionFiscal());
         if (request.getTipoEntrega() == TipoEntrega.DELIVERY
                 && (request.getDireccionEntrega() == null || request.getDireccionEntrega().isBlank())) {
             throw new RuntimeException("La dirección de entrega es obligatoria para delivery");
@@ -169,15 +181,22 @@ public class VentaService {
                 : TipoComprobante.BOLETA;
         request.setTipoComprobante(tipo);
         validarComprobante(tipo, request.getClienteId(), request.getNombreComprobante(),
-                request.getDni(), request.getRuc(), request.getRazonSocial());
+                request.getDni(), request.getRuc(), request.getRazonSocial(), request.getDireccionFiscal());
         if (request.getTipoEntrega() == TipoEntrega.DELIVERY
                 && (request.getDireccionEntrega() == null || request.getDireccionEntrega().isBlank())) {
             throw new RuntimeException("La dirección de entrega es obligatoria para delivery");
         }
     }
 
-    private void validarComprobante(TipoComprobante tipo, Integer clienteId, String nombre,
-            String dni, String ruc, String razonSocial) {
+    private void validarComprobante(
+            TipoComprobante tipo,
+            Integer clienteId,
+            String nombre,
+            String dni,
+            String ruc,
+            String razonSocial,
+            String direccionFiscal
+    ) {
         switch (tipo) {
             case TICKET -> {
                 // Sin cliente registrado obligatorio
@@ -199,14 +218,18 @@ public class VentaService {
                 if (razonSocial == null || razonSocial.isBlank()) {
                     throw new RuntimeException("La factura requiere razón social");
                 }
+                if (direccionFiscal == null || direccionFiscal.isBlank()) {
+                    throw new RuntimeException("La factura requiere dirección fiscal");
+                }
             }
             default -> throw new RuntimeException("Tipo de comprobante no válido");
         }
     }
 
-    private Usuario obtenerVendedor(Integer vendedorId) {
-        return usuarioRepository.findById(vendedorId)
-                .orElseThrow(() -> new RuntimeException("Vendedor no encontrado"));
+    private Usuario obtenerUsuarioActual() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return usuarioRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no autenticado"));
     }
 
     private Usuario obtenerVendedorSistema() {
@@ -243,7 +266,7 @@ public class VentaService {
     private double procesarDetallesYStock(Venta venta, List<VentaRequest.DetalleVentaRequest> items) {
         double total = 0.0;
         for (VentaRequest.DetalleVentaRequest item : items) {
-            Producto producto = productoRepository.findById(item.getProductoId())
+            Producto producto = productoRepository.findByIdForUpdate(item.getProductoId())
                     .orElseThrow(() -> new RuntimeException(
                             "Producto no encontrado: " + item.getProductoId()));
 
@@ -274,6 +297,10 @@ public class VentaService {
             venta.getDetalles().add(detalle);
         }
         return total;
+    }
+
+    private static double round2(double value) {
+        return Math.round(value * 100.0) / 100.0;
     }
 
     private void configurarEntrega(Venta venta, TipoEntrega tipo, String direccion,
