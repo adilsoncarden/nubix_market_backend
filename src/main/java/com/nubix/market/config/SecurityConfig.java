@@ -35,7 +35,12 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Rutas públicas de autenticación
-                        .requestMatchers("/api/auth/**", "/api/catalogo/**", "/uploads/**").permitAll()
+                        .requestMatchers(
+                                "/api/auth/**",
+                                "/api/catalogo/**",
+                                "/api/ventas/checkout",
+                                "/uploads/**")
+                        .permitAll()
 
                         // IMPORTANTE: Permitir el endpoint de error por defecto de Spring Boot.
                         // Esto evita que un error 404 o 500 se disfrace de un error 403 (Forbidden).

@@ -1,28 +1,26 @@
 package com.nubix.market.dto;
 
-import com.nubix.market.enums.CanalVenta;
 import com.nubix.market.enums.MetodoPago;
 import com.nubix.market.enums.TipoComprobante;
 import com.nubix.market.enums.TipoEntrega;
+import com.nubix.market.dto.VentaRequest.DetalleVentaRequest;
 import java.util.List;
 
-public class VentaRequest {
+public class CheckoutRequest {
     private Integer clienteId;
-    private Integer vendedorId;
-    private CanalVenta canal;
     private TipoComprobante tipoComprobante;
     private MetodoPago metodoPago;
     private TipoEntrega tipoEntrega;
-    private String direccionEntrega;
-    private String distrito;
-    private String referencia;
-    private Double costoEnvio;
     private String nombreComprobante;
     private String dni;
     private String ruc;
     private String razonSocial;
     private String emailComprobante;
     private String direccionFiscal;
+    private String direccionEntrega;
+    private String distrito;
+    private String referencia;
+    private Double costoEnvio;
     private List<DetalleVentaRequest> detalles;
 
     public Integer getClienteId() {
@@ -31,22 +29,6 @@ public class VentaRequest {
 
     public void setClienteId(Integer clienteId) {
         this.clienteId = clienteId;
-    }
-
-    public Integer getVendedorId() {
-        return vendedorId;
-    }
-
-    public void setVendedorId(Integer vendedorId) {
-        this.vendedorId = vendedorId;
-    }
-
-    public CanalVenta getCanal() {
-        return canal;
-    }
-
-    public void setCanal(CanalVenta canal) {
-        this.canal = canal;
     }
 
     public TipoComprobante getTipoComprobante() {
@@ -71,38 +53,6 @@ public class VentaRequest {
 
     public void setTipoEntrega(TipoEntrega tipoEntrega) {
         this.tipoEntrega = tipoEntrega;
-    }
-
-    public String getDireccionEntrega() {
-        return direccionEntrega;
-    }
-
-    public void setDireccionEntrega(String direccionEntrega) {
-        this.direccionEntrega = direccionEntrega;
-    }
-
-    public String getDistrito() {
-        return distrito;
-    }
-
-    public void setDistrito(String distrito) {
-        this.distrito = distrito;
-    }
-
-    public String getReferencia() {
-        return referencia;
-    }
-
-    public void setReferencia(String referencia) {
-        this.referencia = referencia;
-    }
-
-    public Double getCostoEnvio() {
-        return costoEnvio;
-    }
-
-    public void setCostoEnvio(Double costoEnvio) {
-        this.costoEnvio = costoEnvio;
     }
 
     public String getNombreComprobante() {
@@ -153,32 +103,43 @@ public class VentaRequest {
         this.direccionFiscal = direccionFiscal;
     }
 
+    public String getDireccionEntrega() {
+        return direccionEntrega;
+    }
+
+    public void setDireccionEntrega(String direccionEntrega) {
+        this.direccionEntrega = direccionEntrega;
+    }
+
+    public String getDistrito() {
+        return distrito;
+    }
+
+    public void setDistrito(String distrito) {
+        this.distrito = distrito;
+    }
+
+    public String getReferencia() {
+        return referencia;
+    }
+
+    public void setReferencia(String referencia) {
+        this.referencia = referencia;
+    }
+
+    public Double getCostoEnvio() {
+        return costoEnvio;
+    }
+
+    public void setCostoEnvio(Double costoEnvio) {
+        this.costoEnvio = costoEnvio;
+    }
+
     public List<DetalleVentaRequest> getDetalles() {
         return detalles;
     }
 
     public void setDetalles(List<DetalleVentaRequest> detalles) {
         this.detalles = detalles;
-    }
-
-    public static class DetalleVentaRequest {
-        private Integer productoId;
-        private Integer cantidad;
-
-        public Integer getProductoId() {
-            return productoId;
-        }
-
-        public void setProductoId(Integer productoId) {
-            this.productoId = productoId;
-        }
-
-        public Integer getCantidad() {
-            return cantidad;
-        }
-
-        public void setCantidad(Integer cantidad) {
-            this.cantidad = cantidad;
-        }
     }
 }
