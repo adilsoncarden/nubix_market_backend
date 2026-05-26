@@ -372,10 +372,14 @@ public class VentaService {
             entrega.setReferencia(referencia);
             venta.setDireccionEntrega(direccion);
             venta.setCodigoRecojo(null);
-        } else if (tipoEntrega == TipoEntrega.FAST_LANE || tipoEntrega == TipoEntrega.PRESENCIAL) {
+        } else if (tipoEntrega == TipoEntrega.FAST_LANE) {
             String codigo = UUID.randomUUID().toString().substring(0, 8).toUpperCase();
             entrega.setCodigoRecojo(codigo);
             venta.setCodigoRecojo(codigo);
+            venta.setDireccionEntrega(null);
+        } else if (tipoEntrega == TipoEntrega.PRESENCIAL) {
+            entrega.setCodigoRecojo(null);
+            venta.setCodigoRecojo(null);
             venta.setDireccionEntrega(null);
         }
 
