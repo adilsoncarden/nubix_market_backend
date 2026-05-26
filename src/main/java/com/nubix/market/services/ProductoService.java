@@ -31,7 +31,7 @@ public class ProductoService {
     private ProductoImagenRepository imagenRepository;
 
     public List<Producto> obtenerTodos() {
-        return productoRepository.findAll();
+        return productoRepository.findAllWithImagen();
     }
 
     public Optional<Producto> obtenerPorId(Integer id) {

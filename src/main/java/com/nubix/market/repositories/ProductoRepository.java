@@ -1,6 +1,7 @@
 package com.nubix.market.repositories;
 
 import com.nubix.market.entities.Producto;
+import java.util.List;
 import java.util.Optional;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,11 +12,14 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductoRepository extends JpaRepository<Producto, Integer> {
-   boolean existsByCodigo(String codigo);
+    boolean existsByCodigo(String codigo);
 
-   Optional<Producto> findByCodigo(String codigoProducto);
+    Optional<Producto> findByCodigo(String codigoProducto);
 
-   @Lock(LockModeType.PESSIMISTIC_WRITE)
-   @Query("SELECT p FROM Producto p WHERE p.id = :id")
-   Optional<Producto> findByIdForUpdate(@Param("id") Integer id);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Producto p WHERE p.id = :id")
+    Optional<Producto> findByIdForUpdate(@Param("id") Integer id);
+
+    @Query("SELECT DISTINCT p FROM Producto p LEFT JOIN FETCH p.imagen LEFT JOIN FETCH p.categoria")
+    List<Producto> findAllWithImagen();
 }
