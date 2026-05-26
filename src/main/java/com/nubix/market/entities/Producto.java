@@ -17,9 +17,6 @@ public class Producto {
     private String nombre;
 
     @Column(nullable = false)
-    private String descripcion;
-
-    @Column(nullable = false)
     private Double precioCompra;
 
     @Column(nullable = false)
@@ -28,11 +25,11 @@ public class Producto {
     @Column(nullable = false)
     private Integer stock;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "id_imagen")
     private ProductoImagen imagen;
 
@@ -46,8 +43,6 @@ public class Producto {
     public void setCodigo(String codigo) {this.codigo = codigo;}
     public String getNombre() {return nombre;}
     public void setNombre(String nombre) {this.nombre = nombre;}
-    public String getDescripcion() {return descripcion;}
-    public void setDescripcion(String descripcion) {this.descripcion = descripcion;}
     public Double getPrecioCompra() {return precioCompra;}
     public void setPrecioCompra(Double precioCompra) {this.precioCompra = precioCompra;}
     public Double getPrecioVenta() {return precioVenta;}

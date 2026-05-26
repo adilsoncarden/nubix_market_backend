@@ -4,18 +4,16 @@ public class ProductoResponse {
     private Integer id;
     private String codigo;
     private String nombre;
-    private String descripcion;
     private Double precioCompra;
     private Double precioVenta;
     private Integer stock;
     private String categoriaNombre;
     private ImagenDTO imagen;
 
-    public ProductoResponse(Integer id, String codigo, String nombre, String descripcion, Double precioCompra, Double precioVenta, Integer stock, String categoriaNombre) {
+    public ProductoResponse(Integer id, String codigo, String nombre, Double precioCompra, Double precioVenta, Integer stock, String categoriaNombre) {
         this.id = id;
         this.codigo = codigo;
         this.nombre = nombre;
-        this.descripcion = descripcion;
         this.precioCompra = precioCompra;
         this.precioVenta = precioVenta;
         this.stock = stock;
@@ -29,8 +27,6 @@ public class ProductoResponse {
     public void setCodigo(String codigo) {this.codigo = codigo;}
     public String getNombre() {return nombre;}
     public void setNombre(String nombre) {this.nombre = nombre;}
-    public String getDescripcion() {return descripcion;}   
-    public void setDescripcion(String descripcion) {this.descripcion = descripcion;}
     public Double getPrecioCompra() {return precioCompra;}
     public void setPrecioCompra(Double precioCompra) {this.precioCompra = precioCompra;}
     public Double getPrecioVenta() {return precioVenta;}
