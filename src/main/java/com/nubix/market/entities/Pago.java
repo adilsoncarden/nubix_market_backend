@@ -24,7 +24,7 @@ public class Pago {
     private MetodoPago metodoPago;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "estado_pago", nullable = false, length = 20)
     private EstadoPago estadoPago;
 
     @Column(nullable = false)

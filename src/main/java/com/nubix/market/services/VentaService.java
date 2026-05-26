@@ -146,7 +146,8 @@ public class VentaService {
         TipoComprobante tipo = request.getTipoComprobante() != null
                 ? request.getTipoComprobante()
                 : TipoComprobante.TICKET;
-        validarComprobante(tipo, request.getClienteId(), request.getDni(), request.getRuc());
+        validarComprobante(tipo, request.getClienteId(), request.getNombreComprobante(),
+                request.getDni(), request.getRuc(), request.getRazonSocial());
         if (request.getTipoEntrega() == TipoEntrega.DELIVERY
                 && (request.getDireccionEntrega() == null || request.getDireccionEntrega().isBlank())) {
             throw new RuntimeException("La dirección de entrega es obligatoria para delivery");
@@ -167,27 +168,36 @@ public class VentaService {
                 ? request.getTipoComprobante()
                 : TipoComprobante.BOLETA;
         request.setTipoComprobante(tipo);
-        validarComprobante(tipo, request.getClienteId(), request.getDni(), request.getRuc());
+        validarComprobante(tipo, request.getClienteId(), request.getNombreComprobante(),
+                request.getDni(), request.getRuc(), request.getRazonSocial());
         if (request.getTipoEntrega() == TipoEntrega.DELIVERY
                 && (request.getDireccionEntrega() == null || request.getDireccionEntrega().isBlank())) {
             throw new RuntimeException("La dirección de entrega es obligatoria para delivery");
         }
     }
 
-    private void validarComprobante(TipoComprobante tipo, Integer clienteId, String dni, String ruc) {
+    private void validarComprobante(TipoComprobante tipo, Integer clienteId, String nombre,
+            String dni, String ruc, String razonSocial) {
         switch (tipo) {
             case TICKET -> {
                 // Sin cliente registrado obligatorio
             }
             case BOLETA -> {
-                if ((dni == null || !dni.matches("\\d{8}"))
-                        && clienteId == null) {
-                    throw new RuntimeException("La boleta requiere DNI de 8 dígitos o cliente registrado");
+                if (clienteId == null) {
+                    if (dni == null || !dni.matches("\\d{8}")) {
+                        throw new RuntimeException("La boleta requiere DNI de 8 dígitos o cliente registrado");
+                    }
+                    if (nombre == null || nombre.isBlank()) {
+                        throw new RuntimeException("La boleta requiere el nombre del cliente");
+                    }
                 }
             }
             case FACTURA -> {
                 if (ruc == null || !ruc.matches("\\d{11}")) {
                     throw new RuntimeException("La factura requiere RUC de 11 dígitos");
+                }
+                if (razonSocial == null || razonSocial.isBlank()) {
+                    throw new RuntimeException("La factura requiere razón social");
                 }
             }
             default -> throw new RuntimeException("Tipo de comprobante no válido");
@@ -206,11 +216,15 @@ public class VentaService {
     }
 
     private void asignarClienteSiCorresponde(Venta venta, Integer clienteId, TipoComprobante tipo) {
+        if (tipo == TipoComprobante.TICKET) {
+            venta.setCliente(null);
+            return;
+        }
         if (clienteId != null) {
             Usuario cliente = usuarioRepository.findById(clienteId)
                     .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
             venta.setCliente(cliente);
-        } else if (tipo != TipoComprobante.TICKET) {
+        } else {
             venta.setCliente(null);
         }
     }
@@ -236,12 +250,17 @@ public class VentaService {
             if (item.getCantidad() == null || item.getCantidad() < 1) {
                 throw new RuntimeException("Cantidad inválida para: " + producto.getNombre());
             }
-            if (producto.getStock() < item.getCantidad()) {
+            int stockActual = producto.getStock() != null ? producto.getStock() : 0;
+            if (stockActual < item.getCantidad()) {
                 throw new RuntimeException("Stock insuficiente para: " + producto.getNombre()
-                        + " (disponible: " + producto.getStock() + ")");
+                        + " (disponible: " + stockActual + ")");
             }
 
-            producto.setStock(producto.getStock() - item.getCantidad());
+            int nuevoStock = stockActual - item.getCantidad();
+            if (nuevoStock < 0) {
+                throw new RuntimeException("Stock insuficiente para: " + producto.getNombre());
+            }
+            producto.setStock(nuevoStock);
             productoRepository.save(producto);
 
             DetalleVenta detalle = new DetalleVenta();

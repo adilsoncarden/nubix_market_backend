@@ -47,7 +47,7 @@ public class Venta {
     private EstadoPedido estadoPedido = EstadoPedido.PENDIENTE;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "estado_pago", nullable = false, length = 20)
     private EstadoPago estadoPago;
 
     @Column(nullable = true)
