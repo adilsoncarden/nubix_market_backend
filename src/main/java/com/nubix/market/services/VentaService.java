@@ -35,6 +35,8 @@ public class VentaService {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private ProductoRepository productoRepository;
+    @Autowired
+    private NotificacionService notificacionService;
 
     public List<Venta> obtenerTodasLasVentas() {
         return ventaRepository.findAllWithRelations();
@@ -71,7 +73,20 @@ public class VentaService {
         configurarPago(venta, request.getMetodoPago(), venta.getTotal());
         // Venta presencial de cajero se considera entregada por defecto
         venta.setEstadoPedido(EstadoPedido.ENTREGADO);
-        return ventaRepository.save(venta);
+        Venta saved = ventaRepository.save(venta);
+        notificacionService.crearInterna(
+                saved.getVendedor(),
+                "pedido",
+                "Nueva venta presencial registrada (ID #" + saved.getId() + ")."
+        );
+        if (saved.getEstadoPago() == EstadoPago.APROBADO) {
+            notificacionService.crearInterna(
+                    saved.getVendedor(),
+                    "pago",
+                    "Pago confirmado para la venta #" + saved.getId() + "."
+            );
+        }
+        return saved;
     }
 
     @Transactional
@@ -100,14 +115,40 @@ public class VentaService {
         } else if (venta.getTipoEntrega() == TipoEntrega.FAST_LANE) {
             venta.setEstadoPedido(EstadoPedido.LISTO_PARA_RECOJO);
         }
-        return ventaRepository.save(venta);
+        Venta saved = ventaRepository.save(venta);
+        notificacionService.crearInterna(
+                saved.getVendedor(),
+                "pedido",
+                "Nuevo pedido web creado (ID #" + saved.getId() + ")."
+        );
+        if (saved.getEstadoPago() == EstadoPago.APROBADO) {
+            notificacionService.crearInterna(
+                    saved.getVendedor(),
+                    "pago",
+                    "Pago confirmado para el pedido #" + saved.getId() + "."
+            );
+        }
+        if (saved.getTipoEntrega() == TipoEntrega.FAST_LANE && saved.getCodigoRecojo() != null) {
+            notificacionService.crearInterna(
+                    saved.getVendedor(),
+                    "recojo",
+                    "Pedido #" + saved.getId() + " listo para recojo. Código: " + saved.getCodigoRecojo()
+            );
+        }
+        return saved;
     }
 
     public Venta actualizarEstadoPedido(Integer ventaId, EstadoPedido nuevoEstado) {
         Venta venta = ventaRepository.findById(ventaId)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + ventaId));
         venta.setEstadoPedido(nuevoEstado);
-        return ventaRepository.save(venta);
+        Venta saved = ventaRepository.save(venta);
+        notificacionService.crearInterna(
+                saved.getVendedor(),
+                "pedido",
+                "Estado del pedido #" + saved.getId() + " actualizado a " + nuevoEstado + "."
+        );
+        return saved;
     }
 
     public Venta registrarCredito(Integer ventaId) {
@@ -125,7 +166,13 @@ public class VentaService {
         if (venta.getPago() != null) {
             venta.getPago().setEstadoPago(EstadoPago.APROBADO);
         }
-        return ventaRepository.save(venta);
+        Venta saved = ventaRepository.save(venta);
+        notificacionService.crearInterna(
+                saved.getVendedor(),
+                "pago",
+                "Pago aprobado para la venta #" + saved.getId() + "."
+        );
+        return saved;
     }
 
     private Venta construirVentaBase(VentaRequest request) {
@@ -285,6 +332,13 @@ public class VentaService {
             }
             producto.setStock(nuevoStock);
             productoRepository.save(producto);
+            if (nuevoStock <= 5) {
+                notificacionService.crearInterna(
+                        venta.getVendedor(),
+                        "stock",
+                        "Stock bajo detectado para " + producto.getNombre() + " (restante: " + nuevoStock + ")."
+                );
+            }
 
             DetalleVenta detalle = new DetalleVenta();
             detalle.setVenta(venta);
