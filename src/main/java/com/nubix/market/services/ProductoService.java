@@ -7,6 +7,9 @@ import com.nubix.market.entities.ProductoImagen;
 import com.nubix.market.repositories.CategoriaRepository;
 import com.nubix.market.repositories.ProductoImagenRepository;
 import com.nubix.market.repositories.ProductoRepository;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +23,8 @@ import java.util.UUID;
 
 @Service
 public class ProductoService {
+
+    private static final Logger log = LoggerFactory.getLogger(ProductoService.class);
 
     private static final String UPLOAD_SUBDIR = "productos";
 
@@ -39,6 +44,9 @@ public class ProductoService {
     }
 
     public Producto guardar(ProductoRequest request) {
+        if (StringUtils.isBlank(request.getCodigo()) || StringUtils.isBlank(request.getNombre())) {
+            throw new RuntimeException("Código y nombre del producto son obligatorios");
+        }
         if (productoRepository.existsByCodigo(request.getCodigo())) {
             throw new RuntimeException("El código del producto ya existe");
         }
@@ -60,12 +68,16 @@ public class ProductoService {
             producto.setImagen(imagen);
         }
 
+        log.info("Creando producto código={} nombre={}", request.getCodigo(), request.getNombre());
         return productoRepository.save(producto);
     }
 
     public Producto actualizar(Integer id, ProductoRequest detalles) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        if (StringUtils.isBlank(detalles.getCodigo()) || StringUtils.isBlank(detalles.getNombre())) {
+            throw new RuntimeException("Código y nombre del producto son obligatorios");
+        }
 
         if (!producto.getCodigo().equals(detalles.getCodigo()) &&
                 productoRepository.existsByCodigo(detalles.getCodigo())) {
@@ -82,6 +94,7 @@ public class ProductoService {
         producto.setStock(detalles.getStock());
         producto.setCategoria(categoria);
 
+        log.debug("Actualizando producto id={} a código={}", id, detalles.getCodigo());
         return productoRepository.save(producto);
     }
 
@@ -93,6 +106,7 @@ public class ProductoService {
             eliminarImagenFisicaYRegistro(producto.getImagen());
         }
 
+        log.info("Eliminando producto id={}", id);
         productoRepository.delete(producto);
     }
 
@@ -123,8 +137,10 @@ public class ProductoService {
                 eliminarImagenFisicaYRegistro(imagenAnterior);
             }
 
+            log.info("Imagen subida para producto id={}", productoId);
             return productoActualizado;
         } catch (IOException e) {
+            log.error("Error al subir imagen de producto id={}: {}", productoId, e.getMessage(), e);
             throw new RuntimeException("Error al subir la imagen: " + e.getMessage());
         }
     }
@@ -157,6 +173,7 @@ public class ProductoService {
             Files.deleteIfExists(rutaImagen);
             imagenRepository.delete(imagen);
         } catch (Exception e) {
+            log.error("Error eliminando imagen id={}: {}", imagen.getId(), e.getMessage(), e);
             throw new RuntimeException("Error al eliminar la imagen: " + e.getMessage());
         }
     }

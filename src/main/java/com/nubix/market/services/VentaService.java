@@ -17,6 +17,10 @@ import com.nubix.market.enums.TipoEntrega;
 import com.nubix.market.repositories.ProductoRepository;
 import com.nubix.market.repositories.UsuarioRepository;
 import com.nubix.market.repositories.VentaRepository;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -28,6 +32,7 @@ import java.util.UUID;
 public class VentaService {
     private static final double IGV_RATE = 0.13;
 
+    private static final Logger log = LoggerFactory.getLogger(VentaService.class);
 
     @Autowired
     private VentaRepository ventaRepository;
@@ -54,6 +59,9 @@ public class VentaService {
         request.setTipoEntrega(TipoEntrega.PRESENCIAL);
 
         validarRequestPresencial(request);
+        log.info("Creando venta presencial (comprobante={}, líneas={})",
+                request.getTipoComprobante(),
+                request.getDetalles() != null ? request.getDetalles().size() : 0);
         Venta venta = construirVentaBase(request);
         venta.setCanal(CanalVenta.PRESENCIAL);
         venta.setVendedor(obtenerUsuarioActual());
@@ -199,7 +207,7 @@ public class VentaService {
     }
 
     private void validarRequestPresencial(VentaRequest request) {
-        if (request.getDetalles() == null || request.getDetalles().isEmpty()) {
+        if (ObjectUtils.isEmpty(request.getDetalles())) {
             throw new RuntimeException("La venta debe tener al menos un producto");
         }
         TipoComprobante tipo = request.getTipoComprobante() != null
@@ -208,13 +216,13 @@ public class VentaService {
         validarComprobante(tipo, request.getClienteId(), request.getNombreComprobante(),
                 request.getDni(), request.getRuc(), request.getRazonSocial(), request.getDireccionFiscal());
         if (request.getTipoEntrega() == TipoEntrega.DELIVERY
-                && (request.getDireccionEntrega() == null || request.getDireccionEntrega().isBlank())) {
+                && StringUtils.isBlank(request.getDireccionEntrega())) {
             throw new RuntimeException("La dirección de entrega es obligatoria para delivery");
         }
     }
 
     private void validarCheckout(CheckoutRequest request) {
-        if (request.getDetalles() == null || request.getDetalles().isEmpty()) {
+        if (ObjectUtils.isEmpty(request.getDetalles())) {
             throw new RuntimeException("El carrito está vacío");
         }
         if (request.getMetodoPago() == null) {
@@ -230,7 +238,7 @@ public class VentaService {
         validarComprobante(tipo, request.getClienteId(), request.getNombreComprobante(),
                 request.getDni(), request.getRuc(), request.getRazonSocial(), request.getDireccionFiscal());
         if (request.getTipoEntrega() == TipoEntrega.DELIVERY
-                && (request.getDireccionEntrega() == null || request.getDireccionEntrega().isBlank())) {
+                && StringUtils.isBlank(request.getDireccionEntrega())) {
             throw new RuntimeException("La dirección de entrega es obligatoria para delivery");
         }
     }
