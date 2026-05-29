@@ -7,7 +7,6 @@ import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
 import com.nubix.market.module.sale.dao.VentaDAO;
 import com.nubix.market.module.sale.model.Venta;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -56,23 +55,31 @@ public class ReporteExportService {
         try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = wb.createSheet("Productos");
             Row header = sheet.createRow(0);
+
             int c = 0;
             for (String h : HEADERS_PRODUCTOS) {
                 header.createCell(c++).setCellValue(h);
             }
+
             int rowIdx = 1;
             for (Producto p : productos) {
                 Row row = sheet.createRow(rowIdx++);
                 int col = 0;
-                row.createCell(col++).setCellValue(p.getId() != null ? p.getId() : 0);
-                row.createCell(col++).setCellValue(ObjectUtils.defaultIfNull(p.getCodigo(), ""));
-                row.createCell(col++).setCellValue(ObjectUtils.defaultIfNull(p.getNombre(), ""));
-                row.createCell(col++).setCellValue(
-                        p.getCategoria() != null ? ObjectUtils.defaultIfNull(p.getCategoria().getNombre(), "") : "");
-                row.createCell(col++).setCellValue(p.getStock() != null ? p.getStock() : 0);
-                row.createCell(col++).setCellValue(p.getPrecioCompra() != null ? p.getPrecioCompra() : 0);
-                row.createCell(col++).setCellValue(p.getPrecioVenta() != null ? p.getPrecioVenta() : 0);
+
+                // Uso de Objects.requireNonNullElse para limpiar el código y quitar las
+                // advertencias
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getId(), 0));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getCodigo(), ""));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getNombre(), ""));
+
+                String nombreCategoria = (p.getCategoria() != null) ? p.getCategoria().getNombre() : "";
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(nombreCategoria, ""));
+
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getStock(), 0));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getPrecioCompra(), 0.0));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getPrecioVenta(), 0.0));
             }
+
             for (int i = 0; i < HEADERS_PRODUCTOS.size(); i++) {
                 sheet.autoSizeColumn(i);
             }
@@ -95,12 +102,14 @@ public class ReporteExportService {
             for (String h : HEADERS_CATEGORIAS) {
                 header.createCell(c++).setCellValue(h);
             }
+
             int rowIdx = 1;
             for (Categoria cat : categorias) {
                 Row row = sheet.createRow(rowIdx++);
-                row.createCell(0).setCellValue(cat.getId() != null ? cat.getId() : 0);
-                row.createCell(1).setCellValue(ObjectUtils.defaultIfNull(cat.getNombre(), ""));
+                row.createCell(0).setCellValue(Objects.requireNonNullElse(cat.getId(), 0));
+                row.createCell(1).setCellValue(Objects.requireNonNullElse(cat.getNombre(), ""));
             }
+
             sheet.autoSizeColumn(0);
             sheet.autoSizeColumn(1);
             wb.write(out);
@@ -122,22 +131,23 @@ public class ReporteExportService {
             for (String h : HEADERS_VENTAS) {
                 header.createCell(hc++).setCellValue(h);
             }
+
             int rowIdx = 1;
             for (Venta v : ventas) {
                 Row row = sheet.createRow(rowIdx++);
                 int col = 0;
-                row.createCell(col++).setCellValue(v.getId() != null ? v.getId() : 0);
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getId(), 0));
                 row.createCell(col++).setCellValue(v.getFecha() != null ? v.getFecha().toString() : "");
-                row.createCell(col++).setCellValue(v.getTotal() != null ? v.getTotal() : 0);
-                row.createCell(col++).setCellValue(v.getSubtotal() != null ? v.getSubtotal() : 0);
-                row.createCell(col++).setCellValue(v.getIgv() != null ? v.getIgv() : 0);
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getTotal(), 0.0));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getSubtotal(), 0.0));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getIgv(), 0.0));
                 row.createCell(col++).setCellValue(v.getEstadoPedido() != null ? v.getEstadoPedido().name() : "");
                 row.createCell(col++).setCellValue(v.getEstadoPago() != null ? v.getEstadoPago().name() : "");
                 row.createCell(col++).setCellValue(v.getMetodoPago() != null ? v.getMetodoPago().name() : "");
-                row.createCell(col++).setCellValue(
-                        v.getTipoComprobante() != null ? v.getTipoComprobante().name() : "");
+                row.createCell(col++).setCellValue(v.getTipoComprobante() != null ? v.getTipoComprobante().name() : "");
                 row.createCell(col++).setCellValue(v.getTipoEntrega() != null ? v.getTipoEntrega().name() : "");
             }
+
             for (int i = 0; i < HEADERS_VENTAS.size(); i++) {
                 sheet.autoSizeColumn(i);
             }
