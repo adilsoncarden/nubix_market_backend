@@ -1,12 +1,14 @@
 package com.nubix.market.services;
 
 import com.nubix.market.config.JwtUtils;
-import com.nubix.market.dto.AuthResponse;
-import com.nubix.market.dto.LoginRequest;
-import com.nubix.market.entities.Rol;
-import com.nubix.market.entities.Usuario;
-import com.nubix.market.repositories.RolRepository;
-import com.nubix.market.repositories.UsuarioRepository;
+import com.nubix.market.module.auth.dto.AuthResponse;
+import com.nubix.market.module.auth.dto.LoginRequest;
+import com.nubix.market.module.auth.service.AuthService;
+import com.nubix.market.module.user.model.Rol;
+import com.nubix.market.module.user.model.Usuario;
+import com.nubix.market.module.user.repository.RolRepository;
+import com.nubix.market.module.user.repository.UsuarioRepository;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

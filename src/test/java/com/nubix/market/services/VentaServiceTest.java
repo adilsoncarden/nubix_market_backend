@@ -1,17 +1,20 @@
 package com.nubix.market.services;
 
-import com.nubix.market.dto.VentaRequest;
-import com.nubix.market.entities.Categoria;
-import com.nubix.market.entities.Producto;
-import com.nubix.market.entities.Rol;
-import com.nubix.market.entities.Usuario;
-import com.nubix.market.entities.Venta;
 import com.nubix.market.enums.MetodoPago;
 import com.nubix.market.enums.TipoComprobante;
 import com.nubix.market.enums.TipoEntrega;
-import com.nubix.market.repositories.ProductoRepository;
-import com.nubix.market.repositories.UsuarioRepository;
-import com.nubix.market.repositories.VentaRepository;
+import com.nubix.market.module.category.model.Categoria;
+import com.nubix.market.module.notification.service.NotificacionService;
+import com.nubix.market.module.product.model.Producto;
+import com.nubix.market.module.product.repository.ProductoRepository;
+import com.nubix.market.module.sale.dto.VentaRequest;
+import com.nubix.market.module.sale.model.Venta;
+import com.nubix.market.module.sale.repository.VentaRepository;
+import com.nubix.market.module.sale.service.VentaService;
+import com.nubix.market.module.user.model.Rol;
+import com.nubix.market.module.user.model.Usuario;
+import com.nubix.market.module.user.repository.UsuarioRepository;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

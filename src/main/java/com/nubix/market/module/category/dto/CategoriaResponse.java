@@ -1,0 +1,28 @@
+package com.nubix.market.module.category.dto;
+
+public class CategoriaResponse {
+    private Integer id;
+    private String nombre;
+
+    public CategoriaResponse(Integer id, String nombre) {
+        this.id = id;
+        this.nombre = nombre;
+    }
+
+    // getters and setters
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+}

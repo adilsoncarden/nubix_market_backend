@@ -1,6 +1,8 @@
 package com.nubix.market.controllers;
 
-import com.nubix.market.services.ProductoService;
+import com.nubix.market.module.product.controller.ProductoController;
+import com.nubix.market.module.product.service.ProductoService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
