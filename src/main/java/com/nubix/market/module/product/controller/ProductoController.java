@@ -5,7 +5,6 @@ import com.nubix.market.module.product.dto.ProductoRequest;
 import com.nubix.market.module.product.dto.ProductoResponse;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.service.ProductoService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -5,7 +5,6 @@ import com.nubix.market.module.user.model.Rol;
 import com.nubix.market.module.user.model.Usuario;
 import com.nubix.market.module.user.repository.RolRepository;
 import com.nubix.market.module.user.repository.UsuarioRepository;
-
 import java.util.Optional;
 import java.util.Arrays;
 import java.util.List;

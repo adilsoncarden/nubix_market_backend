@@ -4,7 +4,6 @@ import com.nubix.market.module.category.dto.CategoriaRequest;
 import com.nubix.market.module.category.dto.CategoriaResponse;
 import com.nubix.market.module.category.model.Categoria;
 import com.nubix.market.module.category.service.CategoriaService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

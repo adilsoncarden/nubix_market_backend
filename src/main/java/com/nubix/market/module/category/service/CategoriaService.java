@@ -3,7 +3,6 @@ package com.nubix.market.module.category.service;
 import com.nubix.market.module.category.dto.CategoriaRequest;
 import com.nubix.market.module.category.model.Categoria;
 import com.nubix.market.module.category.repository.CategoriaRepository;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

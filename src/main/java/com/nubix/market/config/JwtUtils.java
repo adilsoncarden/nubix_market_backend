@@ -4,15 +4,15 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
-
 import java.security.Key;
 import java.util.Date;
 
 @Component
 public class JwtUtils {
 
-    // Llave secreta para firmar el token (en producción esto va en application.properties)
-    private final String SECRET_KEY = "NubixMarketClaveSecretaMuyLargaYSegura2026"; 
+    // Llave secreta para firmar el token (en producción esto va en
+    // application.properties)
+    private final String SECRET_KEY = "NubixMarketClaveSecretaMuyLargaYSegura2026";
     private final long EXPIRATION_TIME = 86400000; // 24 horas en milisegundos
 
     // Genera una clave segura a partir del String

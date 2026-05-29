@@ -8,7 +8,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Alinea el esquema de ventas/pagos con el módulo actual (cliente_id nullable, estado_pago VARCHAR).
+ * Alinea el esquema de ventas/pagos con el módulo actual (cliente_id nullable,
+ * estado_pago VARCHAR).
  */
 @Component
 public class VentasSchemaPatch implements ApplicationRunner {
@@ -32,11 +33,11 @@ public class VentasSchemaPatch implements ApplicationRunner {
         try {
             String nullable = jdbcTemplate.queryForObject(
                     """
-                    SELECT IS_NULLABLE FROM information_schema.COLUMNS
-                    WHERE TABLE_SCHEMA = DATABASE()
-                      AND TABLE_NAME = 'ventas'
-                      AND COLUMN_NAME = 'cliente_id'
-                    """,
+                            SELECT IS_NULLABLE FROM information_schema.COLUMNS
+                            WHERE TABLE_SCHEMA = DATABASE()
+                              AND TABLE_NAME = 'ventas'
+                              AND COLUMN_NAME = 'cliente_id'
+                            """,
                     String.class);
             if ("NO".equalsIgnoreCase(nullable)) {
                 jdbcTemplate.execute("ALTER TABLE ventas MODIFY cliente_id INT NULL");
@@ -51,11 +52,11 @@ public class VentasSchemaPatch implements ApplicationRunner {
         try {
             String columnType = jdbcTemplate.queryForObject(
                     """
-                    SELECT COLUMN_TYPE FROM information_schema.COLUMNS
-                    WHERE TABLE_SCHEMA = DATABASE()
-                      AND TABLE_NAME = ?
-                      AND COLUMN_NAME = 'estado_pago'
-                    """,
+                            SELECT COLUMN_TYPE FROM information_schema.COLUMNS
+                            WHERE TABLE_SCHEMA = DATABASE()
+                              AND TABLE_NAME = ?
+                              AND COLUMN_NAME = 'estado_pago'
+                            """,
                     String.class,
                     tableName);
             if (columnType == null) {

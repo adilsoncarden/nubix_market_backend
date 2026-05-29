@@ -1,7 +1,6 @@
 package com.nubix.market.module.auth.controller;
 
 import jakarta.validation.Valid;
-
 import com.nubix.market.module.auth.dto.AuthResponse;
 import com.nubix.market.module.auth.dto.ContraseñaOlvidadaRequest;
 import com.nubix.market.module.auth.dto.LoginRequest;
@@ -10,7 +9,6 @@ import com.nubix.market.module.auth.dto.RegisterRequest;
 import com.nubix.market.module.auth.dto.VerficarCodigoRequest;
 import com.nubix.market.module.auth.service.AuthService;
 import com.nubix.market.module.auth.service.RecuperaciónContraseñaService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

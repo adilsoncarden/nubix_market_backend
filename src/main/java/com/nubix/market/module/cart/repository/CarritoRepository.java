@@ -3,10 +3,8 @@ package com.nubix.market.module.cart.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
 import com.nubix.market.module.cart.model.Carrito;
 import com.nubix.market.module.user.model.Usuario;
-
 import java.util.Optional;
 
 @Repository

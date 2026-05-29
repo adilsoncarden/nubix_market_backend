@@ -14,12 +14,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
 import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {   
+public class SecurityConfig {
 
     @Autowired
     private JwtAuthFilter jwtAuthFilter;
@@ -47,8 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
 
                         // Cualquier otra ruta requerirá autenticación
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
                 // Filtro JWT antes del filtro de autenticación por usuario/contraseña
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

@@ -2,7 +2,6 @@ package com.nubix.market.module.product.model;
 
 import com.nubix.market.module.category.model.Categoria;
 import com.nubix.market.module.media.model.ProductoImagen;
-
 import jakarta.persistence.*;
 
 @Entity

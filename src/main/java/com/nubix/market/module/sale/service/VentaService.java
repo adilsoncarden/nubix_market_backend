@@ -18,7 +18,6 @@ import com.nubix.market.module.sale.model.VentaEntrega;
 import com.nubix.market.module.sale.repository.VentaRepository;
 import com.nubix.market.module.user.model.Usuario;
 import com.nubix.market.module.user.repository.UsuarioRepository;
-
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

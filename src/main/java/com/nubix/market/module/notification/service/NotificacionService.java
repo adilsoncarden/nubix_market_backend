@@ -5,7 +5,6 @@ import com.nubix.market.module.notification.model.Notificacion;
 import com.nubix.market.module.notification.repository.NotificacionRepository;
 import com.nubix.market.module.user.model.Usuario;
 import com.nubix.market.module.user.repository.UsuarioRepository;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;

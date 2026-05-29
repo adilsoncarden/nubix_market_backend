@@ -2,7 +2,6 @@ package com.nubix.market.module.notification.controller;
 
 import com.nubix.market.module.notification.dto.NotificacionRequest;
 import com.nubix.market.module.notification.service.NotificacionService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

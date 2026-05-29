@@ -2,7 +2,6 @@ package com.nubix.market.module.notification.controller;
 
 import com.nubix.market.module.auth.dto.EmailConfirmacionRequest;
 import com.nubix.market.module.notification.service.EmailService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

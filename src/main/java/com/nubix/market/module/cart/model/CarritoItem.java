@@ -2,7 +2,6 @@ package com.nubix.market.module.cart.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nubix.market.module.product.model.Producto;
-
 import jakarta.persistence.*;
 
 @Entity
