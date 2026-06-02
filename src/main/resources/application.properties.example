@@ -1,0 +1,30 @@
+spring.application.name=market-backend
+
+# Configuración de base de datos (usar variables de entorno en producción)
+spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/nubix_market_db?ssl-mode=REQUIRED}
+spring.datasource.username=${DB_USERNAME:root}
+spring.datasource.password=${DB_PASSWORD:}
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=${SHOW_SQL:false}
+
+# JWT
+jwt.secret=${JWT_SECRET:NubixMarketClaveSecretaMuyLargaYSegura2026}
+jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
+
+# CORS (orígenes separados por coma)
+cors.allowed-origins=${CORS_ORIGINS:http://localhost:5173}
+
+# Email SMTP
+spring.mail.host=${MAIL_HOST:smtp.gmail.com}
+spring.mail.port=${MAIL_PORT:587}
+spring.mail.username=${MAIL_USERNAME:}
+spring.mail.password=${MAIL_PASSWORD:}
+spring.mail.properties.mail.smtp.auth=true
+spring.mail.properties.mail.smtp.starttls.enable=true
+spring.mail.properties.mail.smtp.starttls.required=true
+spring.mail.properties.mail.smtp.ssl.trust=${MAIL_HOST:smtp.gmail.com}
+spring.mail.properties.mail.from=${MAIL_FROM:}
+
+# Directorio de imágenes de productos
+media.upload-dir=uploads/productos/
