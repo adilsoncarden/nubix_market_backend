@@ -2,6 +2,9 @@ package com.nubix.market.module.sale.dao;
 
 import java.time.LocalDate;
 import java.util.List;
+import com.nubix.market.enums.EstadoPago;
+import com.nubix.market.enums.EstadoPedido;
+import com.nubix.market.enums.TipoEntrega;
 import com.nubix.market.module.sale.model.Venta;
 
 /**
@@ -14,4 +17,12 @@ import com.nubix.market.module.sale.model.Venta;
 public interface VentaDAO {
 
     List<Venta> buscarVentasEntreFechas(LocalDate desde, LocalDate hasta);
+
+    List<Venta> buscarConFiltros(
+            LocalDate desde,
+            LocalDate hasta,
+            TipoEntrega tipoEntrega,
+            Integer clienteId,
+            EstadoPedido estadoPedido,
+            EstadoPago estadoPago);
 }

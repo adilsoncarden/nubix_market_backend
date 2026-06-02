@@ -7,8 +7,13 @@ import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
 import com.nubix.market.module.supplier.model.Proveedor;
 import com.nubix.market.module.supplier.repository.ProveedorRepository;
+import com.nubix.market.enums.EstadoPago;
+import com.nubix.market.enums.EstadoPedido;
+import com.nubix.market.enums.TipoEntrega;
+import com.nubix.market.enums.TipoComprobante;
 import com.nubix.market.module.sale.dao.VentaDAO;
 import com.nubix.market.module.sale.model.Venta;
+import com.nubix.market.module.user.model.Usuario;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -36,8 +41,8 @@ public class ReporteExportService {
             "ID", "RUC", "Nombre", "Teléfono", "Email");
 
     private static final ImmutableList<String> HEADERS_VENTAS = ImmutableList.of(
-            "ID", "Fecha", "Total", "Subtotal", "IGV", "Estado pedido", "Estado pago",
-            "Método pago", "Tipo comprobante", "Tipo entrega");
+            "ID", "Fecha", "Cliente", "Total", "Subtotal", "IGV", "Estado pedido", "Estado pago",
+            "Método pago", "Tipo comprobante", "Tipo entrega", "Código recojo");
 
     @Autowired
     private ProductoRepository productoRepository;
@@ -181,8 +186,15 @@ public class ReporteExportService {
         }
     }
 
-    public byte[] exportarVentasExcel(LocalDate desde, LocalDate hasta) {
-        List<Venta> ventas = ventaDAO.buscarVentasEntreFechas(desde, hasta);
+    public byte[] exportarVentasExcel(
+            LocalDate desde,
+            LocalDate hasta,
+            TipoEntrega tipoEntrega,
+            Integer clienteId,
+            EstadoPedido estadoPedido,
+            EstadoPago estadoPago) {
+        List<Venta> ventas = ventaDAO.buscarConFiltros(
+                desde, hasta, tipoEntrega, clienteId, estadoPedido, estadoPago);
         log.info("Exportando ventas a Excel ({} registros, {} → {})", ventas.size(), desde, hasta);
 
         try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -199,6 +211,7 @@ public class ReporteExportService {
                 int col = 0;
                 row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getId(), 0));
                 row.createCell(col++).setCellValue(v.getFecha() != null ? v.getFecha().toString() : "");
+                row.createCell(col++).setCellValue(nombreClienteVenta(v));
                 row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getTotal(), 0.0));
                 row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getSubtotal(), 0.0));
                 row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getIgv(), 0.0));
@@ -207,6 +220,7 @@ public class ReporteExportService {
                 row.createCell(col++).setCellValue(v.getMetodoPago() != null ? v.getMetodoPago().name() : "");
                 row.createCell(col++).setCellValue(v.getTipoComprobante() != null ? v.getTipoComprobante().name() : "");
                 row.createCell(col++).setCellValue(v.getTipoEntrega() != null ? v.getTipoEntrega().name() : "");
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(v.getCodigoRecojo(), ""));
             }
 
             for (int i = 0; i < HEADERS_VENTAS.size(); i++) {
@@ -218,5 +232,30 @@ public class ReporteExportService {
             log.error("Error generando Excel de ventas", e);
             throw new RuntimeException("No se pudo generar el archivo Excel", e);
         }
+    }
+
+    private static String nombreClienteVenta(Venta v) {
+        if (v.getTipoComprobante() == TipoComprobante.TICKET) {
+            return "Consumidor Final";
+        }
+        Usuario cliente = v.getCliente();
+        if (cliente != null && cliente.getUsername() != null) {
+            return cliente.getUsername();
+        }
+        if (v.getTipoComprobante() == TipoComprobante.FACTURA) {
+            if (v.getRazonSocial() != null) {
+                return v.getRazonSocial();
+            }
+            if (v.getRuc() != null) {
+                return "RUC " + v.getRuc();
+            }
+        }
+        if (v.getNombreComprobante() != null) {
+            return v.getNombreComprobante();
+        }
+        if (v.getDni() != null) {
+            return "DNI " + v.getDni();
+        }
+        return "Consumidor Final";
     }
 }
