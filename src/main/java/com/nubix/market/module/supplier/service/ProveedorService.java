@@ -41,7 +41,7 @@ public class ProveedorService {
         Proveedor proveedor = proveedorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
 
-        if (!proveedor.getRuc().equals(detalles.getRuc()) && proveedorRepository.existsByRuc(detalles.getRuc())) {
+        if (proveedorRepository.existsByRucAndIdNot(detalles.getRuc(), id)) {
             throw new RuntimeException("El RUC del proveedor ya existe");
         }
 
@@ -60,6 +60,18 @@ public class ProveedorService {
     }
 
     private void validarProveedor(ProveedorRequest request) {
+        if (request.getRuc() != null) {
+            request.setRuc(request.getRuc().trim());
+        }
+        if (request.getTelefono() != null) {
+            request.setTelefono(request.getTelefono().trim());
+        }
+        if (request.getNombre() != null) {
+            request.setNombre(request.getNombre().trim());
+        }
+        if (request.getEmail() != null) {
+            request.setEmail(request.getEmail().trim());
+        }
         if (request.getRuc() == null || !request.getRuc().matches("\\d{11}")) {
             throw new RuntimeException("El RUC debe tener 11 dígitos numéricos");
         }

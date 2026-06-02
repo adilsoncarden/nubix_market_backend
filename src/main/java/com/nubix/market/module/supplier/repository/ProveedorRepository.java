@@ -7,4 +7,6 @@ import com.nubix.market.module.supplier.model.Proveedor;
 @Repository
 public interface ProveedorRepository extends JpaRepository<Proveedor, Integer> {
     boolean existsByRuc(String ruc);
+
+    boolean existsByRucAndIdNot(String ruc, Integer id);
 }
