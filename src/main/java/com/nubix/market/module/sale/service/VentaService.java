@@ -76,12 +76,7 @@ public class VentaService {
                 request.getDni(), request.getRuc(), request.getRazonSocial(),
                 request.getEmailComprobante(), request.getDireccionFiscal());
         double subtotal = procesarDetallesYStock(venta, request.getDetalles());
-        double envio = request.getCostoEnvio() != null ? request.getCostoEnvio() : 0.0;
-        double igv = round2(subtotal * IGV_RATE);
-        venta.setCostoEnvio(envio);
-        venta.setSubtotal(round2(subtotal));
-        venta.setIgv(igv);
-        venta.setTotal(round2(subtotal + igv + envio));
+        aplicarTotalesFinancieros(venta, subtotal, request.getTipoEntrega());
         configurarEntrega(venta, request.getTipoEntrega(), request.getDireccionEntrega(),
                 request.getDistrito(), request.getReferencia());
         configurarPago(venta, request.getMetodoPago(), venta.getTotal());
@@ -89,12 +84,12 @@ public class VentaService {
         venta.setEstadoPedido(EstadoPedido.ENTREGADO);
         Venta saved = ventaRepository.save(venta);
         notificacionService.crearInterna(
-                saved.getVendedor(),
+                destinatarioNotificacion(saved),
                 "pedido",
                 "Nueva venta presencial registrada (ID #" + saved.getId() + ").");
         if (saved.getEstadoPago() == EstadoPago.APROBADO) {
             notificacionService.crearInterna(
-                    saved.getVendedor(),
+                    destinatarioNotificacion(saved),
                     "pago",
                     "Pago confirmado para la venta #" + saved.getId() + ".");
         }
@@ -111,42 +106,32 @@ public class VentaService {
         VentaRequest ventaRequest = mapearCheckout(request);
         Venta venta = construirVentaBase(ventaRequest);
         venta.setCanal(CanalVenta.WEB);
-        venta.setVendedor(obtenerVendedorSistema());
+        venta.setVendedor(null);
         asignarClienteSiCorresponde(venta, request.getClienteId(), request.getTipoComprobante());
         aplicarComprobante(venta, request.getTipoComprobante(), request.getNombreComprobante(),
                 request.getDni(), request.getRuc(), request.getRazonSocial(),
                 request.getEmailComprobante(), request.getDireccionFiscal());
         double subtotal = procesarDetallesYStock(venta, request.getDetalles());
-        double envio = calcularCostoEnvio(subtotal, request.getTipoEntrega());
-        double igv = round2(subtotal * IGV_RATE);
-        venta.setCostoEnvio(envio);
-        venta.setSubtotal(round2(subtotal));
-        venta.setIgv(igv);
-        venta.setTotal(round2(subtotal + igv + envio));
+        aplicarTotalesFinancieros(venta, subtotal, request.getTipoEntrega());
         configurarEntrega(venta, request.getTipoEntrega(), request.getDireccionEntrega(),
                 request.getDistrito(), request.getReferencia());
         configurarPago(venta, request.getMetodoPago(), venta.getTotal());
-        if (venta.getTipoEntrega() == TipoEntrega.DELIVERY) {
-            venta.setEstadoPedido(EstadoPedido.EN_PROCESO);
-        } else if (venta.getTipoEntrega() == TipoEntrega.FAST_LANE) {
-            venta.setEstadoPedido(EstadoPedido.LISTO_PARA_RECOJO);
-        }
         Venta saved = ventaRepository.save(venta);
         notificacionService.crearInterna(
-                saved.getVendedor(),
+                destinatarioNotificacion(saved),
                 "pedido",
                 "Nuevo pedido web creado (ID #" + saved.getId() + ").");
         if (saved.getEstadoPago() == EstadoPago.APROBADO) {
             notificacionService.crearInterna(
-                    saved.getVendedor(),
+                    destinatarioNotificacion(saved),
                     "pago",
                     "Pago confirmado para el pedido #" + saved.getId() + ".");
         }
         if (saved.getTipoEntrega() == TipoEntrega.FAST_LANE && saved.getCodigoRecojo() != null) {
             notificacionService.crearInterna(
-                    saved.getVendedor(),
+                    destinatarioNotificacion(saved),
                     "recojo",
-                    "Pedido #" + saved.getId() + " listo para recojo. Código: " + saved.getCodigoRecojo());
+                    "Pedido Fast Lane #" + saved.getId() + " registrado. Código de recojo: " + saved.getCodigoRecojo());
         }
         carritoService.vaciarCarrito(usuarioActual.getId());
         return saved;
@@ -159,7 +144,7 @@ public class VentaService {
         venta.setEstadoPedido(nuevoEstado);
         Venta saved = ventaRepository.save(venta);
         notificacionService.crearInterna(
-                saved.getVendedor(),
+                destinatarioNotificacion(saved),
                 "pedido",
                 "Estado del pedido #" + saved.getId() + " actualizado a " + nuevoEstado + ".");
         return saved;
@@ -183,7 +168,7 @@ public class VentaService {
         }
         Venta saved = ventaRepository.save(venta);
         notificacionService.crearInterna(
-                saved.getVendedor(),
+                destinatarioNotificacion(saved),
                 "pago",
                 "Pago aprobado para la venta #" + saved.getId() + ".");
         return saved;
@@ -298,6 +283,11 @@ public class VentaService {
                 .orElseThrow(() -> new RuntimeException("No hay vendedor del sistema configurado"));
     }
 
+    /** Destinatario de notificaciones internas cuando la venta web no tiene vendedor. */
+    private Usuario destinatarioNotificacion(Venta venta) {
+        return venta.getVendedor() != null ? venta.getVendedor() : obtenerVendedorSistema();
+    }
+
     private void asignarClienteSiCorresponde(Venta venta, Integer clienteId, TipoComprobante tipo) {
         if (tipo == TipoComprobante.TICKET) {
             venta.setCliente(null);
@@ -347,7 +337,7 @@ public class VentaService {
             productoRepository.save(producto);
             if (nuevoStock <= 5) {
                 notificacionService.crearInterna(
-                        venta.getVendedor(),
+                        destinatarioNotificacion(venta),
                         "stock",
                         "Stock bajo detectado para " + producto.getNombre() + " (restante: " + nuevoStock + ").");
             }
@@ -367,6 +357,20 @@ public class VentaService {
 
     private static double round2(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    /**
+     * Subtotal = suma de precios base (sin IGV). Total = subtotal + IGV + envío.
+     */
+    private void aplicarTotalesFinancieros(Venta venta, double subtotalBase, TipoEntrega tipoEntrega) {
+        double base = round2(subtotalBase);
+        double envio = calcularCostoEnvio(base, tipoEntrega);
+        double igv = round2(base * IGV_RATE);
+        double total = round2(base + igv + envio);
+        venta.setSubtotal(base);
+        venta.setIgv(igv);
+        venta.setCostoEnvio(envio);
+        venta.setTotal(total);
     }
 
     private double calcularCostoEnvio(double subtotal, TipoEntrega tipoEntrega) {
