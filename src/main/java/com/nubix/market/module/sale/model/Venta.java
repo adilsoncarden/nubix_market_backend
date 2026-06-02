@@ -90,7 +90,7 @@ public class Venta {
     private Usuario cliente;
 
     @ManyToOne
-    @JoinColumn(name = "usuario_id", nullable = false)
+    @JoinColumn(name = "usuario_id", nullable = true)
     @JsonIgnoreProperties({ "venta", "hibernateLazyInitializer", "handler", "password" })
     private Usuario vendedor;
 
