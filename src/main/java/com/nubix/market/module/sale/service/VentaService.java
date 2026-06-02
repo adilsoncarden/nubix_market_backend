@@ -116,11 +116,6 @@ public class VentaService {
         configurarEntrega(venta, request.getTipoEntrega(), request.getDireccionEntrega(),
                 request.getDistrito(), request.getReferencia());
         configurarPago(venta, request.getMetodoPago(), venta.getTotal());
-        if (venta.getTipoEntrega() == TipoEntrega.DELIVERY) {
-            venta.setEstadoPedido(EstadoPedido.EN_PROCESO);
-        } else if (venta.getTipoEntrega() == TipoEntrega.FAST_LANE) {
-            venta.setEstadoPedido(EstadoPedido.LISTO_PARA_RECOJO);
-        }
         Venta saved = ventaRepository.save(venta);
         notificacionService.crearInterna(
                 destinatarioNotificacion(saved),
@@ -136,7 +131,7 @@ public class VentaService {
             notificacionService.crearInterna(
                     destinatarioNotificacion(saved),
                     "recojo",
-                    "Pedido #" + saved.getId() + " listo para recojo. Código: " + saved.getCodigoRecojo());
+                    "Pedido Fast Lane #" + saved.getId() + " registrado. Código de recojo: " + saved.getCodigoRecojo());
         }
         carritoService.vaciarCarrito(usuarioActual.getId());
         return saved;
