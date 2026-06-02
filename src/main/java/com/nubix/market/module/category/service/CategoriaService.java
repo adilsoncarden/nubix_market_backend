@@ -28,6 +28,7 @@ public class CategoriaService {
         }
         Categoria categoria = new Categoria();
         categoria.setNombre(request.getNombre());
+        categoria.setDescripcion(request.getDescripcion());
         return categoriaRepository.save(categoria);
     }
 
@@ -41,6 +42,7 @@ public class CategoriaService {
         }
 
         categoria.setNombre(detalles.getNombre());
+        categoria.setDescripcion(detalles.getDescripcion());
         return categoriaRepository.save(categoria);
     }
 

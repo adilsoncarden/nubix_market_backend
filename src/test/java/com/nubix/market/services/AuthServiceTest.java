@@ -45,18 +45,20 @@ class AuthServiceTest {
         Usuario u = new Usuario();
         u.setUsername("user1");
         u.setPassword("hash");
+        u.setId(1);
         Rol r = new Rol("CLIENTE");
         u.setRol(r);
 
         when(usuarioRepository.findByUsername("user1")).thenReturn(Optional.of(u));
         when(passwordEncoder.matches("clave123", "hash")).thenReturn(true);
-        when(jwtUtils.generateToken("user1")).thenReturn("jwt-token");
+        when(jwtUtils.generateToken("user1", "CLIENTE")).thenReturn("jwt-token");
 
         AuthResponse resp = authService.login(req);
 
         assertThat(resp.isSuccess()).isTrue();
         assertThat(resp.getToken()).isEqualTo("jwt-token");
         assertThat(resp.getRol()).isEqualTo("CLIENTE");
+        assertThat(resp.getId()).isEqualTo(1);
     }
 
     @Test
@@ -76,6 +78,6 @@ class AuthServiceTest {
         AuthResponse resp = authService.login(req);
 
         assertThat(resp.isSuccess()).isFalse();
-        assertThat(resp.getMessage()).containsIgnoringCase("contraseña");
+        assertThat(resp.getMessage()).containsIgnoringCase("credenciales");
     }
 }

@@ -1,8 +1,8 @@
 package com.nubix.market.module.auth.service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.Random;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,8 @@ import com.nubix.market.module.user.repository.UsuarioRepository;
 
 @Service
 public class RecuperaciónContraseñaService {
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -36,7 +38,7 @@ public class RecuperaciónContraseñaService {
 
         Usuario usuario = usuarioOpt.get();
 
-        String codigo = String.format("%06d", new Random().nextInt(999999));
+        String codigo = String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
 
         ContraseñaResetToken resetCodigo = new ContraseñaResetToken();
         resetCodigo.setUsuario(usuario);

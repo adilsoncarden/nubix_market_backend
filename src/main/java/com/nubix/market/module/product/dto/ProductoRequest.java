@@ -1,20 +1,25 @@
 package com.nubix.market.module.product.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ProductoRequest {
 
     @JsonProperty("categoria_id")
+    @JsonAlias("categoriaId")
     private Integer categoriaId; // solo pedimos el ID de la categoría
     private String codigo;
     private String nombre;
     private String descripcion;
     @JsonProperty("precio_compra")
+    @JsonAlias("precioCompra")
     private Double precioCompra;
     @JsonProperty("precio_venta")
+    @JsonAlias("precioVenta")
     private Double precioVenta;
     private Integer stock;
     @JsonProperty("id_imagen")
+    @JsonAlias("imagenId")
     private Integer imagenId;
 
     // getters and setters

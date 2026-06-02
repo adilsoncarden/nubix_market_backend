@@ -1,11 +1,14 @@
 package com.nubix.market.module.auth.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class LoginRequest {
     private String username;
     private String email;
+
+    @NotBlank(message = "La contraseña es obligatoria")
     private String password;
 
-    // Getters y Setters
     public String getUsername() {
         return username;
     }

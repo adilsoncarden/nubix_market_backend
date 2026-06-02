@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
 public class AuthController {
     @Autowired
     private AuthService authService;
@@ -34,7 +33,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);
@@ -44,7 +43,7 @@ public class AuthController {
     }
 
     @PostMapping("/admin-login")
-    public ResponseEntity<AuthResponse> adminLogin(@RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> adminLogin(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.adminLogin(request);
         if (response.isSuccess()) {
             return ResponseEntity.ok(response);

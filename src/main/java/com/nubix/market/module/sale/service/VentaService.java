@@ -6,6 +6,7 @@ import com.nubix.market.enums.EstadoPedido;
 import com.nubix.market.enums.MetodoPago;
 import com.nubix.market.enums.TipoComprobante;
 import com.nubix.market.enums.TipoEntrega;
+import com.nubix.market.module.cart.service.CarritoService;
 import com.nubix.market.module.notification.service.NotificacionService;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
@@ -32,6 +33,8 @@ import java.util.UUID;
 @Service
 public class VentaService {
     private static final double IGV_RATE = 0.13;
+    private static final double ENVIO_GRATIS_DESDE = 100.0;
+    private static final double COSTO_ENVIO_DEFAULT = 8.0;
 
     private static final Logger log = LoggerFactory.getLogger(VentaService.class);
 
@@ -43,6 +46,8 @@ public class VentaService {
     private ProductoRepository productoRepository;
     @Autowired
     private NotificacionService notificacionService;
+    @Autowired
+    private CarritoService carritoService;
 
     public List<Venta> obtenerTodasLasVentas() {
         return ventaRepository.findAllWithRelations();
@@ -98,6 +103,10 @@ public class VentaService {
 
     @Transactional
     public Venta checkoutWeb(CheckoutRequest request) {
+        Usuario usuarioActual = obtenerUsuarioActual();
+        if ("CLIENTE".equals(usuarioActual.getRol().getNombre())) {
+            request.setClienteId(usuarioActual.getId());
+        }
         validarCheckout(request);
         VentaRequest ventaRequest = mapearCheckout(request);
         Venta venta = construirVentaBase(ventaRequest);
@@ -108,7 +117,7 @@ public class VentaService {
                 request.getDni(), request.getRuc(), request.getRazonSocial(),
                 request.getEmailComprobante(), request.getDireccionFiscal());
         double subtotal = procesarDetallesYStock(venta, request.getDetalles());
-        double envio = request.getCostoEnvio() != null ? request.getCostoEnvio() : 0.0;
+        double envio = calcularCostoEnvio(subtotal, request.getTipoEntrega());
         double igv = round2(subtotal * IGV_RATE);
         venta.setCostoEnvio(envio);
         venta.setSubtotal(round2(subtotal));
@@ -139,9 +148,11 @@ public class VentaService {
                     "recojo",
                     "Pedido #" + saved.getId() + " listo para recojo. Código: " + saved.getCodigoRecojo());
         }
+        carritoService.vaciarCarrito(usuarioActual.getId());
         return saved;
     }
 
+    @Transactional
     public Venta actualizarEstadoPedido(Integer ventaId, EstadoPedido nuevoEstado) {
         Venta venta = ventaRepository.findById(ventaId)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + ventaId));
@@ -154,6 +165,7 @@ public class VentaService {
         return saved;
     }
 
+    @Transactional
     public Venta registrarCredito(Integer ventaId) {
         Venta venta = ventaRepository.findById(ventaId)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada"));
@@ -161,7 +173,7 @@ public class VentaService {
         if (venta.getMetodoPago() != MetodoPago.CREDITO) {
             throw new RuntimeException("La venta no es a crédito");
         }
-        if (venta.getEstadoPago() == EstadoPago.PAGADO || venta.getEstadoPago() == EstadoPago.APROBADO) {
+        if (venta.getEstadoPago() == EstadoPago.APROBADO) {
             throw new RuntimeException("La venta ya ha sido pagada");
         }
 
@@ -355,6 +367,16 @@ public class VentaService {
 
     private static double round2(double value) {
         return Math.round(value * 100.0) / 100.0;
+    }
+
+    private double calcularCostoEnvio(double subtotal, TipoEntrega tipoEntrega) {
+        if (tipoEntrega != TipoEntrega.DELIVERY) {
+            return 0.0;
+        }
+        if (subtotal >= ENVIO_GRATIS_DESDE) {
+            return 0.0;
+        }
+        return COSTO_ENVIO_DEFAULT;
     }
 
     private void configurarEntrega(Venta venta, TipoEntrega tipo, String direccion,

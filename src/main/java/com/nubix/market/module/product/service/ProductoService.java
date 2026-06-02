@@ -44,6 +44,7 @@ public class ProductoService {
     }
 
     public Producto guardar(ProductoRequest request) {
+        validarPreciosYStock(request);
         if (StringUtils.isBlank(request.getCodigo()) || StringUtils.isBlank(request.getNombre())) {
             throw new RuntimeException("Código y nombre del producto son obligatorios");
         }
@@ -51,6 +52,9 @@ public class ProductoService {
             throw new RuntimeException("El código del producto ya existe");
         }
 
+        if (request.getCategoriaId() == null) {
+            throw new RuntimeException("La categoría es obligatoria");
+        }
         Categoria categoria = categoriaRepository.findById(request.getCategoriaId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
@@ -74,6 +78,7 @@ public class ProductoService {
     }
 
     public Producto actualizar(Integer id, ProductoRequest detalles) {
+        validarPreciosYStock(detalles);
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         if (StringUtils.isBlank(detalles.getCodigo()) || StringUtils.isBlank(detalles.getNombre())) {
@@ -85,6 +90,9 @@ public class ProductoService {
             throw new RuntimeException("El nuevo código de producto ya está en uso");
         }
 
+        if (detalles.getCategoriaId() == null) {
+            throw new RuntimeException("La categoría es obligatoria");
+        }
         Categoria categoria = categoriaRepository.findById(detalles.getCategoriaId())
                 .orElseThrow(() -> new RuntimeException("Categoría no encontrada"));
 
@@ -120,11 +128,22 @@ public class ProductoService {
     }
 
     public Producto subirImagenProducto(Integer productoId, MultipartFile archivo) {
+        if (archivo == null || archivo.isEmpty()) {
+            throw new RuntimeException("El archivo es obligatorio");
+        }
+        if (archivo.getSize() > 5 * 1024 * 1024) {
+            throw new RuntimeException("La imagen no puede superar 5 MB");
+        }
+        String contentType = archivo.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            throw new RuntimeException("Solo se permiten archivos de imagen");
+        }
+
         Producto producto = productoRepository.findById(productoId)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
         try {
-            String nombreArchivo = UUID.randomUUID() + "_" + archivo.getOriginalFilename();
+            String nombreArchivo = UUID.randomUUID() + "_" + sanitizarNombreArchivo(archivo.getOriginalFilename());
             String rutaRelativa = UPLOAD_SUBDIR + "/" + nombreArchivo;
 
             Path directorio = obtenerDirectorioUpload();
@@ -166,6 +185,25 @@ public class ProductoService {
         }
 
         return producto;
+    }
+
+    private void validarPreciosYStock(ProductoRequest request) {
+        if (request.getPrecioCompra() != null && request.getPrecioCompra() < 0) {
+            throw new RuntimeException("El precio de compra no puede ser negativo");
+        }
+        if (request.getPrecioVenta() != null && request.getPrecioVenta() < 0) {
+            throw new RuntimeException("El precio de venta no puede ser negativo");
+        }
+        if (request.getStock() != null && request.getStock() < 0) {
+            throw new RuntimeException("El stock no puede ser negativo");
+        }
+    }
+
+    private String sanitizarNombreArchivo(String original) {
+        if (original == null || original.isBlank()) {
+            return "imagen";
+        }
+        return original.replaceAll("[^a-zA-Z0-9._-]", "_");
     }
 
     private Path obtenerDirectorioUpload() throws IOException {

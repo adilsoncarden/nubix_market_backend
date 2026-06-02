@@ -5,6 +5,8 @@ import com.nubix.market.module.category.model.Categoria;
 import com.nubix.market.module.category.repository.CategoriaRepository;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
+import com.nubix.market.module.supplier.model.Proveedor;
+import com.nubix.market.module.supplier.repository.ProveedorRepository;
 import com.nubix.market.module.sale.dao.VentaDAO;
 import com.nubix.market.module.sale.model.Venta;
 import org.apache.poi.ss.usermodel.Row;
@@ -28,7 +30,10 @@ public class ReporteExportService {
     private static final ImmutableList<String> HEADERS_PRODUCTOS = ImmutableList.of(
             "ID", "Código", "Nombre", "Categoría", "Stock", "Precio compra", "Precio venta");
 
-    private static final ImmutableList<String> HEADERS_CATEGORIAS = ImmutableList.of("ID", "Nombre");
+    private static final ImmutableList<String> HEADERS_CATEGORIAS = ImmutableList.of("ID", "Nombre", "Descripción");
+
+    private static final ImmutableList<String> HEADERS_PROVEEDORES = ImmutableList.of(
+            "ID", "RUC", "Nombre", "Teléfono", "Email");
 
     private static final ImmutableList<String> HEADERS_VENTAS = ImmutableList.of(
             "ID", "Fecha", "Total", "Subtotal", "IGV", "Estado pedido", "Estado pago",
@@ -39,9 +44,15 @@ public class ReporteExportService {
     @Autowired
     private CategoriaRepository categoriaRepository;
     @Autowired
+    private ProveedorRepository proveedorRepository;
+    @Autowired
     private VentaDAO ventaDAO;
 
-    public byte[] exportarProductosExcel(Integer categoriaId) {
+    public byte[] exportarProductosExcel(
+            Integer categoriaId,
+            Boolean stockBajo,
+            Double precioMin,
+            Double precioMax) {
         List<Producto> productos = productoRepository.findAllWithImagen();
         if (categoriaId != null) {
             productos = productos.stream()
@@ -49,8 +60,22 @@ public class ReporteExportService {
                             && Objects.equals(p.getCategoria().getId(), categoriaId))
                     .toList();
         }
-        log.info("Exportando productos a Excel ({} registros, filtro categoría={})",
-                productos.size(), categoriaId);
+        if (Boolean.TRUE.equals(stockBajo)) {
+            productos = productos.stream()
+                    .filter(p -> p.getStock() != null && p.getStock() < 10)
+                    .toList();
+        }
+        if (precioMin != null) {
+            productos = productos.stream()
+                    .filter(p -> p.getPrecioVenta() != null && p.getPrecioVenta() >= precioMin)
+                    .toList();
+        }
+        if (precioMax != null) {
+            productos = productos.stream()
+                    .filter(p -> p.getPrecioVenta() != null && p.getPrecioVenta() <= precioMax)
+                    .toList();
+        }
+        log.info("Exportando productos a Excel ({} registros)", productos.size());
 
         try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = wb.createSheet("Productos");
@@ -108,14 +133,50 @@ public class ReporteExportService {
                 Row row = sheet.createRow(rowIdx++);
                 row.createCell(0).setCellValue(Objects.requireNonNullElse(cat.getId(), 0));
                 row.createCell(1).setCellValue(Objects.requireNonNullElse(cat.getNombre(), ""));
+                row.createCell(2).setCellValue(Objects.requireNonNullElse(cat.getDescripcion(), ""));
             }
 
-            sheet.autoSizeColumn(0);
-            sheet.autoSizeColumn(1);
+            for (int i = 0; i < HEADERS_CATEGORIAS.size(); i++) {
+                sheet.autoSizeColumn(i);
+            }
             wb.write(out);
             return out.toByteArray();
         } catch (IOException e) {
             log.error("Error generando Excel de categorías", e);
+            throw new RuntimeException("No se pudo generar el archivo Excel", e);
+        }
+    }
+
+    public byte[] exportarProveedoresExcel() {
+        List<Proveedor> proveedores = proveedorRepository.findAll();
+        log.info("Exportando proveedores a Excel ({} registros)", proveedores.size());
+
+        try (XSSFWorkbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = wb.createSheet("Proveedores");
+            Row header = sheet.createRow(0);
+            int c = 0;
+            for (String h : HEADERS_PROVEEDORES) {
+                header.createCell(c++).setCellValue(h);
+            }
+
+            int rowIdx = 1;
+            for (Proveedor p : proveedores) {
+                Row row = sheet.createRow(rowIdx++);
+                int col = 0;
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getId(), 0));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getRuc(), ""));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getNombre(), ""));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getTelefono(), ""));
+                row.createCell(col++).setCellValue(Objects.requireNonNullElse(p.getEmail(), ""));
+            }
+
+            for (int i = 0; i < HEADERS_PROVEEDORES.size(); i++) {
+                sheet.autoSizeColumn(i);
+            }
+            wb.write(out);
+            return out.toByteArray();
+        } catch (IOException e) {
+            log.error("Error generando Excel de proveedores", e);
             throw new RuntimeException("No se pudo generar el archivo Excel", e);
         }
     }

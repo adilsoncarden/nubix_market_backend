@@ -3,23 +3,28 @@ package com.nubix.market.module.auth.dto;
 public class AuthResponse {
     private boolean success;
     private String message;
+    private Integer id;
     private String username;
     private String token;
     private String rol;
 
     public AuthResponse(boolean success, String message, String username) {
-        this(success, message, username, null, null);
+        this(success, message, null, username, null, null);
     }
 
     public AuthResponse(boolean success, String message, String username, String token, String rol) {
+        this(success, message, null, username, token, rol);
+    }
+
+    public AuthResponse(boolean success, String message, Integer id, String username, String token, String rol) {
         this.success = success;
         this.message = message;
+        this.id = id;
         this.username = username;
         this.token = token;
         this.rol = rol;
     }
 
-    // Getters y Setters
     public boolean isSuccess() {
         return success;
     }
@@ -34,6 +39,14 @@ public class AuthResponse {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getUsername() {

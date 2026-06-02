@@ -23,7 +23,7 @@ public class UsuarioService {
 
     // Método para obtener todos los clientes
     public List<Usuario> obtenerClientes() {
-        return usuarioRepository.findByRolNombre("CLIENTE");
+        return usuarioRepository.findByRol_Nombre("CLIENTE");
     }
 
     public Optional<Usuario> obtenerPorId(Integer id) {

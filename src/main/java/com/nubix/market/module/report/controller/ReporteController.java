@@ -6,7 +6,6 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,7 +15,6 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/admin/reportes")
-@CrossOrigin(origins = "*")
 public class ReporteController {
 
     @Autowired
@@ -24,8 +22,12 @@ public class ReporteController {
 
     @GetMapping(value = "/productos", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarProductos(
-            @RequestParam(required = false) Integer categoriaId) {
-        byte[] body = reporteExportService.exportarProductosExcel(categoriaId);
+            @RequestParam(required = false) Integer categoriaId,
+            @RequestParam(required = false) Boolean stockBajo,
+            @RequestParam(required = false) Double precioMin,
+            @RequestParam(required = false) Double precioMax) {
+        byte[] body = reporteExportService.exportarProductosExcel(
+                categoriaId, stockBajo, precioMin, precioMax);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"productos.xlsx\"")
                 .contentType(MediaType.parseMediaType(
@@ -38,6 +40,16 @@ public class ReporteController {
         byte[] body = reporteExportService.exportarCategoriasExcel();
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"categorias.xlsx\"")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(body);
+    }
+
+    @GetMapping(value = "/proveedores", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    public ResponseEntity<byte[]> exportarProveedores() {
+        byte[] body = reporteExportService.exportarProveedoresExcel();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"proveedores.xlsx\"")
                 .contentType(MediaType.parseMediaType(
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(body);

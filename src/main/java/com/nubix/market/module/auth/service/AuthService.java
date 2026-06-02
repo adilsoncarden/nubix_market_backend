@@ -66,22 +66,21 @@ public class AuthService {
         }
 
         if (usuarioOpt.isEmpty()) {
-            log.warn("Login fallido: usuario no encontrado (username/email informado)");
-            return new AuthResponse(false, "Usuario no encontrado", null);
+            log.warn("Login fallido: credenciales inválidas");
+            return new AuthResponse(false, "Credenciales incorrectas", null);
         }
 
         Usuario usuario = usuarioOpt.get();
 
-        // Validamos la contraseña usando BCrypt
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
-            log.warn("Login fallido: contraseña incorrecta para usuario {}", usuario.getUsername());
-            return new AuthResponse(false, "Contraseña incorrecta", null);
+            log.warn("Login fallido: credenciales inválidas para {}", usuario.getUsername());
+            return new AuthResponse(false, "Credenciales incorrectas", null);
         }
 
-        // ¡Login exitoso! Generamos el JWT
-        String token = jwtUtils.generateToken(usuario.getUsername());
-        log.info("Login exitoso para usuario {} (rol {})", usuario.getUsername(), usuario.getRol().getNombre());
-        return new AuthResponse(true, "Login exitoso", usuario.getUsername(), token, usuario.getRol().getNombre());
+        String rol = usuario.getRol().getNombre();
+        String token = jwtUtils.generateToken(usuario.getUsername(), rol);
+        log.info("Login exitoso para usuario {} (rol {})", usuario.getUsername(), rol);
+        return new AuthResponse(true, "Login exitoso", usuario.getId(), usuario.getUsername(), token, rol);
     }
 
     public AuthResponse adminLogin(LoginRequest request) {
@@ -93,25 +92,25 @@ public class AuthService {
             usuarioOpt = usuarioRepository.findByEmail(request.getEmail());
         }
         if (usuarioOpt.isEmpty()) {
-            log.warn("Admin login fallido: usuario no encontrado");
-            return new AuthResponse(false, "Usuario no encontrado", null);
+            log.warn("Admin login fallido: credenciales inválidas");
+            return new AuthResponse(false, "Credenciales incorrectas", null);
         }
 
         Usuario usuario = usuarioOpt.get();
 
-        // Verificamos que el usuario tenga rol de ADMIN o EMPLEADO
         String rolNombre = usuario.getRol().getNombre();
         if (!rolNombre.equals("ADMIN") && !rolNombre.equals("EMPLEADO")) {
             log.warn("Admin login denegado: usuario {} no es administrativo", usuario.getUsername());
             return new AuthResponse(false, "Acceso denegado: no es un usuario administrativo", null);
         }
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
-            log.warn("Admin login fallido: contraseña incorrecta para {}", usuario.getUsername());
-            return new AuthResponse(false, "Contraseña incorrecta", null);
+            log.warn("Admin login fallido: credenciales inválidas para {}", usuario.getUsername());
+            return new AuthResponse(false, "Credenciales incorrectas", null);
         }
 
-        String token = jwtUtils.generateToken(usuario.getUsername());
+        String token = jwtUtils.generateToken(usuario.getUsername(), rolNombre);
         log.info("Admin login exitoso para {} (rol {})", usuario.getUsername(), rolNombre);
-        return new AuthResponse(true, "Bienvenido al panel de administración", usuario.getUsername(), token, rolNombre);
+        return new AuthResponse(true, "Bienvenido al panel de administración", usuario.getId(),
+                usuario.getUsername(), token, rolNombre);
     }
 }

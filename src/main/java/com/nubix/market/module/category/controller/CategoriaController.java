@@ -14,14 +14,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "*")
 public class CategoriaController {
     @Autowired
     private CategoriaService categoriaService;
 
     private CategoriaResponse mapToResponse(Categoria categoria) {
         return new CategoriaResponse(categoria.getId(),
-                categoria.getNombre());
+                categoria.getNombre(), categoria.getDescripcion());
     }
 
     // GET: Listar todas las categorías

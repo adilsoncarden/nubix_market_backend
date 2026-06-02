@@ -14,6 +14,9 @@ public class Categoria {
     @Column(nullable = false, length = 100)
     private String nombre;
 
+    @Column(length = 500)
+    private String descripcion;
+
     public Categoria() {
     }
 
@@ -33,5 +36,13 @@ public class Categoria {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
     }
 }

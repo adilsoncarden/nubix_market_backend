@@ -18,7 +18,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Integer> {
     // Verificar si el username ya exista
     boolean existsByUsername(String username);
 
-    List<Usuario> findByRolNombre(String nombreRol);
+    List<Usuario> findByRol_Nombre(String nombreRol);
 
     List<Usuario> findByRol_NombreIn(List<String> nombresRol);
 

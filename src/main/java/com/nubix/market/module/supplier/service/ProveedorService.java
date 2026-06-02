@@ -22,6 +22,7 @@ public class ProveedorService {
     }
 
     public Proveedor guardar(ProveedorRequest request) {
+        validarProveedor(request);
         if (proveedorRepository.existsByRuc(request.getRuc())) {
             throw new RuntimeException("El RUC del proveedor ya existe");
         }
@@ -36,6 +37,7 @@ public class ProveedorService {
     }
 
     public Proveedor actualizar(Integer id, ProveedorRequest detalles) {
+        validarProveedor(detalles);
         Proveedor proveedor = proveedorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
 
@@ -55,5 +57,20 @@ public class ProveedorService {
         Proveedor proveedor = proveedorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
         proveedorRepository.delete(proveedor);
+    }
+
+    private void validarProveedor(ProveedorRequest request) {
+        if (request.getRuc() == null || !request.getRuc().matches("\\d{11}")) {
+            throw new RuntimeException("El RUC debe tener 11 dígitos numéricos");
+        }
+        if (request.getTelefono() == null || !request.getTelefono().matches("\\d{9}")) {
+            throw new RuntimeException("El teléfono debe tener 9 dígitos numéricos");
+        }
+        if (request.getNombre() == null || request.getNombre().isBlank()) {
+            throw new RuntimeException("El nombre del proveedor es obligatorio");
+        }
+        if (request.getEmail() == null || !request.getEmail().contains("@")) {
+            throw new RuntimeException("El email no es válido");
+        }
     }
 }

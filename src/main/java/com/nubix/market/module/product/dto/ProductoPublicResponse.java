@@ -1,29 +1,26 @@
 package com.nubix.market.module.product.dto;
 
-public class ProductoResponse {
+public class ProductoPublicResponse {
     private Integer id;
     private String codigo;
     private String nombre;
     private String descripcion;
-    private Double precioCompra;
     private Double precioVenta;
     private Integer stock;
     private String categoriaNombre;
-    private ImagenDTO imagen;
+    private ProductoResponse.ImagenDTO imagen;
 
-    public ProductoResponse(Integer id, String codigo, String nombre, String descripcion,
-            Double precioCompra, Double precioVenta, Integer stock, String categoriaNombre) {
+    public ProductoPublicResponse(Integer id, String codigo, String nombre, String descripcion,
+            Double precioVenta, Integer stock, String categoriaNombre) {
         this.id = id;
         this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.precioCompra = precioCompra;
         this.precioVenta = precioVenta;
         this.stock = stock;
         this.categoriaNombre = categoriaNombre;
     }
 
-    // Getters y Setters
     public Integer getId() {
         return id;
     }
@@ -56,14 +53,6 @@ public class ProductoResponse {
         this.descripcion = descripcion;
     }
 
-    public Double getPrecioCompra() {
-        return precioCompra;
-    }
-
-    public void setPrecioCompra(Double precioCompra) {
-        this.precioCompra = precioCompra;
-    }
-
     public Double getPrecioVenta() {
         return precioVenta;
     }
@@ -88,30 +77,11 @@ public class ProductoResponse {
         this.categoriaNombre = categoriaNombre;
     }
 
-    public ImagenDTO getImagen() {
+    public ProductoResponse.ImagenDTO getImagen() {
         return imagen;
     }
 
-    public void setImagen(ImagenDTO imagen) {
+    public void setImagen(ProductoResponse.ImagenDTO imagen) {
         this.imagen = imagen;
-    }
-
-    // Sub-DTO para imágenes
-    public static class ImagenDTO {
-        private Integer id;
-        private String archivo;
-
-        public ImagenDTO(Integer id, String archivo) {
-            this.id = id;
-            this.archivo = archivo;
-        }
-
-        public Integer getId() {
-            return id;
-        }
-
-        public String getArchivo() {
-            return archivo;
-        }
     }
 }
