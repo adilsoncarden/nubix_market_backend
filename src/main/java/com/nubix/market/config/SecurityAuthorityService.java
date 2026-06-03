@@ -34,11 +34,13 @@ public class SecurityAuthorityService {
         Set<String> permisoNames = new LinkedHashSet<>();
         String rolNombre = rolClaim;
 
-        var usuarioOpt = usuarioRepository.findByUsername(username);
+        var usuarioOpt = usuarioRepository.findByUsernameWithRol(username);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            if (usuario.getRol() != null) {
-                rolNombre = usuario.getRol().getNombre();
+            if (usuario.getRol() != null && usuario.getRol().getId() != null) {
+                if (usuario.getRol().getNombre() != null) {
+                    rolNombre = usuario.getRol().getNombre().trim();
+                }
                 cargarPermisosDelRol(usuario.getRol().getId(), permisoNames);
             }
         }

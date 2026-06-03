@@ -136,7 +136,11 @@ public class RbacService {
     public void eliminarRol(Integer id) {
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
-        if ("ADMIN".equals(rol.getNombre()) || "CLIENTE".equals(rol.getNombre())) {
+        if (esRolAdministradorSupremo(rol)) {
+            throw new RuntimeException(
+                    "El rol de Administrador Supremo no puede ser eliminado");
+        }
+        if (rol.getNombre() != null && "CLIENTE".equalsIgnoreCase(rol.getNombre().trim())) {
             throw new RuntimeException("No se puede eliminar un rol base del sistema");
         }
         if (usuarioRepository.countByRol_Id(id) > 0) {
@@ -206,5 +210,19 @@ public class RbacService {
 
     private RolResponse mapRol(Rol rol) {
         return new RolResponse(rol.getId(), rol.getNombre(), rol.getDescripcion());
+    }
+
+    private boolean esRolAdministradorSupremo(Rol rol) {
+        if (rol == null) {
+            return false;
+        }
+        if (rol.getId() != null && rol.getId() == 1) {
+            return true;
+        }
+        if (rol.getNombre() == null) {
+            return false;
+        }
+        String nombre = rol.getNombre().trim().toUpperCase();
+        return "ADMIN".equals(nombre) || "ADMINISTRADOR".equals(nombre);
     }
 }

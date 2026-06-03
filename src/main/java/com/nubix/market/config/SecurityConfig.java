@@ -25,12 +25,15 @@ public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
     private final RbacAuthorizationFilter rbacAuthorizationFilter;
+    private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
 
     public SecurityConfig(
             JwtAuthFilter jwtAuthFilter,
-            RbacAuthorizationFilter rbacAuthorizationFilter) {
+            RbacAuthorizationFilter rbacAuthorizationFilter,
+            JsonAccessDeniedHandler jsonAccessDeniedHandler) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.rbacAuthorizationFilter = rbacAuthorizationFilter;
+        this.jsonAccessDeniedHandler = jsonAccessDeniedHandler;
     }
 
     @Value("${cors.allowed-origins:http://localhost:5173}")
@@ -44,21 +47,29 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/auth/**",
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/admin-login",
+                                "/api/auth/forgot-password",
+                                "/api/auth/verify-code",
+                                "/api/auth/reset-password",
                                 "/api/catalogo/**",
                                 "/uploads/**",
                                 "/error")
                         .permitAll()
+                        .requestMatchers("/api/auth/admin-permisos")
+                        .authenticated()
                         .requestMatchers("/api/permisos", "/api/permisos/**", "/api/roles", "/api/roles/**")
-                        .hasAnyRole("ADMIN", "EMPLEADO", "REPARTIDOR")
+                        .authenticated()
                         .requestMatchers("/api/admin/**")
-                        .hasAnyRole("ADMIN", "EMPLEADO", "REPARTIDOR")
+                        .authenticated()
                         .requestMatchers("/api/ventas/checkout", "/api/carrito/**", "/api/favoritos/**",
                                 "/api/notificaciones/**", "/api/email/**")
                         .hasAnyRole("CLIENTE", "ADMIN", "EMPLEADO")
                         .requestMatchers("/api/media/upload")
-                        .hasAnyRole("ADMIN", "EMPLEADO", "REPARTIDOR")
+                        .authenticated()
                         .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex.accessDeniedHandler(jsonAccessDeniedHandler))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(rbacAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 

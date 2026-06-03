@@ -15,9 +15,13 @@ import java.io.IOException;
 public class RbacAuthorizationFilter extends OncePerRequestFilter {
 
     private final RbacPermissionResolver permissionResolver;
+    private final RbacForbiddenResponseWriter forbiddenResponseWriter;
 
-    public RbacAuthorizationFilter(RbacPermissionResolver permissionResolver) {
+    public RbacAuthorizationFilter(
+            RbacPermissionResolver permissionResolver,
+            RbacForbiddenResponseWriter forbiddenResponseWriter) {
         this.permissionResolver = permissionResolver;
+        this.forbiddenResponseWriter = forbiddenResponseWriter;
     }
 
     @Override
@@ -40,8 +44,7 @@ public class RbacAuthorizationFilter extends OncePerRequestFilter {
             return;
         }
 
-        response.sendError(HttpServletResponse.SC_FORBIDDEN,
-                "No tiene permisos para realizar esta acción");
+        forbiddenResponseWriter.write(response);
     }
 
     private boolean isAdmin(Authentication auth) {

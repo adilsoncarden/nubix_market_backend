@@ -62,6 +62,9 @@ public class RolPermisoController {
             if (e.getMessage().contains("no encontrado")) {
                 return ResponseEntity.notFound().build();
             }
+            if (e.getMessage().contains("Administrador Supremo")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            }
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

@@ -92,6 +92,10 @@ public class RbacPermissionResolver {
             return "gestionar:usuarios";
         }
 
+        if (HttpMethod.GET.matches(method)) {
+            return "ver:dashboard";
+        }
+
         return null;
     }
 }
