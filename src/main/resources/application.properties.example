@@ -1,12 +1,25 @@
 spring.application.name=market-backend
 
-# Configuración de base de datos (usar variables de entorno en producción)
-spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/nubix_market_db?ssl-mode=REQUIRED}
-spring.datasource.username=${DB_USERNAME:root}
+# Supabase PostgreSQL — Transaction Mode (puerto 6543, no usar 5432 en producción)
+spring.datasource.url=${DB_URL:jdbc:postgresql://YOUR_PROJECT.pooler.supabase.com:6543/postgres?sslmode=require}
+spring.datasource.username=${DB_USERNAME:postgres.YOUR_PROJECT_REF}
 spring.datasource.password=${DB_PASSWORD:}
+spring.datasource.driver-class-name=org.postgresql.Driver
 
+# HikariCP — máximo 5 conexiones por instancia JVM (pooler Supavisor suele limitar a 15)
+spring.datasource.hikari.maximum-pool-size=5
+spring.datasource.hikari.minimum-idle=1
+spring.datasource.hikari.connection-timeout=20000
+spring.datasource.hikari.idle-timeout=300000
+spring.datasource.hikari.max-lifetime=600000
+spring.datasource.hikari.pool-name=nubix-market-pool
+spring.datasource.hikari.data-source-properties.prepareThreshold=0
+
+# JPA / Hibernate
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=${SHOW_SQL:false}
+spring.jpa.open-in-view=false
 
 # JWT
 jwt.secret=${JWT_SECRET:NubixMarketClaveSecretaMuyLargaYSegura2026}
