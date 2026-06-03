@@ -1,6 +1,5 @@
 package com.nubix.market.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +23,15 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final RbacAuthorizationFilter rbacAuthorizationFilter;
+
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            RbacAuthorizationFilter rbacAuthorizationFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.rbacAuthorizationFilter = rbacAuthorizationFilter;
+    }
 
     @Value("${cors.allowed-origins:http://localhost:5173}")
     private String allowedOrigins;
@@ -43,15 +49,18 @@ public class SecurityConfig {
                                 "/uploads/**",
                                 "/error")
                         .permitAll()
+                        .requestMatchers("/api/permisos", "/api/permisos/**", "/api/roles", "/api/roles/**")
+                        .hasAnyRole("ADMIN", "EMPLEADO", "REPARTIDOR")
                         .requestMatchers("/api/admin/**")
-                        .hasAnyRole("ADMIN", "EMPLEADO")
+                        .hasAnyRole("ADMIN", "EMPLEADO", "REPARTIDOR")
                         .requestMatchers("/api/ventas/checkout", "/api/carrito/**", "/api/favoritos/**",
                                 "/api/notificaciones/**", "/api/email/**")
                         .hasAnyRole("CLIENTE", "ADMIN", "EMPLEADO")
                         .requestMatchers("/api/media/upload")
-                        .hasAnyRole("ADMIN", "EMPLEADO")
+                        .hasAnyRole("ADMIN", "EMPLEADO", "REPARTIDOR")
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rbacAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

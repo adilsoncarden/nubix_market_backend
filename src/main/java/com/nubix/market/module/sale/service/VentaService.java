@@ -49,10 +49,12 @@ public class VentaService {
     @Autowired
     private CarritoService carritoService;
 
+    @Transactional(readOnly = true)
     public List<Venta> obtenerTodasLasVentas() {
         return ventaRepository.findAllWithRelations();
     }
 
+    @Transactional(readOnly = true)
     public Venta obtenerPorId(Integer id) {
         return ventaRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));

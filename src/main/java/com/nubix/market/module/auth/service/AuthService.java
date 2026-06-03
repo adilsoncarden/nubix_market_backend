@@ -99,7 +99,8 @@ public class AuthService {
         Usuario usuario = usuarioOpt.get();
 
         String rolNombre = usuario.getRol().getNombre();
-        if (!rolNombre.equals("ADMIN") && !rolNombre.equals("EMPLEADO")) {
+        if (!rolNombre.equals("ADMIN") && !rolNombre.equals("EMPLEADO")
+                && !rolNombre.equals("REPARTIDOR")) {
             log.warn("Admin login denegado: usuario {} no es administrativo", usuario.getUsername());
             return new AuthResponse(false, "Acceso denegado: no es un usuario administrativo", null);
         }
