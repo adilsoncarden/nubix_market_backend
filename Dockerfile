@@ -1,5 +1,5 @@
 # Etapa 1: Compilación sin inicializar el contexto de Spring
-FROM maven:3.8.8-eclipse-temurin-17 AS build
+FROM maven:3.8.5-eclipse-temurin-17 AS build
 COPY . .
 # Forzamos a saltar tests y cualquier inicialización de beans en la compilación
 RUN mvn clean package -Dmaven.test.skip=true -Dspring.main.lazy-initialization=true
