@@ -63,8 +63,14 @@ public class SecurityConfig {
                         .authenticated()
                         .requestMatchers("/api/admin/**")
                         .authenticated()
-                        .requestMatchers("/api/ventas/checkout", "/api/carrito/**", "/api/favoritos/**",
-                                "/api/notificaciones/**", "/api/email/**")
+                        .requestMatchers(
+                                "/api/ventas/checkout",
+                                "/api/ventas/mis-pedidos",
+                                "/api/usuarios/perfil",
+                                "/api/carrito/**",
+                                "/api/favoritos/**",
+                                "/api/notificaciones/**",
+                                "/api/email/**")
                         .hasAnyRole("CLIENTE", "ADMIN", "EMPLEADO")
                         .requestMatchers("/api/media/upload")
                         .authenticated()

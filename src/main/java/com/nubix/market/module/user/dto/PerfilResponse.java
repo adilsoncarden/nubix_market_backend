@@ -1,67 +1,17 @@
-package com.nubix.market.module.user.model;
+package com.nubix.market.module.user.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
+public class PerfilResponse {
 
-@Entity
-@Table(name = "usuario")
-public class Usuario {
-    
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(nullable = false, unique = true, length = 50)
     private String username;
-
-
-    @Column(nullable = false, unique = true, length = 100)
     private String email;
-
-    @Column(nullable = false)
-    @JsonIgnore
-    private String password;
-
-
-    @ManyToOne
-    @JoinColumn(name = "rol_id", nullable = false)
-    private Rol rol;
-
-    @Column(length = 20)
+    private String rolNombre;
     private String telefono;
-
-    @Column(length = 255)
     private String direccion;
-
-    @Column(length = 80)
     private String departamento;
-
-    @Column(length = 80)
     private String provincia;
-
-    @Column(length = 80)
     private String distrito;
-
-    @Column(length = 255)
     private String referencia;
-
-    public Usuario() {
-    }
-    
-    public Usuario(String username, String email, String password) {
-        this.username = username;
-        this.email = email;
-        this.password = password;
-    }
-
-    // Getters and Setters
 
     public Integer getId() {
         return id;
@@ -87,20 +37,12 @@ public class Usuario {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getRolNombre() {
+        return rolNombre;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Rol getRol() {
-        return rol;
-    }
-
-    public void setRol(Rol rol) {
-        this.rol = rol;
+    public void setRolNombre(String rolNombre) {
+        this.rolNombre = rolNombre;
     }
 
     public String getTelefono() {
