@@ -11,6 +11,7 @@ import com.nubix.market.module.notification.service.NotificacionService;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
 import com.nubix.market.module.sale.dto.CheckoutRequest;
+import com.nubix.market.module.sale.dto.MisPedidoResponse;
 import com.nubix.market.module.sale.dto.VentaRequest;
 import com.nubix.market.module.sale.model.DetalleVenta;
 import com.nubix.market.module.sale.model.Pago;
@@ -27,8 +28,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class VentaService {
@@ -49,10 +53,12 @@ public class VentaService {
     @Autowired
     private CarritoService carritoService;
 
+    @Transactional(readOnly = true)
     public List<Venta> obtenerTodasLasVentas() {
         return ventaRepository.findAllWithRelations();
     }
 
+    @Transactional(readOnly = true)
     public Venta obtenerPorId(Integer id) {
         return ventaRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
@@ -135,6 +141,63 @@ public class VentaService {
         }
         carritoService.vaciarCarrito(usuarioActual.getId());
         return saved;
+    }
+
+    @Transactional(readOnly = true)
+    public List<MisPedidoResponse> listarMisPedidosWeb(
+            String mes, LocalDate fechaInicio, LocalDate fechaFin) {
+        Usuario usuario = obtenerUsuarioActual();
+        Integer clienteId = usuario.getId();
+        CanalVenta canal = CanalVenta.WEB;
+
+        LocalDate[] rango = resolverRangoMisPedidos(mes, fechaInicio, fechaFin);
+        List<Venta> ventas;
+        if (rango == null) {
+            ventas = ventaRepository.findByClienteIdAndCanalOrderByIdDesc(clienteId, canal);
+        } else {
+            ventas = ventaRepository.findByClienteIdAndCanalAndFechaBetweenOrderByIdDesc(
+                    clienteId, canal, rango[0], rango[1]);
+        }
+
+        return ventas.stream().map(this::toMisPedidoResponse).collect(Collectors.toList());
+    }
+
+    /**
+     * Sin parámetros o con {@code mes=actual}: mes en curso.
+     * {@code mes=todos} / {@code all}: sin filtro de fecha.
+     */
+    private LocalDate[] resolverRangoMisPedidos(String mes, LocalDate fechaInicio, LocalDate fechaFin) {
+        if (fechaInicio != null && fechaFin != null) {
+            return new LocalDate[] {fechaInicio, fechaFin};
+        }
+
+        LocalDate hoy = LocalDate.now();
+        String periodo = (mes == null || mes.isBlank()) ? "actual" : mes.trim().toLowerCase(Locale.ROOT);
+
+        return switch (periodo) {
+            case "todos", "all", "completo" -> null;
+            case "trimestre", "quarter" -> new LocalDate[] {hoy.withDayOfMonth(1).minusMonths(2), hoy};
+            case "anio", "year" -> new LocalDate[] {
+                LocalDate.of(hoy.getYear(), 1, 1), LocalDate.of(hoy.getYear(), 12, 31)
+            };
+            case "actual", "month", "mes" -> new LocalDate[] {
+                hoy.withDayOfMonth(1), hoy.withDayOfMonth(hoy.lengthOfMonth())
+            };
+            default -> new LocalDate[] {hoy.withDayOfMonth(1), hoy.withDayOfMonth(hoy.lengthOfMonth())};
+        };
+    }
+
+    private MisPedidoResponse toMisPedidoResponse(Venta venta) {
+        MisPedidoResponse dto = new MisPedidoResponse();
+        dto.setId(venta.getId());
+        dto.setFecha(venta.getFecha());
+        dto.setEstado(venta.getEstadoPedido());
+        dto.setEstadoPago(venta.getEstadoPago());
+        dto.setTotal(venta.getTotal());
+        dto.setTipoEntrega(venta.getTipoEntrega());
+        dto.setCodigoRecojo(venta.getCodigoRecojo());
+        dto.setCanal(venta.getCanal());
+        return dto;
     }
 
     @Transactional

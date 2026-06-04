@@ -80,7 +80,7 @@ public class UsuarioController {
     @PostMapping("/empleados/{id}/update")
     public ResponseEntity<?> updateEmpleadoAdmin(@PathVariable Integer id, @RequestBody UsuarioRequest request) {
         try {
-            Usuario actualizado = usuarioService.actualizar(id, request);
+            Usuario actualizado = usuarioService.actualizarEmpleado(id, request);
             return ResponseEntity.ok(mapToResponse(actualizado));
         } catch (RuntimeException e) {
             if (e.getMessage().equals("Usuario no encontrado")) {

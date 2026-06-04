@@ -1,6 +1,5 @@
 package com.nubix.market.config;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +23,18 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthFilter jwtAuthFilter;
+    private final JwtAuthFilter jwtAuthFilter;
+    private final RbacAuthorizationFilter rbacAuthorizationFilter;
+    private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
+
+    public SecurityConfig(
+            JwtAuthFilter jwtAuthFilter,
+            RbacAuthorizationFilter rbacAuthorizationFilter,
+            JsonAccessDeniedHandler jsonAccessDeniedHandler) {
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.rbacAuthorizationFilter = rbacAuthorizationFilter;
+        this.jsonAccessDeniedHandler = jsonAccessDeniedHandler;
+    }
 
     @Value("${cors.allowed-origins:http://localhost:5173}")
     private String allowedOrigins;
@@ -38,20 +47,37 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/api/auth/**",
+                                "/api/auth/register",
+                                "/api/auth/login",
+                                "/api/auth/admin-login",
+                                "/api/auth/forgot-password",
+                                "/api/auth/verify-code",
+                                "/api/auth/reset-password",
                                 "/api/catalogo/**",
                                 "/uploads/**",
                                 "/error")
                         .permitAll()
+                        .requestMatchers("/api/auth/admin-permisos")
+                        .authenticated()
+                        .requestMatchers("/api/permisos", "/api/permisos/**", "/api/roles", "/api/roles/**")
+                        .authenticated()
                         .requestMatchers("/api/admin/**")
-                        .hasAnyRole("ADMIN", "EMPLEADO")
-                        .requestMatchers("/api/ventas/checkout", "/api/carrito/**", "/api/favoritos/**",
-                                "/api/notificaciones/**", "/api/email/**")
+                        .authenticated()
+                        .requestMatchers(
+                                "/api/ventas/checkout",
+                                "/api/ventas/mis-pedidos",
+                                "/api/usuarios/perfil",
+                                "/api/carrito/**",
+                                "/api/favoritos/**",
+                                "/api/notificaciones/**",
+                                "/api/email/**")
                         .hasAnyRole("CLIENTE", "ADMIN", "EMPLEADO")
                         .requestMatchers("/api/media/upload")
-                        .hasAnyRole("ADMIN", "EMPLEADO")
+                        .authenticated()
                         .anyRequest().authenticated())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .exceptionHandling(ex -> ex.accessDeniedHandler(jsonAccessDeniedHandler))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rbacAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

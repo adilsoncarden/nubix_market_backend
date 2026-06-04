@@ -5,6 +5,7 @@ public class UsuarioRequest {
     private String email;
     private String password;
     private Integer rolId;
+    private String rolNombre;
 
     public String getUsername() {
         return username;
@@ -36,5 +37,13 @@ public class UsuarioRequest {
 
     public void setRolId(Integer rolId) {
         this.rolId = rolId;
+    }
+
+    public String getRolNombre() {
+        return rolNombre;
+    }
+
+    public void setRolNombre(String rolNombre) {
+        this.rolNombre = rolNombre;
     }
 }

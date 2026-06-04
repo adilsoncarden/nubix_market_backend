@@ -1,5 +1,8 @@
 package com.nubix.market.module.auth.dto;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AuthResponse {
     private boolean success;
     private String message;
@@ -7,6 +10,7 @@ public class AuthResponse {
     private String username;
     private String token;
     private String rol;
+    private List<String> permisos = new ArrayList<>();
 
     public AuthResponse(boolean success, String message, String username) {
         this(success, message, null, username, null, null);
@@ -71,5 +75,13 @@ public class AuthResponse {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+
+    public List<String> getPermisos() {
+        return permisos;
+    }
+
+    public void setPermisos(List<String> permisos) {
+        this.permisos = permisos != null ? permisos : new ArrayList<>();
     }
 }
