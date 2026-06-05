@@ -10,4 +10,4 @@ COPY --from=build /target/*.jar app.jar
 EXPOSE 8080
 
 # Nos aseguramos de pasar el puerto dinámico de Render al arrancar
-ENTRYPOINT exec java -Dserver.port=${PORT:-8080} -jar app.jar
+ENTRYPOINT exec java -Dserver.port=$PORT -jar app.jar
