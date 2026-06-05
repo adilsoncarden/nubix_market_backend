@@ -1,13 +1,12 @@
-# Etapa 1: Compilación sin inicializar el contexto de Spring
+# Etapa 1: Compilación
 FROM maven:3.8.5-eclipse-temurin-17 AS build
 COPY . .
-# Forzamos a saltar tests y cualquier inicialización de beans en la compilación
 RUN mvn clean package -Dmaven.test.skip=true -Dspring.main.lazy-initialization=true
 
-# Etapa 2: Ejecución (Aquí es donde Render inyectará tus variables)
+# Etapa 2: Ejecución
 FROM eclipse-temurin:17-jdk-alpine
 COPY --from=build /target/*.jar app.jar
 EXPOSE 8080
 
-# Nos aseguramos de pasar el puerto dinámico de Render al arrancar
-ENTRYPOINT exec java -Dserver.port=$PORT -jar app.jar
+# Usamos el formato limpio que usaste en Neon
+ENTRYPOINT ["java", "-jar", "app.jar"]
