@@ -40,7 +40,7 @@ public class ProductoService {
     }
 
     public Optional<Producto> obtenerPorId(Integer id) {
-        return productoRepository.findById(id);
+        return productoRepository.findByIdWithRelations(id);
     }
 
     public Producto guardar(ProductoRequest request) {

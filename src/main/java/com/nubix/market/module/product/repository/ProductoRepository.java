@@ -3,6 +3,7 @@ package com.nubix.market.module.product.repository;
 import java.util.List;
 import java.util.Optional;
 import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -20,6 +21,11 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
     @Query("SELECT p FROM Producto p WHERE p.id = :id")
     Optional<Producto> findByIdForUpdate(@Param("id") Integer id);
 
-    @Query("SELECT DISTINCT p FROM Producto p LEFT JOIN FETCH p.imagen LEFT JOIN FETCH p.categoria")
+    @EntityGraph(attributePaths = {"imagen", "categoria"})
+    @Query("SELECT p FROM Producto p ORDER BY p.id ASC")
     List<Producto> findAllWithImagen();
+
+    @EntityGraph(attributePaths = {"imagen", "categoria"})
+    @Query("SELECT p FROM Producto p WHERE p.id = :id")
+    Optional<Producto> findByIdWithRelations(@Param("id") Integer id);
 }

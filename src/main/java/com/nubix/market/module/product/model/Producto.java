@@ -30,11 +30,11 @@ public class Producto {
     @Column(nullable = false)
     private Integer stock;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_imagen")
     private ProductoImagen imagen;
 
