@@ -1,14 +1,14 @@
-# Usamos una imagen ligera de Java solo para correr la aplicación
-FROM eclipse-temurin:17-jre 
-
-# Creamos el directorio de trabajo
+# Etapa 1: Construcción
+FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
+# Actualizamos e instalamos Maven dentro de la infraestructura de Render
+RUN apt-get update && apt-get install -y maven
+COPY . .
+RUN mvn clean package -DskipTests
 
-# Copiamos el archivo JAR que ya compilaste en tu máquina local
-COPY target/*.jar app.jar
-
-# Exponemos el puerto
+# Etapa 2: Ejecución
+FROM eclipse-temurin:17-jre 
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-
-# Comando para arrancar el backend
 ENTRYPOINT ["java", "-jar", "app.jar"]
