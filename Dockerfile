@@ -1,12 +1,14 @@
-# Etapa 1: Compilación
-FROM maven:3.8.5-eclipse-temurin-17 AS build
-COPY . .
-RUN mvn clean package -Dmaven.test.skip=true -Dspring.main.lazy-initialization=true
+# Usamos una imagen ligera de Java solo para correr la aplicación
+FROM eclipse-temurin:17-jre 
 
-# Etapa 2: Ejecución
-FROM eclipse-temurin:17-jdk-alpine
-COPY --from=build /target/*.jar app.jar
+# Creamos el directorio de trabajo
+WORKDIR /app
+
+# Copiamos el archivo JAR que ya compilaste en tu máquina local
+COPY target/*.jar app.jar
+
+# Exponemos el puerto
 EXPOSE 8080
 
-# Usamos el formato limpio que usaste en Neon
+# Comando para arrancar el backend
 ENTRYPOINT ["java", "-jar", "app.jar"]
