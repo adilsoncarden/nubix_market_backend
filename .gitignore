@@ -23,7 +23,6 @@
 target/
 
 # === CONFIGURACIÓN SENSIBLE (Spring Boot) ===
-application.properties
 application.yml
 
 # === IDEs (IntelliJ, VS Code) ===
