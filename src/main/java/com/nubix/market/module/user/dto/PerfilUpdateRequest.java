@@ -11,6 +11,8 @@ public class PerfilUpdateRequest {
     private Double latitud;
     private Double longitud;
     private String googlePlaceId;
+    private String dniRuc;
+    private String nombreRazonSocial;
 
     public String getTelefono() {
         return telefono;
@@ -82,5 +84,21 @@ public class PerfilUpdateRequest {
 
     public void setGooglePlaceId(String googlePlaceId) {
         this.googlePlaceId = googlePlaceId;
+    }
+
+    public String getDniRuc() {
+        return dniRuc;
+    }
+
+    public void setDniRuc(String dniRuc) {
+        this.dniRuc = dniRuc;
+    }
+
+    public String getNombreRazonSocial() {
+        return nombreRazonSocial;
+    }
+
+    public void setNombreRazonSocial(String nombreRazonSocial) {
+        this.nombreRazonSocial = nombreRazonSocial;
     }
 }

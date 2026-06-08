@@ -51,6 +51,12 @@ public class UsuarioPerfilService {
         if (request.getGooglePlaceId() != null) {
             usuario.setGooglePlaceId(blankToNull(request.getGooglePlaceId()));
         }
+        if (request.getDniRuc() != null) {
+            usuario.setDniRuc(blankToNull(request.getDniRuc()));
+        }
+        if (request.getNombreRazonSocial() != null) {
+            usuario.setNombreRazonSocial(blankToNull(request.getNombreRazonSocial()));
+        }
         return toResponse(usuarioRepository.save(usuario));
     }
 
@@ -78,6 +84,8 @@ public class UsuarioPerfilService {
         r.setLatitud(usuario.getLatitud());
         r.setLongitud(usuario.getLongitud());
         r.setGooglePlaceId(usuario.getGooglePlaceId());
+        r.setDniRuc(usuario.getDniRuc());
+        r.setNombreRazonSocial(usuario.getNombreRazonSocial());
         if (usuario.getRol() != null) {
             r.setRolNombre(usuario.getRol().getNombre());
         }

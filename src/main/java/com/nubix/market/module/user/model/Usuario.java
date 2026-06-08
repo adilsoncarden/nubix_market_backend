@@ -61,6 +61,12 @@ public class Usuario {
     @Column(name = "google_place_id", length = 255)
     private String googlePlaceId;
 
+    @Column(name = "dni_ruc", length = 11)
+    private String dniRuc;
+
+    @Column(name = "nombre_razon_social", length = 255)
+    private String nombreRazonSocial;
+
     public Usuario() {
     }
     
@@ -182,5 +188,21 @@ public class Usuario {
 
     public void setGooglePlaceId(String googlePlaceId) {
         this.googlePlaceId = googlePlaceId;
+    }
+
+    public String getDniRuc() {
+        return dniRuc;
+    }
+
+    public void setDniRuc(String dniRuc) {
+        this.dniRuc = dniRuc;
+    }
+
+    public String getNombreRazonSocial() {
+        return nombreRazonSocial;
+    }
+
+    public void setNombreRazonSocial(String nombreRazonSocial) {
+        this.nombreRazonSocial = nombreRazonSocial;
     }
 }
