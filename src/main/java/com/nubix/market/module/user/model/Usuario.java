@@ -52,6 +52,21 @@ public class Usuario {
     @Column(length = 255)
     private String referencia;
 
+    @Column
+    private Double latitud;
+
+    @Column
+    private Double longitud;
+
+    @Column(name = "google_place_id", length = 255)
+    private String googlePlaceId;
+
+    @Column(name = "dni_ruc", length = 11)
+    private String dniRuc;
+
+    @Column(name = "nombre_razon_social", length = 255)
+    private String nombreRazonSocial;
+
     public Usuario() {
     }
     
@@ -149,5 +164,45 @@ public class Usuario {
 
     public void setReferencia(String referencia) {
         this.referencia = referencia;
+    }
+
+    public Double getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(Double latitud) {
+        this.latitud = latitud;
+    }
+
+    public Double getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(Double longitud) {
+        this.longitud = longitud;
+    }
+
+    public String getGooglePlaceId() {
+        return googlePlaceId;
+    }
+
+    public void setGooglePlaceId(String googlePlaceId) {
+        this.googlePlaceId = googlePlaceId;
+    }
+
+    public String getDniRuc() {
+        return dniRuc;
+    }
+
+    public void setDniRuc(String dniRuc) {
+        this.dniRuc = dniRuc;
+    }
+
+    public String getNombreRazonSocial() {
+        return nombreRazonSocial;
+    }
+
+    public void setNombreRazonSocial(String nombreRazonSocial) {
+        this.nombreRazonSocial = nombreRazonSocial;
     }
 }

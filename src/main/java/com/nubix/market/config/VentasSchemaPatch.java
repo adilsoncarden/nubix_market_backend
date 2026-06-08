@@ -33,14 +33,14 @@ public class VentasSchemaPatch implements ApplicationRunner {
         try {
             String nullable = jdbcTemplate.queryForObject(
                     """
-                            SELECT IS_NULLABLE FROM information_schema.COLUMNS
-                            WHERE TABLE_SCHEMA = DATABASE()
-                              AND TABLE_NAME = 'ventas'
-                              AND COLUMN_NAME = 'cliente_id'
+                            SELECT is_nullable FROM information_schema.columns
+                            WHERE table_schema = current_schema()
+                              AND table_name = 'ventas'
+                              AND column_name = 'cliente_id'
                             """,
                     String.class);
             if ("NO".equalsIgnoreCase(nullable)) {
-                jdbcTemplate.execute("ALTER TABLE ventas MODIFY cliente_id INT NULL");
+                jdbcTemplate.execute("ALTER TABLE ventas ALTER COLUMN cliente_id DROP NOT NULL");
                 log.info("ventas.cliente_id: ahora permite NULL");
             }
         } catch (Exception e) {
@@ -50,23 +50,26 @@ public class VentasSchemaPatch implements ApplicationRunner {
 
     private void patchEstadoPago(String tableName) {
         try {
-            String columnType = jdbcTemplate.queryForObject(
+            String dataType = jdbcTemplate.queryForObject(
                     """
-                            SELECT COLUMN_TYPE FROM information_schema.COLUMNS
-                            WHERE TABLE_SCHEMA = DATABASE()
-                              AND TABLE_NAME = ?
-                              AND COLUMN_NAME = 'estado_pago'
+                            SELECT data_type FROM information_schema.columns
+                            WHERE table_schema = current_schema()
+                              AND table_name = ?
+                              AND column_name = 'estado_pago'
                             """,
                     String.class,
                     tableName);
-            if (columnType == null) {
+            if (dataType == null) {
                 return;
             }
-            if (columnType.toLowerCase().startsWith("enum")) {
+            if ("USER-DEFINED".equalsIgnoreCase(dataType)) {
                 jdbcTemplate.execute(
-                        "UPDATE " + tableName + " SET estado_pago = 'RECHAZADO' WHERE estado_pago = 'CANCELADO'");
+                        "UPDATE " + tableName + " SET estado_pago = 'RECHAZADO' WHERE estado_pago::text = 'CANCELADO'");
                 jdbcTemplate.execute(
-                        "ALTER TABLE " + tableName + " MODIFY estado_pago VARCHAR(20) NOT NULL");
+                        "ALTER TABLE " + tableName
+                                + " ALTER COLUMN estado_pago TYPE VARCHAR(20) USING estado_pago::text");
+                jdbcTemplate.execute(
+                        "ALTER TABLE " + tableName + " ALTER COLUMN estado_pago SET NOT NULL");
                 log.info("{}.estado_pago: ENUM migrado a VARCHAR(20)", tableName);
             }
         } catch (Exception e) {

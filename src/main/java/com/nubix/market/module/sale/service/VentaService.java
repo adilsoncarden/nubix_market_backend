@@ -55,7 +55,7 @@ public class VentaService {
 
     @Transactional(readOnly = true)
     public List<Venta> obtenerTodasLasVentas() {
-        return ventaRepository.findAllWithRelations();
+        return ventaRepository.findAllForList();
     }
 
     @Transactional(readOnly = true)
