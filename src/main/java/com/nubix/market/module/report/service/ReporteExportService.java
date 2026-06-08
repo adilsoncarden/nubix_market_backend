@@ -58,7 +58,7 @@ public class ReporteExportService {
             Boolean stockBajo,
             Double precioMin,
             Double precioMax) {
-        List<Producto> productos = productoRepository.findAllWithImagen();
+        List<Producto> productos = productoRepository.findAllWithCategoria();
         if (categoriaId != null) {
             productos = productos.stream()
                     .filter(p -> p.getCategoria() != null

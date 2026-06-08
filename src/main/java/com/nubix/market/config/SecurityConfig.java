@@ -54,7 +54,6 @@ public class SecurityConfig {
                                 "/api/auth/verify-code",
                                 "/api/auth/reset-password",
                                 "/api/catalogo/**",
-                                "/uploads/**",
                                 "/error")
                         .permitAll()
                         .requestMatchers("/api/auth/admin-permisos")
@@ -72,8 +71,6 @@ public class SecurityConfig {
                                 "/api/notificaciones/**",
                                 "/api/email/**")
                         .hasAnyRole("CLIENTE", "ADMIN", "EMPLEADO")
-                        .requestMatchers("/api/media/upload")
-                        .authenticated()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex.accessDeniedHandler(jsonAccessDeniedHandler))
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)

@@ -7,7 +7,7 @@ public class ProductoRequest {
 
     @JsonProperty("categoria_id")
     @JsonAlias("categoriaId")
-    private Integer categoriaId; // solo pedimos el ID de la categoría
+    private Integer categoriaId;
     private String codigo;
     private String nombre;
     private String descripcion;
@@ -18,11 +18,9 @@ public class ProductoRequest {
     @JsonAlias("precioVenta")
     private Double precioVenta;
     private Integer stock;
-    @JsonProperty("id_imagen")
-    @JsonAlias("imagenId")
-    private Integer imagenId;
-
-    // getters and setters
+    @JsonProperty("url_imagen")
+    @JsonAlias("urlImagen")
+    private String urlImagen;
 
     public Integer getCategoriaId() {
         return categoriaId;
@@ -80,11 +78,11 @@ public class ProductoRequest {
         this.stock = stock;
     }
 
-    public Integer getImagenId() {
-        return imagenId;
+    public String getUrlImagen() {
+        return urlImagen;
     }
 
-    public void setImagenId(Integer imagenId) {
-        this.imagenId = imagenId;
+    public void setUrlImagen(String urlImagen) {
+        this.urlImagen = urlImagen;
     }
 }

@@ -30,7 +30,7 @@ public class RbacPermissionResolver {
             if (uri.contains("/create")) {
                 return "crear:productos";
             }
-            if (uri.contains("/update") || uri.contains("/imagen")) {
+            if (uri.contains("/update")) {
                 return "editar:productos";
             }
             if (uri.contains("/delete")) {

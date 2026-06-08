@@ -9,7 +9,7 @@ public class ProductoResponse {
     private Double precioVenta;
     private Integer stock;
     private String categoriaNombre;
-    private ImagenDTO imagen;
+    private String urlImagen;
 
     public ProductoResponse(Integer id, String codigo, String nombre, String descripcion,
             Double precioCompra, Double precioVenta, Integer stock, String categoriaNombre) {
@@ -23,7 +23,6 @@ public class ProductoResponse {
         this.categoriaNombre = categoriaNombre;
     }
 
-    // Getters y Setters
     public Integer getId() {
         return id;
     }
@@ -88,30 +87,11 @@ public class ProductoResponse {
         this.categoriaNombre = categoriaNombre;
     }
 
-    public ImagenDTO getImagen() {
-        return imagen;
+    public String getUrlImagen() {
+        return urlImagen;
     }
 
-    public void setImagen(ImagenDTO imagen) {
-        this.imagen = imagen;
-    }
-
-    // Sub-DTO para imágenes
-    public static class ImagenDTO {
-        private Integer id;
-        private String archivo;
-
-        public ImagenDTO(Integer id, String archivo) {
-            this.id = id;
-            this.archivo = archivo;
-        }
-
-        public Integer getId() {
-            return id;
-        }
-
-        public String getArchivo() {
-            return archivo;
-        }
+    public void setUrlImagen(String urlImagen) {
+        this.urlImagen = urlImagen;
     }
 }

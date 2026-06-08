@@ -21,11 +21,11 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
     @Query("SELECT p FROM Producto p WHERE p.id = :id")
     Optional<Producto> findByIdForUpdate(@Param("id") Integer id);
 
-    @EntityGraph(attributePaths = {"imagen", "categoria"})
+    @EntityGraph(attributePaths = {"categoria"})
     @Query("SELECT p FROM Producto p ORDER BY p.id ASC")
-    List<Producto> findAllWithImagen();
+    List<Producto> findAllWithCategoria();
 
-    @EntityGraph(attributePaths = {"imagen", "categoria"})
+    @EntityGraph(attributePaths = {"categoria"})
     @Query("SELECT p FROM Producto p WHERE p.id = :id")
     Optional<Producto> findByIdWithRelations(@Param("id") Integer id);
 }

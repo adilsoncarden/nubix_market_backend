@@ -8,7 +8,7 @@ public class ProductoPublicResponse {
     private Double precioVenta;
     private Integer stock;
     private String categoriaNombre;
-    private ProductoResponse.ImagenDTO imagen;
+    private String urlImagen;
 
     public ProductoPublicResponse(Integer id, String codigo, String nombre, String descripcion,
             Double precioVenta, Integer stock, String categoriaNombre) {
@@ -77,11 +77,11 @@ public class ProductoPublicResponse {
         this.categoriaNombre = categoriaNombre;
     }
 
-    public ProductoResponse.ImagenDTO getImagen() {
-        return imagen;
+    public String getUrlImagen() {
+        return urlImagen;
     }
 
-    public void setImagen(ProductoResponse.ImagenDTO imagen) {
-        this.imagen = imagen;
+    public void setUrlImagen(String urlImagen) {
+        this.urlImagen = urlImagen;
     }
 }

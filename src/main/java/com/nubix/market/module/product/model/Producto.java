@@ -1,7 +1,6 @@
 package com.nubix.market.module.product.model;
 
 import com.nubix.market.module.category.model.Categoria;
-import com.nubix.market.module.media.model.ProductoImagen;
 import jakarta.persistence.*;
 
 @Entity
@@ -34,14 +33,12 @@ public class Producto {
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_imagen")
-    private ProductoImagen imagen;
+    @Column(name = "url_imagen")
+    private String urlImagen;
 
     public Producto() {
     }
 
-    // Getters and Setters
     public Integer getId() {
         return id;
     }
@@ -106,11 +103,11 @@ public class Producto {
         this.categoria = categoria;
     }
 
-    public ProductoImagen getImagen() {
-        return imagen;
+    public String getUrlImagen() {
+        return urlImagen;
     }
 
-    public void setImagen(ProductoImagen imagen) {
-        this.imagen = imagen;
+    public void setUrlImagen(String urlImagen) {
+        this.urlImagen = urlImagen;
     }
 }

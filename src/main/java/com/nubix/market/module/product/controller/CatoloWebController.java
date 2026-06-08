@@ -2,10 +2,8 @@ package com.nubix.market.module.product.controller;
 
 import com.nubix.market.module.category.dto.CategoriaResponse;
 import com.nubix.market.module.category.service.CategoriaService;
-import com.nubix.market.module.media.model.ProductoImagen;
 import com.nubix.market.module.product.dto.ProductoPublicResponse;
-import com.nubix.market.module.product.dto.ProductoResponse;
-import com.nubix.market.module.product.model.Producto;
+import com.nubix.market.module.product.mapper.ProductoMapper;
 import com.nubix.market.module.product.service.ProductoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,28 +20,15 @@ public class CatoloWebController {
 
     @Autowired
     private ProductoService productoService;
-
     @Autowired
     private CategoriaService categoriaService;
-
-    private ProductoPublicResponse mapToPublicResponse(Producto producto) {
-        ProductoPublicResponse response = new ProductoPublicResponse(
-                producto.getId(), producto.getCodigo(),
-                producto.getNombre(), producto.getDescripcion(),
-                producto.getPrecioVenta(), producto.getStock(),
-                producto.getCategoria().getNombre());
-
-        ProductoImagen imagen = producto.getImagen();
-        if (imagen != null) {
-            response.setImagen(new ProductoResponse.ImagenDTO(imagen.getId(), imagen.getArchivo()));
-        }
-        return response;
-    }
+    @Autowired
+    private ProductoMapper productoMapper;
 
     @GetMapping("/productos")
     public ResponseEntity<List<ProductoPublicResponse>> listarProductos() {
         List<ProductoPublicResponse> productos = productoService.obtenerTodos().stream()
-                .map(this::mapToPublicResponse)
+                .map(productoMapper::toPublicResponse)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(productos);
     }
@@ -51,7 +36,7 @@ public class CatoloWebController {
     @GetMapping("/productos/{id}")
     public ResponseEntity<ProductoPublicResponse> obtenerProducto(@PathVariable Integer id) {
         return productoService.obtenerPorId(id)
-                .map(this::mapToPublicResponse)
+                .map(productoMapper::toPublicResponse)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

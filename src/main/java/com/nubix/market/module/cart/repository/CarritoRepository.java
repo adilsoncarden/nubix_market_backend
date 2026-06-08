@@ -16,7 +16,6 @@ public interface CarritoRepository extends JpaRepository<Carrito, Integer> {
             SELECT DISTINCT c FROM Carrito c
             LEFT JOIN FETCH c.items i
             LEFT JOIN FETCH i.producto p
-            LEFT JOIN FETCH p.imagen
             LEFT JOIN FETCH p.categoria
             WHERE c.usuario.id = :usuarioId
             """)

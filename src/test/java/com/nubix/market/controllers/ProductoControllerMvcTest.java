@@ -1,6 +1,7 @@
 package com.nubix.market.controllers;
 
 import com.nubix.market.module.product.controller.ProductoController;
+import com.nubix.market.module.product.mapper.ProductoMapper;
 import com.nubix.market.module.product.service.ProductoService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -24,6 +25,9 @@ class ProductoControllerMvcTest {
 
     @Mock
     private ProductoService productoService;
+
+    @Mock
+    private ProductoMapper productoMapper;
 
     @InjectMocks
     private ProductoController productoController;
