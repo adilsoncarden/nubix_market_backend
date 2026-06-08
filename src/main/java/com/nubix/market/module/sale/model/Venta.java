@@ -1,6 +1,8 @@
 package com.nubix.market.module.sale.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.nubix.market.common.jackson.JsonViews;
 import com.nubix.market.enums.CanalVenta;
 import com.nubix.market.enums.EstadoPago;
 import com.nubix.market.enums.EstadoPedido;
@@ -13,6 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonView(JsonViews.List.class)
 @Entity
 @Table(name = "ventas")
 public class Venta {
@@ -86,12 +89,12 @@ public class Venta {
 
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = true)
-    @JsonIgnoreProperties({ "venta", "hibernateLazyInitializer", "handler", "password" })
+    @JsonIgnoreProperties({ "venta", "hibernateLazyInitializer", "handler", "password", "rol" })
     private Usuario cliente;
 
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = true)
-    @JsonIgnoreProperties({ "venta", "hibernateLazyInitializer", "handler", "password" })
+    @JsonIgnoreProperties({ "venta", "hibernateLazyInitializer", "handler", "password", "rol" })
     private Usuario vendedor;
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -285,6 +288,7 @@ public class Venta {
         this.vendedor = vendedor;
     }
 
+    @JsonView(JsonViews.Detail.class)
     public List<DetalleVenta> getDetalles() {
         return detalles;
     }

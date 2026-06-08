@@ -1,5 +1,7 @@
 package com.nubix.market.module.sale.controller;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.nubix.market.common.jackson.JsonViews;
 import com.nubix.market.enums.EstadoPedido;
 import com.nubix.market.module.sale.dto.VentaRequest;
 import com.nubix.market.module.sale.model.Venta;
@@ -16,11 +18,13 @@ public class VentaController {
     @Autowired
     private VentaService ventaService;
 
+    @JsonView(JsonViews.List.class)
     @GetMapping("/ventas")
     public ResponseEntity<List<Venta>> obtenerTodasLasVentas() {
         return ResponseEntity.ok(ventaService.obtenerTodasLasVentas());
     }
 
+    @JsonView(JsonViews.Detail.class)
     @GetMapping("/ventas/{id}")
     public ResponseEntity<?> obtenerVenta(@PathVariable Integer id) {
         try {

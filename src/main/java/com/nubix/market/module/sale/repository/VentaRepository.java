@@ -27,6 +27,14 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
 
     @Query("""
             SELECT DISTINCT v FROM Venta v
+            LEFT JOIN FETCH v.cliente
+            LEFT JOIN FETCH v.vendedor
+            ORDER BY v.id DESC
+            """)
+    List<Venta> findAllForList();
+
+    @Query("""
+            SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.detalles d
             LEFT JOIN FETCH d.producto
             LEFT JOIN FETCH v.cliente
