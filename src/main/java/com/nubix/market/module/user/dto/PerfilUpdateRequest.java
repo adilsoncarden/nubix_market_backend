@@ -8,6 +8,9 @@ public class PerfilUpdateRequest {
     private String provincia;
     private String distrito;
     private String referencia;
+    private Double latitud;
+    private Double longitud;
+    private String googlePlaceId;
 
     public String getTelefono() {
         return telefono;
@@ -55,5 +58,29 @@ public class PerfilUpdateRequest {
 
     public void setReferencia(String referencia) {
         this.referencia = referencia;
+    }
+
+    public Double getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(Double latitud) {
+        this.latitud = latitud;
+    }
+
+    public Double getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(Double longitud) {
+        this.longitud = longitud;
+    }
+
+    public String getGooglePlaceId() {
+        return googlePlaceId;
+    }
+
+    public void setGooglePlaceId(String googlePlaceId) {
+        this.googlePlaceId = googlePlaceId;
     }
 }

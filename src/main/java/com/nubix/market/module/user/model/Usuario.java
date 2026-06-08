@@ -52,6 +52,15 @@ public class Usuario {
     @Column(length = 255)
     private String referencia;
 
+    @Column
+    private Double latitud;
+
+    @Column
+    private Double longitud;
+
+    @Column(name = "google_place_id", length = 255)
+    private String googlePlaceId;
+
     public Usuario() {
     }
     
@@ -149,5 +158,29 @@ public class Usuario {
 
     public void setReferencia(String referencia) {
         this.referencia = referencia;
+    }
+
+    public Double getLatitud() {
+        return latitud;
+    }
+
+    public void setLatitud(Double latitud) {
+        this.latitud = latitud;
+    }
+
+    public Double getLongitud() {
+        return longitud;
+    }
+
+    public void setLongitud(Double longitud) {
+        this.longitud = longitud;
+    }
+
+    public String getGooglePlaceId() {
+        return googlePlaceId;
+    }
+
+    public void setGooglePlaceId(String googlePlaceId) {
+        this.googlePlaceId = googlePlaceId;
     }
 }

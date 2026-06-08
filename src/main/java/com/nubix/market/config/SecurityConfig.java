@@ -66,6 +66,7 @@ public class SecurityConfig {
                                 "/api/ventas/checkout",
                                 "/api/ventas/mis-pedidos",
                                 "/api/usuarios/perfil",
+                                "/api/config/google-maps-key",
                                 "/api/carrito/**",
                                 "/api/favoritos/**",
                                 "/api/notificaciones/**",
