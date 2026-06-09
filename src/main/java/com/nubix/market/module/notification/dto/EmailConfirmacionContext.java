@@ -1,15 +1,13 @@
-package com.nubix.market.module.auth.dto;
+package com.nubix.market.module.notification.dto;
 
-import com.nubix.market.module.notification.dto.EmailProductoLinea;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmailConfirmacionRequest {
+public class EmailConfirmacionContext {
 
     private String email;
-    private Integer ventaId;
     private String numero;
-    private String tipo;
+    private String tipoComprobante;
     private String codigoRecojo;
     private Double subtotal;
     private Double igv;
@@ -25,14 +23,6 @@ public class EmailConfirmacionRequest {
         this.email = email;
     }
 
-    public Integer getVentaId() {
-        return ventaId;
-    }
-
-    public void setVentaId(Integer ventaId) {
-        this.ventaId = ventaId;
-    }
-
     public String getNumero() {
         return numero;
     }
@@ -41,12 +31,12 @@ public class EmailConfirmacionRequest {
         this.numero = numero;
     }
 
-    public String getTipo() {
-        return tipo;
+    public String getTipoComprobante() {
+        return tipoComprobante;
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setTipoComprobante(String tipoComprobante) {
+        this.tipoComprobante = tipoComprobante;
     }
 
     public String getCodigoRecojo() {
