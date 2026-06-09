@@ -2,6 +2,7 @@ package com.nubix.market.exception;
 
 import com.nubix.market.config.ApiErrorResponse;
 import com.nubix.market.module.auth.AuthMessages;
+import com.nubix.market.module.auth.exception.PasswordResetCodeException;
 import java.util.HashMap;
 import java.util.Map;
 import org.hibernate.LazyInitializationException;
@@ -60,6 +61,14 @@ public class GlobalExceptionHandler {
                 .body(Map.of(
                         "message",
                         "Error al cargar los datos de la cuenta. Inténtelo de nuevo o contacte al administrador."));
+    }
+
+    @ExceptionHandler(PasswordResetCodeException.class)
+    public ResponseEntity<Map<String, String>> handlePasswordResetCode(
+            PasswordResetCodeException ex) {
+        log.warn("Validación de recuperación de contraseña: {}", ex.getErrorCode());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("code", ex.getErrorCode(), "message", ex.getMessage()));
     }
 
     @ExceptionHandler(RuntimeException.class)

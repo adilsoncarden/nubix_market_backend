@@ -1,5 +1,8 @@
 package com.nubix.market.module.product.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.nubix.market.common.jackson.JsonViews;
 import com.nubix.market.module.category.model.Categoria;
 import jakarta.persistence.*;
 
@@ -39,6 +42,7 @@ public class Producto {
     public Producto() {
     }
 
+    @JsonView(JsonViews.Detail.class)
     public Integer getId() {
         return id;
     }
@@ -47,6 +51,7 @@ public class Producto {
         this.id = id;
     }
 
+    @JsonView(JsonViews.Detail.class)
     public String getCodigo() {
         return codigo;
     }
@@ -55,6 +60,7 @@ public class Producto {
         this.codigo = codigo;
     }
 
+    @JsonView(JsonViews.Detail.class)
     public String getNombre() {
         return nombre;
     }
@@ -79,6 +85,7 @@ public class Producto {
         this.precioCompra = precioCompra;
     }
 
+    @JsonView(JsonViews.Detail.class)
     public Double getPrecioVenta() {
         return precioVenta;
     }
@@ -95,6 +102,7 @@ public class Producto {
         this.stock = stock;
     }
 
+    @JsonIgnore
     public Categoria getCategoria() {
         return categoria;
     }

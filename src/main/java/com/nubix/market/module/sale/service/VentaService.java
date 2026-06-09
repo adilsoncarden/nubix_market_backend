@@ -18,6 +18,7 @@ import com.nubix.market.module.sale.model.Pago;
 import com.nubix.market.module.sale.model.Venta;
 import com.nubix.market.module.sale.model.VentaEntrega;
 import com.nubix.market.module.sale.repository.VentaRepository;
+import com.nubix.market.module.sale.util.OrderStatusFlow;
 import com.nubix.market.module.user.model.Usuario;
 import com.nubix.market.module.user.repository.UsuarioRepository;
 import org.apache.commons.lang3.ObjectUtils;
@@ -204,6 +205,10 @@ public class VentaService {
     public Venta actualizarEstadoPedido(Integer ventaId, EstadoPedido nuevoEstado) {
         Venta venta = ventaRepository.findById(ventaId)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + ventaId));
+        OrderStatusFlow.validateTransition(
+                venta.getTipoEntrega(),
+                venta.getEstadoPedido(),
+                nuevoEstado);
         venta.setEstadoPedido(nuevoEstado);
         Venta saved = ventaRepository.save(venta);
         notificacionService.crearInterna(

@@ -1,9 +1,12 @@
 package com.nubix.market.module.sale.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonView;
+import com.nubix.market.common.jackson.JsonViews;
 import com.nubix.market.module.product.model.Producto;
 import jakarta.persistence.*;
 
+@JsonView(JsonViews.Detail.class)
 @Entity
 @Table(name = "venta_detalles")
 public class DetalleVenta {
