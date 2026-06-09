@@ -54,6 +54,7 @@ public class SecurityConfig {
                                 "/api/auth/verify-code",
                                 "/api/auth/reset-password",
                                 "/api/catalogo/**",
+                                "/api/public/**",
                                 "/error")
                         .permitAll()
                         .requestMatchers("/api/auth/admin-permisos")

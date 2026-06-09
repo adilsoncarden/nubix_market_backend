@@ -1,6 +1,8 @@
 package com.nubix.market.module.sale.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.nubix.market.common.jackson.JsonViews;
 import com.nubix.market.enums.CanalVenta;
@@ -99,6 +101,7 @@ public class Venta {
 
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties({ "venta" })
+    @JsonIgnore
     private List<DetalleVenta> detalles = new ArrayList<>();
 
     @OneToOne(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -288,6 +291,7 @@ public class Venta {
         this.vendedor = vendedor;
     }
 
+    @JsonProperty("detalles")
     @JsonView(JsonViews.Detail.class)
     public List<DetalleVenta> getDetalles() {
         return detalles;

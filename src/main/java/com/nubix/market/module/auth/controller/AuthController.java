@@ -80,23 +80,16 @@ public class AuthController {
 
     @PostMapping("/verify-code")
     public ResponseEntity<?> verificarCodigo(@RequestBody VerficarCodigoRequest request) {
-        boolean valid = recuperaciónContraseñaService.verificarCodigo(request.getEmail(), request.getCodigo());
-        if (!valid) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        return ResponseEntity.ok("Código verificado exitosamente");
+        recuperaciónContraseñaService.verificarCodigo(request.getEmail(), request.getCodigo());
+        return ResponseEntity.ok(java.util.Map.of("message", "Código verificado exitosamente"));
     }
 
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody NuevaContraseñaRequest request) {
-        // corregido: agrego request.getCodigo()
-        boolean success = recuperaciónContraseñaService.resetearContraseña(
+        recuperaciónContraseñaService.resetearContraseña(
                 request.getEmail(),
                 request.getNuevaContraseña(),
                 request.getCodigo());
-        if (!success) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-        return ResponseEntity.ok("Contraseña actualizada exitosamente");
+        return ResponseEntity.ok(java.util.Map.of("message", "Contraseña actualizada exitosamente"));
     }
 }
