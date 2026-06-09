@@ -4,7 +4,7 @@ import com.nubix.market.module.product.dto.ProductoRequest;
 import com.nubix.market.module.product.dto.ProductoResponse;
 import com.nubix.market.module.product.mapper.ProductoMapper;
 import com.nubix.market.module.product.service.ProductoService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +14,14 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/admin")
 public class ProductoController {
-    @Autowired
-    private ProductoService productoService;
-    @Autowired
-    private ProductoMapper productoMapper;
+
+    private final ProductoService productoService;
+    private final ProductoMapper productoMapper;
+
+    public ProductoController(ProductoService productoService, ProductoMapper productoMapper) {
+        this.productoService = productoService;
+        this.productoMapper = productoMapper;
+    }
 
     @GetMapping("/productos")
     public ResponseEntity<List<ProductoResponse>> index() {
@@ -39,6 +43,9 @@ public class ProductoController {
 
     @GetMapping("/productos/{id}")
     public ResponseEntity<ProductoResponse> show(@PathVariable Integer id) {
+        if (id == null || id <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
         return productoService.obtenerPorId(id)
                 .map(productoMapper::toResponse)
                 .map(ResponseEntity::ok)
@@ -50,7 +57,7 @@ public class ProductoController {
         try {
             return ResponseEntity.ok(productoMapper.toResponse(productoService.actualizar(id, request)));
         } catch (RuntimeException e) {
-            if (e.getMessage().contains("no encontrado")) {
+            if (StringUtils.containsIgnoreCase(e.getMessage(), "no encontrado")) {
                 return ResponseEntity.notFound().build();
             }
             return ResponseEntity.badRequest().body(e.getMessage());

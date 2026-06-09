@@ -1,6 +1,8 @@
 package com.nubix.market.services;
 
+import com.nubix.market.config.AdminAccessPolicy;
 import com.nubix.market.config.JwtUtils;
+import com.nubix.market.config.SecurityAuthorityService;
 import com.nubix.market.module.auth.dto.AuthResponse;
 import com.nubix.market.module.auth.dto.LoginRequest;
 import com.nubix.market.module.auth.service.AuthService;
@@ -32,6 +34,10 @@ class AuthServiceTest {
     private PasswordEncoder passwordEncoder;
     @Mock
     private RolRepository rolRepository;
+    @Mock
+    private AdminAccessPolicy adminAccessPolicy;
+    @Mock
+    private SecurityAuthorityService securityAuthorityService;
 
     @InjectMocks
     private AuthService authService;
@@ -49,7 +55,7 @@ class AuthServiceTest {
         Rol r = new Rol("CLIENTE");
         u.setRol(r);
 
-        when(usuarioRepository.findByUsername("user1")).thenReturn(Optional.of(u));
+        when(usuarioRepository.findByUsernameWithRol("user1")).thenReturn(Optional.of(u));
         when(passwordEncoder.matches("clave123", "hash")).thenReturn(true);
         when(jwtUtils.generateToken("user1", "CLIENTE")).thenReturn("jwt-token");
 
@@ -72,12 +78,12 @@ class AuthServiceTest {
         u.setPassword("hash");
         u.setRol(new Rol("CLIENTE"));
 
-        when(usuarioRepository.findByUsername("user1")).thenReturn(Optional.of(u));
+        when(usuarioRepository.findByUsernameWithRol("user1")).thenReturn(Optional.of(u));
         when(passwordEncoder.matches("mala", "hash")).thenReturn(false);
 
         AuthResponse resp = authService.login(req);
 
         assertThat(resp.isSuccess()).isFalse();
-        assertThat(resp.getMessage()).containsIgnoringCase("credenciales");
+        assertThat(resp.getMessage()).containsIgnoringCase("contraseña");
     }
 }

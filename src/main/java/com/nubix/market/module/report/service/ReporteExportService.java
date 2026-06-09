@@ -3,8 +3,10 @@ package com.nubix.market.module.report.service;
 import com.google.common.collect.ImmutableList;
 import com.nubix.market.module.category.model.Categoria;
 import com.nubix.market.module.category.repository.CategoriaRepository;
+import com.nubix.market.module.product.dao.ProductoDAO;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
+import com.nubix.market.module.product.service.ProductoService;
 import com.nubix.market.module.supplier.model.Proveedor;
 import com.nubix.market.module.supplier.repository.ProveedorRepository;
 import com.nubix.market.enums.EstadoPago;
@@ -19,7 +21,6 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -44,31 +45,41 @@ public class ReporteExportService {
             "ID", "Fecha", "Cliente", "Total", "Subtotal", "IGV", "Estado pedido", "Estado pago",
             "Método pago", "Tipo comprobante", "Tipo entrega", "Código recojo");
 
-    @Autowired
-    private ProductoRepository productoRepository;
-    @Autowired
-    private CategoriaRepository categoriaRepository;
-    @Autowired
-    private ProveedorRepository proveedorRepository;
-    @Autowired
-    private VentaDAO ventaDAO;
+    private final ProductoRepository productoRepository;
+    private final ProductoDAO productoDAO;
+    private final CategoriaRepository categoriaRepository;
+    private final ProveedorRepository proveedorRepository;
+    private final VentaDAO ventaDAO;
+
+    public ReporteExportService(
+            ProductoRepository productoRepository,
+            ProductoDAO productoDAO,
+            CategoriaRepository categoriaRepository,
+            ProveedorRepository proveedorRepository,
+            VentaDAO ventaDAO) {
+        this.productoRepository = productoRepository;
+        this.productoDAO = productoDAO;
+        this.categoriaRepository = categoriaRepository;
+        this.proveedorRepository = proveedorRepository;
+        this.ventaDAO = ventaDAO;
+    }
 
     public byte[] exportarProductosExcel(
             Integer categoriaId,
             Boolean stockBajo,
             Double precioMin,
             Double precioMax) {
-        List<Producto> productos = productoRepository.findAllWithCategoria();
-        if (categoriaId != null) {
-            productos = productos.stream()
-                    .filter(p -> p.getCategoria() != null
-                            && Objects.equals(p.getCategoria().getId(), categoriaId))
-                    .toList();
-        }
+        List<Producto> productos;
         if (Boolean.TRUE.equals(stockBajo)) {
-            productos = productos.stream()
-                    .filter(p -> p.getStock() != null && p.getStock() < 10)
-                    .toList();
+            productos = productoDAO.buscarConStockBajo(ProductoService.STOCK_BAJO_UMBRAL, categoriaId);
+        } else {
+            productos = productoRepository.findAllWithCategoria();
+            if (categoriaId != null) {
+                productos = productos.stream()
+                        .filter(p -> p.getCategoria() != null
+                                && Objects.equals(p.getCategoria().getId(), categoriaId))
+                        .toList();
+            }
         }
         if (precioMin != null) {
             productos = productos.stream()
