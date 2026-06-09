@@ -14,7 +14,6 @@ import com.nubix.market.module.user.repository.UsuarioRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -29,18 +28,27 @@ public class AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-    @Autowired
-    private RolRepository rolRepository;
-    @Autowired
-    private AdminAccessPolicy adminAccessPolicy;
-    @Autowired
-    private SecurityAuthorityService securityAuthorityService;
+    private final UsuarioRepository usuarioRepository;
+    private final JwtUtils jwtUtils;
+    private final PasswordEncoder passwordEncoder;
+    private final RolRepository rolRepository;
+    private final AdminAccessPolicy adminAccessPolicy;
+    private final SecurityAuthorityService securityAuthorityService;
+
+    public AuthService(
+            UsuarioRepository usuarioRepository,
+            JwtUtils jwtUtils,
+            PasswordEncoder passwordEncoder,
+            RolRepository rolRepository,
+            AdminAccessPolicy adminAccessPolicy,
+            SecurityAuthorityService securityAuthorityService) {
+        this.usuarioRepository = usuarioRepository;
+        this.jwtUtils = jwtUtils;
+        this.passwordEncoder = passwordEncoder;
+        this.rolRepository = rolRepository;
+        this.adminAccessPolicy = adminAccessPolicy;
+        this.securityAuthorityService = securityAuthorityService;
+    }
 
     public AuthResponse register(RegisterRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {

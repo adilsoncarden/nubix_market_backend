@@ -1,7 +1,6 @@
 package com.nubix.market.module.report.controller;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -20,8 +19,11 @@ import java.time.LocalDate;
 @RequestMapping("/api/admin/reportes")
 public class ReporteController {
 
-    @Autowired
-    private ReporteExportService reporteExportService;
+    private final ReporteExportService reporteExportService;
+
+    public ReporteController(ReporteExportService reporteExportService) {
+        this.reporteExportService = reporteExportService;
+    }
 
     @GetMapping(value = "/productos", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarProductos(

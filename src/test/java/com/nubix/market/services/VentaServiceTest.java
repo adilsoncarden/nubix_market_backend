@@ -4,6 +4,7 @@ import com.nubix.market.enums.MetodoPago;
 import com.nubix.market.enums.TipoComprobante;
 import com.nubix.market.enums.TipoEntrega;
 import com.nubix.market.module.category.model.Categoria;
+import com.nubix.market.module.cart.service.CarritoService;
 import com.nubix.market.module.notification.service.NotificacionService;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
@@ -45,6 +46,8 @@ class VentaServiceTest {
     private ProductoRepository productoRepository;
     @Mock
     private NotificacionService notificacionService;
+    @Mock
+    private CarritoService carritoService;
 
     @InjectMocks
     private VentaService ventaService;

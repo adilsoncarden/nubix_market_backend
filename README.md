@@ -30,7 +30,7 @@ Backend de **Nubix Market**, un API REST que proporciona servicios de autenticac
 - ✅ Autenticación con JWT (JSON Web Tokens)
 - ✅ Gestión segura de usuarios
 - ✅ Validación de datos robusta
-- ✅ Conexión a base de datos MySQL
+- ✅ Conexión a base de datos PostgreSQL
 - ✅ Filtros de seguridad personalizados
 - ✅ Manejo de excepciones centralizado
 
@@ -41,7 +41,7 @@ Backend de **Nubix Market**, un API REST que proporciona servicios de autenticac
 - 🔐 **Autenticación JWT** - Tokens seguros y validación de sesiones
 - 👤 **Gestión de Usuarios** - Registro, login y perfil de usuario
 - 🔒 **Seguridad** - Encriptación de contraseñas y filtros de autorización
-- 🗄️ **Base de Datos** - Integración con MySQL
+- 🗄️ **Base de Datos** - Integración con PostgreSQL (Supabase)
 - ⚙️ **Configuración centralizada** - Manejo de propiedades por ambiente
 - 📝 **Logging** - Trazabilidad de operaciones
 
@@ -51,10 +51,10 @@ Backend de **Nubix Market**, un API REST que proporciona servicios de autenticac
 
 | Categoría                | Tecnología            | Versión |
 | ------------------------ | --------------------- | ------- |
-| **Framework**            | Spring Boot           | 3.x+    |
+| **Framework**            | Spring Boot           | 4.0.5   |
 | **Lenguaje**             | Java                  | 17+     |
 | **Build Tool**           | Maven                 | 3.8+    |
-| **Base de Datos**        | MySQL                 | 8.0+    |
+| **Base de Datos**        | PostgreSQL            | 15+     |
 | **Seguridad**            | Spring Security + JWT | -       |
 | **Validación**           | Jakarta Validation    | -       |
 | **Control de Versiones** | Git / GitHub          | -       |
@@ -67,7 +67,7 @@ Antes de comenzar, asegúrate de tener instalado:
 
 - **Java Development Kit (JDK)** - v17 o superior
 - **Maven** - v3.8 o superior
-- **MySQL Server** - v8.0 o superior
+- **PostgreSQL** - v15 o superior (o proyecto Supabase)
 - **Git** - para control de versiones
 - **IDE** (opcional) - IntelliJ IDEA, VS Code o Eclipse
 
@@ -76,7 +76,7 @@ Verificar instalación:
 ```bash
 java -version
 mvn -version
-mysql --version
+psql --version
 ```
 
 ---
@@ -90,14 +90,9 @@ git clone https://github.com/nubix/nubix_market_backend.git
 cd nubix_market_backend
 ```
 
-### 2. Crear base de datos MySQL
+### 2. Configurar base de datos PostgreSQL
 
-```sql
-CREATE DATABASE nubix_market;
-CREATE USER 'nubix_user'@'localhost' IDENTIFIED BY 'password123';
-GRANT ALL PRIVILEGES ON nubix_market.* TO 'nubix_user'@'localhost';
-FLUSH PRIVILEGES;
-```
+Crea un proyecto en [Supabase](https://supabase.com) o una instancia local de PostgreSQL y obtén la URL de conexión (modo pooler, puerto 6543, recomendado en producción).
 
 ### 3. Configurar variables de entorno
 
@@ -108,20 +103,23 @@ cp src/main/resources/application.properties.example src/main/resources/applicat
 Editar `application.properties`:
 
 ```properties
-# Database
-spring.datasource.url=jdbc:mysql://localhost:3306/nubix_market
-spring.datasource.username=nubix_user
-spring.datasource.password=password123
-spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+# Database (PostgreSQL / Supabase)
+spring.datasource.url=jdbc:postgresql://localhost:5432/nubix_market
+spring.datasource.username=postgres
+spring.datasource.password=tu_password
+spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA/Hibernate
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=false
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL8Dialect
 
 # JWT
 jwt.secret=tu_clave_secreta_super_segura_aqui
-jwt.expiration=86400000
+jwt.expiration-ms=86400000
+
+# CORS
+cors.allowed-origins=http://localhost:5173
 
 # Server
 server.port=8080
@@ -173,17 +171,20 @@ src/main/resources/
 # Información de la aplicación
 spring.application.name=market-backend
 
-# Base de datos
-spring.datasource.url=jdbc:mysql://localhost:3306/nubix_market
-spring.datasource.username=nubix_user
+# Base de datos PostgreSQL
+spring.datasource.url=jdbc:postgresql://localhost:5432/nubix_market
+spring.datasource.username=postgres
 spring.datasource.password=password123
+spring.datasource.driver-class-name=org.postgresql.Driver
 
 # JPA
+spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=update
 
 # JWT Secret (cambiar por una clave segura en producción)
 jwt.secret=clave_secreta_super_segura
-jwt.expiration=86400000
+jwt.expiration-ms=86400000
+cors.allowed-origins=http://localhost:5173
 
 # Server
 server.port=8080

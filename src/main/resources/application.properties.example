@@ -28,9 +28,6 @@ jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}
 # CORS (orígenes separados por coma)
 cors.allowed-origins=${CORS_ORIGINS:http://localhost:5173}
 
-# URL pública del API (imágenes dinámicas en correos)
-app.public-base-url=${API_PUBLIC_URL:http://localhost:8080}
-
 # Email SMTP
 spring.mail.host=${MAIL_HOST:smtp.gmail.com}
 spring.mail.port=${MAIL_PORT:587}

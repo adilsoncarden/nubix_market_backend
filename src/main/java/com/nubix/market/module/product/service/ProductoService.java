@@ -1,14 +1,15 @@
 package com.nubix.market.module.product.service;
 
+import com.google.common.base.Preconditions;
 import com.nubix.market.module.category.model.Categoria;
 import com.nubix.market.module.category.repository.CategoriaRepository;
+import com.nubix.market.module.product.dao.ProductoDAO;
 import com.nubix.market.module.product.dto.ProductoRequest;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
@@ -16,22 +17,38 @@ import java.util.Optional;
 @Service
 public class ProductoService {
 
+    public static final int STOCK_BAJO_UMBRAL = 10;
+
     private static final Logger log = LoggerFactory.getLogger(ProductoService.class);
 
-    @Autowired
-    private ProductoRepository productoRepository;
-    @Autowired
-    private CategoriaRepository categoriaRepository;
+    private final ProductoRepository productoRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final ProductoDAO productoDAO;
+
+    public ProductoService(
+            ProductoRepository productoRepository,
+            CategoriaRepository categoriaRepository,
+            ProductoDAO productoDAO) {
+        this.productoRepository = productoRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.productoDAO = productoDAO;
+    }
 
     public List<Producto> obtenerTodos() {
         return productoRepository.findAllWithCategoria();
     }
 
+    public List<Producto> obtenerConStockBajo(Integer categoriaId) {
+        return productoDAO.buscarConStockBajo(STOCK_BAJO_UMBRAL, categoriaId);
+    }
+
     public Optional<Producto> obtenerPorId(Integer id) {
+        Preconditions.checkArgument(id != null && id > 0, "El id del producto es obligatorio");
         return productoRepository.findByIdWithRelations(id);
     }
 
     public Producto guardar(ProductoRequest request) {
+        Preconditions.checkNotNull(request, "La solicitud de producto es obligatoria");
         validarPreciosYStock(request);
         if (StringUtils.isBlank(request.getCodigo()) || StringUtils.isBlank(request.getNombre())) {
             throw new RuntimeException("Código y nombre del producto son obligatorios");
@@ -61,6 +78,8 @@ public class ProductoService {
     }
 
     public Producto actualizar(Integer id, ProductoRequest detalles) {
+        Preconditions.checkNotNull(id, "El id del producto es obligatorio");
+        Preconditions.checkNotNull(detalles, "La solicitud de actualización es obligatoria");
         validarPreciosYStock(detalles);
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
@@ -93,6 +112,7 @@ public class ProductoService {
     }
 
     public void eliminar(Integer id) {
+        Preconditions.checkNotNull(id, "El id del producto es obligatorio");
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
@@ -105,14 +125,18 @@ public class ProductoService {
     }
 
     private void validarPreciosYStock(ProductoRequest request) {
-        if (request.getPrecioCompra() != null && request.getPrecioCompra() < 0) {
-            throw new RuntimeException("El precio de compra no puede ser negativo");
+        if (request.getPrecioCompra() != null) {
+            Preconditions.checkArgument(
+                    request.getPrecioCompra() >= 0,
+                    "El precio de compra no puede ser negativo");
         }
-        if (request.getPrecioVenta() != null && request.getPrecioVenta() < 0) {
-            throw new RuntimeException("El precio de venta no puede ser negativo");
+        if (request.getPrecioVenta() != null) {
+            Preconditions.checkArgument(
+                    request.getPrecioVenta() >= 0,
+                    "El precio de venta no puede ser negativo");
         }
-        if (request.getStock() != null && request.getStock() < 0) {
-            throw new RuntimeException("El stock no puede ser negativo");
+        if (request.getStock() != null) {
+            Preconditions.checkArgument(request.getStock() >= 0, "El stock no puede ser negativo");
         }
     }
 }
