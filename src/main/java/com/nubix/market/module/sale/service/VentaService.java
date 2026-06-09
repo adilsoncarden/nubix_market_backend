@@ -23,9 +23,9 @@ import com.nubix.market.module.user.model.Usuario;
 import com.nubix.market.module.user.repository.UsuarioRepository;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,16 +43,24 @@ public class VentaService {
 
     private static final Logger log = LoggerFactory.getLogger(VentaService.class);
 
-    @Autowired
-    private VentaRepository ventaRepository;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private ProductoRepository productoRepository;
-    @Autowired
-    private NotificacionService notificacionService;
-    @Autowired
-    private CarritoService carritoService;
+    private final VentaRepository ventaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ProductoRepository productoRepository;
+    private final NotificacionService notificacionService;
+    private final CarritoService carritoService;
+
+    public VentaService(
+            VentaRepository ventaRepository,
+            UsuarioRepository usuarioRepository,
+            ProductoRepository productoRepository,
+            NotificacionService notificacionService,
+            CarritoService carritoService) {
+        this.ventaRepository = ventaRepository;
+        this.usuarioRepository = usuarioRepository;
+        this.productoRepository = productoRepository;
+        this.notificacionService = notificacionService;
+        this.carritoService = carritoService;
+    }
 
     @Transactional(readOnly = true)
     public List<Venta> obtenerTodasLasVentas() {
@@ -61,6 +69,7 @@ public class VentaService {
 
     @Transactional(readOnly = true)
     public Venta obtenerPorId(Integer id) {
+        Preconditions.checkArgument(id != null && id > 0, "El id de la venta es obligatorio");
         return ventaRepository.findByIdWithRelations(id)
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
     }

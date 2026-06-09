@@ -11,7 +11,6 @@ import com.nubix.market.module.user.model.Rol;
 import com.nubix.market.module.user.repository.PermisoRepository;
 import com.nubix.market.module.user.repository.RolRepository;
 import com.nubix.market.module.user.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashSet;
@@ -21,14 +20,18 @@ import java.util.stream.Collectors;
 @Service
 public class RbacService {
 
-    @Autowired
-    private PermisoRepository permisoRepository;
+    private final PermisoRepository permisoRepository;
+    private final RolRepository rolRepository;
+    private final UsuarioRepository usuarioRepository;
 
-    @Autowired
-    private RolRepository rolRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    public RbacService(
+            PermisoRepository permisoRepository,
+            RolRepository rolRepository,
+            UsuarioRepository usuarioRepository) {
+        this.permisoRepository = permisoRepository;
+        this.rolRepository = rolRepository;
+        this.usuarioRepository = usuarioRepository;
+    }
 
     // ─── Permisos CRUD ───
 

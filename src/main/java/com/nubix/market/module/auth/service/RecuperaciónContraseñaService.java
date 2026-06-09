@@ -3,7 +3,7 @@ package com.nubix.market.module.auth.service;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,19 +22,26 @@ public class RecuperaciónContraseñaService {
 
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final ReseteoContraseñaRepository reseteoContraseñaRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    @Autowired
-    private ReseteoContraseñaRepository reseteoContraseñaRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private EmailService emailService;
+    public RecuperaciónContraseñaService(
+            UsuarioRepository usuarioRepository,
+            ReseteoContraseñaRepository reseteoContraseñaRepository,
+            PasswordEncoder passwordEncoder,
+            EmailService emailService) {
+        this.usuarioRepository = usuarioRepository;
+        this.reseteoContraseñaRepository = reseteoContraseñaRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
+    }
 
     public void contraseñaOlvidada(String email) {
+        if (StringUtils.isBlank(email)) {
+            return;
+        }
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(email);
         if (usuarioOpt.isEmpty()) {
             return;
