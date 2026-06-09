@@ -17,24 +17,37 @@ public class EmailTemplateService {
 
     public String recuperacionContrasena(String codigo) {
         String safeCodigo = escape(codigo);
+
         return baseLayout(
                 "Recuperación de contraseña",
                 """
                         <p style="margin:0 0 16px;color:%s;font-size:15px;line-height:1.6;">
                           Recibimos una solicitud para restablecer tu contraseña en <strong>Nubix Market</strong>.
                         </p>
-                        <p style="margin:0 0 20px;color:%s;font-size:14px;line-height:1.6;">
-                          Usa el siguiente código de verificación. Expira en pocos minutos.
+                        <p style="margin:0 0 24px;color:%s;font-size:14px;line-height:1.6;">
+                          Usa el siguiente código de verificación. El código tiene una vigencia de 5 minutos.
+                          Si el código expira, deberás solicitar uno nuevo.
                         </p>
-                        <div style="text-align:center;margin:28px 0;">
-                          <span style="display:inline-block;background:%s;color:%s;font-size:28px;font-weight:700;letter-spacing:6px;padding:16px 28px;border-radius:12px;border:2px dashed %s;">
-                            %s
-                          </span>
-                        </div>
+                        <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+                          <tr>
+                            <td align="center" style="padding:0;">
+                              <span style="display:inline-block;background:%s;color:%s;font-size:28px;font-weight:700;letter-spacing:6px;padding:16px 28px;border-radius:12px;border:2px dashed %s;">
+                                %s
+                              </span>
+                            </td>
+                          </tr>
+                        </table>
                         <p style="margin:0;color:%s;font-size:13px;line-height:1.5;">
                           Si no solicitaste este cambio, ignora este correo. Tu cuenta permanecerá segura.
                         </p>
-                        """.formatted(TEXT, MUTED, BRAND_LIGHT, BRAND, BRAND, safeCodigo, MUTED));
+                        """.formatted(
+                        TEXT,
+                        MUTED,
+                        BRAND_LIGHT,
+                        BRAND,
+                        BRAND,
+                        safeCodigo,
+                        MUTED));
     }
 
     public String confirmacionCompra(EmailConfirmacionContext ctx) {
@@ -178,10 +191,14 @@ public class EmailTemplateService {
     }
 
     private String baseLayout(String title, String bodyHtml) {
+        return baseLayout(title, bodyHtml, "");
+    }
+
+    private String baseLayout(String title, String bodyHtml, String extraHeadHtml) {
         return """
                 <!DOCTYPE html>
                 <html lang="es">
-                <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+                <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">%s</head>
                 <body style="margin:0;padding:0;background:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
                   <table role="presentation" width="100%%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;padding:32px 16px;">
                     <tr>
@@ -207,7 +224,7 @@ public class EmailTemplateService {
                   </table>
                 </body>
                 </html>
-                """.formatted(BRAND, escape(title), bodyHtml, BORDER, MUTED);
+                """.formatted(extraHeadHtml, BRAND, escape(title), bodyHtml, BORDER, MUTED);
     }
 
     private static String escape(String value) {
