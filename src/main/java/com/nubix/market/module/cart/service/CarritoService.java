@@ -35,8 +35,12 @@ public class CarritoService {
         }
         Producto producto = productoRepository.findById(request.getProductoId())
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
+        if (producto.getStock() <= 0) {
+            throw new RuntimeException("Producto agotado");
+        }
         if (producto.getStock() < request.getCantidad()) {
-            throw new RuntimeException("Stock insuficiente");
+            throw new RuntimeException(
+                    "Solo hay " + producto.getStock() + " unidades disponibles");
         }
 
         Carrito carrito = obtenerCarritoUsuario(usuarioId);
@@ -48,7 +52,8 @@ public class CarritoService {
         if (existente != null) {
             int nuevaCantidad = existente.getCantidad() + request.getCantidad();
             if (producto.getStock() < nuevaCantidad) {
-                throw new RuntimeException("Stock insuficiente");
+                throw new RuntimeException(
+                        "Solo hay " + producto.getStock() + " unidades disponibles");
             }
             existente.setCantidad(nuevaCantidad);
         } else {
@@ -74,8 +79,12 @@ public class CarritoService {
         if (cantidad == null || cantidad < 1) {
             carrito.getItems().remove(item);
         } else {
+            if (item.getProducto().getStock() <= 0) {
+                throw new RuntimeException("Producto agotado");
+            }
             if (item.getProducto().getStock() < cantidad) {
-                throw new RuntimeException("Stock insuficiente");
+                throw new RuntimeException(
+                        "Solo hay " + item.getProducto().getStock() + " unidades disponibles");
             }
             item.setCantidad(cantidad);
         }
