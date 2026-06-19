@@ -11,6 +11,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * Controlador REST privado diseñado para la gestión de ventas desde el panel administrativo.
+ * Permite a los empleados crear ventas presenciales (Punto de Venta/POS), registrar créditos, 
+ * y avanzar el estado de los pedidos web (ej. de "Pendiente" a "En Camino" o "Entregado").
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class VentaController {
@@ -18,12 +23,20 @@ public class VentaController {
     @Autowired
     private VentaService ventaService;
 
+    /**
+     * Lista el historial completo de todas las ventas del negocio (tanto web como presenciales).
+     * Utiliza @JsonView para enviar una versión resumida sin sobrecargar la red con detalles de productos.
+     */
     @JsonView(JsonViews.List.class)
     @GetMapping("/ventas")
     public ResponseEntity<List<Venta>> obtenerTodasLasVentas() {
         return ResponseEntity.ok(ventaService.obtenerTodasLasVentas());
     }
 
+    /**
+     * Devuelve el detalle completo de una venta específica, incluyendo todos los productos 
+     * comprados, cálculos de IGV y datos del cliente.
+     */
     @JsonView(JsonViews.Detail.class)
     @GetMapping("/ventas/{id}")
     public ResponseEntity<?> obtenerVenta(@PathVariable Integer id) {
@@ -34,6 +47,10 @@ public class VentaController {
         }
     }
 
+    /**
+     * Crea una nueva venta desde el panel de administración (ej. un cliente comprando en tienda física).
+     * Asigna valores por defecto de Canal (PRESENCIAL) y Tipo de Comprobante (TICKET) si no se especifican.
+     */
     @PostMapping("/ventas/create")
     public ResponseEntity<?> crearVenta(@RequestBody VentaRequest request) {
         try {
@@ -49,6 +66,10 @@ public class VentaController {
         }
     }
 
+    /**
+     * Actualiza la etapa logística de un pedido.
+     * Ejemplo: Un empleado cambia el pedido #102 de "PREPARANDO" a "LISTO_PARA_RECOJO".
+     */
     @PostMapping("/ventas/{id}")
     public ResponseEntity<?> actualizarEstadoPedido(
             @PathVariable Integer id,
@@ -60,6 +81,10 @@ public class VentaController {
         }
     }
 
+    /**
+     * Registra que una venta (probablemente presencial o corporativa) ha sido dada "A crédito" 
+     * y cambia su estado de pago consecuentemente.
+     */
     @PostMapping("/ventas/{id}/credito")
     public ResponseEntity<?> registrarCredito(@PathVariable Integer id) {
         try {

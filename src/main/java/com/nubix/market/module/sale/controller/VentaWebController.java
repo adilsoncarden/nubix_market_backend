@@ -18,6 +18,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controlador REST público/protegido orientado exclusivamente a los clientes finales 
+ * interactuando con la tienda virtual de Nubix Market.
+ */
 @RestController
 @RequestMapping("/api/ventas")
 public class VentaWebController {
@@ -25,6 +29,14 @@ public class VentaWebController {
     @Autowired
     private VentaService ventaService;
 
+    /**
+     * Endpoint final del proceso de compra web.
+     * Recibe la intención de pago del cliente (carrito), procesa el descuento de stock, 
+     * genera la venta en BD y emite la boleta/factura electrónica.
+     *
+     * @param request Datos financieros y logísticos confirmados por el usuario.
+     * @return Respuesta HTTP 200 con la entidad de la Venta finalizada.
+     */
     @PostMapping("/checkout")
     public ResponseEntity<Venta> checkout(@Valid @RequestBody CheckoutRequest request) {
         if (request.getTipoComprobante() == null) {
@@ -34,6 +46,10 @@ public class VentaWebController {
         return ResponseEntity.ok(venta);
     }
 
+    /**
+     * Permite a un cliente autenticado revisar su historial personal de compras en la tienda.
+     * Incluye opciones de filtrado rápido por mes específico o por rangos de fechas personalizados.
+     */
     @GetMapping("/mis-pedidos")
     public ResponseEntity<List<MisPedidoResponse>> misPedidos(
             @RequestParam(required = false) String mes,
