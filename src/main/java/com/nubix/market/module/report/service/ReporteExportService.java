@@ -28,11 +28,17 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Servicio central para la generación de reportes en memoria utilizando la librería Apache POI.
+ * Transforma grandes volúmenes de datos extraídos de la base de datos en hojas de cálculo Excel 
+ * formateadas, listas para su descarga.
+ */
 @Service
 public class ReporteExportService {
 
     private static final Logger log = LoggerFactory.getLogger(ReporteExportService.class);
 
+    // Cabeceras inmutables (Constantes) para asegurar el orden de las columnas en el Excel
     private static final ImmutableList<String> HEADERS_PRODUCTOS = ImmutableList.of(
             "ID", "Código", "Nombre", "Categoría", "Stock", "Precio compra", "Precio venta");
 
@@ -64,6 +70,10 @@ public class ReporteExportService {
         this.ventaDAO = ventaDAO;
     }
 
+    /**
+     * Filtra los productos según los parámetros ingresados y genera un archivo Excel.
+     * Utiliza Objects.requireNonNullElse para prevenir errores de celdas vacías por datos nulos en la BD.
+     */
     public byte[] exportarProductosExcel(
             Integer categoriaId,
             Boolean stockBajo,
@@ -132,6 +142,9 @@ public class ReporteExportService {
         }
     }
 
+    /**
+     * Genera un archivo Excel con todas las categorías.
+     */
     public byte[] exportarCategoriasExcel() {
         List<Categoria> categorias = categoriaRepository.findAll();
         log.info("Exportando categorías a Excel ({} registros)", categorias.size());
@@ -163,6 +176,9 @@ public class ReporteExportService {
         }
     }
 
+    /**
+     * Genera un archivo Excel con los datos de contacto de todos los proveedores.
+     */
     public byte[] exportarProveedoresExcel() {
         List<Proveedor> proveedores = proveedorRepository.findAll();
         log.info("Exportando proveedores a Excel ({} registros)", proveedores.size());
@@ -197,6 +213,9 @@ public class ReporteExportService {
         }
     }
 
+    /**
+     * Genera un reporte contable de ventas filtrado por rango de fechas y parámetros operativos.
+     */
     public byte[] exportarVentasExcel(
             LocalDate desde,
             LocalDate hasta,
@@ -245,6 +264,11 @@ public class ReporteExportService {
         }
     }
 
+    /**
+     * Método auxiliar privado que determina inteligentemente qué nombre mostrar en el reporte 
+     * como comprador, dependiendo de si fue con factura (Razon Social), boleta (DNI), 
+     * un usuario registrado o un consumidor final anónimo.
+     */
     private static String nombreClienteVenta(Venta v) {
         if (v.getTipoComprobante() == TipoComprobante.TICKET) {
             return "Consumidor Final";
