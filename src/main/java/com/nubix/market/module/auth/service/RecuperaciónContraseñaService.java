@@ -15,11 +15,18 @@ import com.nubix.market.module.notification.service.EmailService;
 import com.nubix.market.module.user.model.Usuario;
 import com.nubix.market.module.user.repository.UsuarioRepository;
 
+/**
+ * Servicio encargado de gestionar el flujo completo de recuperación de contraseñas.
+ * Maneja la generación de códigos seguros, la validación de su vigencia, 
+ * el envío de notificaciones por correo y la actualización final de la credencial.
+ */
 @Service
 public class RecuperaciónContraseñaService {
 
+    /** Tiempo de vigencia (en minutos) de un código de recuperación antes de expirar. */
     public static final int CODE_VALIDITY_MINUTES = 5;
 
+    /** Generador de números aleatorios criptográficamente seguro para los códigos. */
     private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     private final UsuarioRepository usuarioRepository;
@@ -38,6 +45,14 @@ public class RecuperaciónContraseñaService {
         this.emailService = emailService;
     }
 
+    /**
+     * Inicia el proceso de recuperación.
+     * Si el correo existe, genera un código de 6 dígitos, lo guarda en la base de datos 
+     * asociado al usuario y programa su envío por correo electrónico.
+     * Silenciosamente ignora los correos no registrados para evitar filtraciones de seguridad.
+     *
+     * @param email Correo electrónico de la cuenta a recuperar.
+     */
     public void contraseñaOlvidada(String email) {
         if (StringUtils.isBlank(email)) {
             return;
@@ -62,17 +77,33 @@ public class RecuperaciónContraseñaService {
         emailService.enviarCodigoRecuperacion(email, codigo);
     }
 
+    /**
+     * Valida un código ingresado por el usuario contra el último código generado en el sistema.
+     * Confirma que coincidan y que no haya expirado el tiempo límite.
+     *
+     * @param email Correo del usuario.
+     * @param codigo Código de 6 dígitos ingresado.
+     * @throws PasswordResetCodeException Si el código es inválido o ha expirado.
+     */
     public void verificarCodigo(String email, String codigo) {
         ContraseñaResetToken token = resolveTokenForValidation(email);
         assertTokenNotExpired(token);
         assertCodeMatches(token, codigo);
     }
 
+    /**
+     * Paso final: actualiza la contraseña del usuario tras validar nuevamente el código de seguridad.
+     * Al finalizar, marca el token como utilizado para evitar que vuelva a ser canjeado.
+     *
+     * @param email Correo del usuario.
+     * @param nuevaContraseña La nueva credencial elegida.
+     * @param codigo El código de seguridad para autorizar la acción.
+     */
     public void resetearContraseña(String email, String nuevaContraseña, String codigo) {
         ContraseñaResetToken token = resolveTokenForValidation(email);
         assertTokenNotExpired(token);
         assertCodeMatches(token, codigo);
-
+        
         Usuario usuario = token.getUsuario();
         usuario.setPassword(passwordEncoder.encode(nuevaContraseña));
         usuarioRepository.save(usuario);

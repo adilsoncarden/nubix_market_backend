@@ -23,6 +23,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio principal que encapsula la lógica de negocio para la autenticación y registro de usuarios.
+ * Se encarga de validar credenciales, crear nuevas cuentas, asignar roles por defecto 
+ * y generar los tokens JWT para las sesiones.
+ */
 @Service
 public class AuthService {
 
@@ -50,6 +55,14 @@ public class AuthService {
         this.securityAuthorityService = securityAuthorityService;
     }
 
+    /**
+     * Procesa el registro de un nuevo usuario en el sistema.
+     * Verifica que el username y el email no estén duplicados, encripta la contraseña 
+     * y le asigna el rol base de "CLIENTE".
+     *
+     * @param request Datos del nuevo usuario ingresados en el formulario de registro.
+     * @return Objeto AuthResponse indicando el éxito o el motivo del fallo.
+     */
     public AuthResponse register(RegisterRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
             return new AuthResponse(false, "El nombre de usuario ya existe", null);
@@ -72,6 +85,13 @@ public class AuthService {
         return new AuthResponse(true, "Usuario registrado exitosamente", nuevoUsuario.getUsername());
     }
 
+    /**
+     * Procesa el inicio de sesión para los clientes de la tienda web.
+     * Valida la existencia del usuario y la correctitud de su contraseña.
+     *
+     * @param request Credenciales del usuario (email/username y contraseña).
+     * @return AuthResponse con el token JWT si es exitoso, o un mensaje genérico de error si falla.
+     */
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         Optional<Usuario> usuarioOpt = buscarPorCredenciales(request);
@@ -106,6 +126,15 @@ public class AuthService {
                 rolNombre);
     }
 
+    /**
+     * Procesa el inicio de sesión exclusivo para el panel de administración.
+     * Ejecuta las mismas validaciones que el login normal, pero añade una capa extra 
+     * verificando las políticas de acceso al panel mediante {@link AdminAccessPolicy}.
+     * Además, carga los permisos detallados del usuario en la respuesta.
+     *
+     * @param request Credenciales del empleado/administrador.
+     * @return AuthResponse con token y lista de permisos, o error de acceso denegado.
+     */
     @Transactional(readOnly = true)
     public AuthResponse adminLogin(LoginRequest request) {
         Optional<Usuario> usuarioOpt = buscarPorCredenciales(request);
@@ -154,6 +183,9 @@ public class AuthService {
         return response;
     }
 
+    /**
+     * Busca a un usuario en la base de datos utilizando su username o su email.
+     */
     private Optional<Usuario> buscarPorCredenciales(LoginRequest request) {
         if (!StringUtils.isBlank(request.getUsername())) {
             Optional<Usuario> porUsername =
@@ -168,6 +200,10 @@ public class AuthService {
         return Optional.empty();
     }
 
+    /**
+     * Compara la contraseña en texto plano enviada por el usuario con el hash seguro 
+     * almacenado en la base de datos.
+     */
     private boolean validarPassword(Usuario usuario, String passwordPlano) {
         if (passwordPlano == null || usuario.getPassword() == null) {
             return false;
@@ -184,6 +220,9 @@ public class AuthService {
         }
     }
 
+    /**
+     * Extrae de forma segura el nombre del rol asociado al usuario.
+     */
     private String obtenerNombreRol(Usuario usuario) {
         if (usuario.getRol() == null || usuario.getRol().getNombre() == null) {
             return null;
@@ -191,6 +230,9 @@ public class AuthService {
         return usuario.getRol().getNombre().trim();
     }
 
+    /**
+     * Obtiene y formatea la lista de permisos del usuario para inyectarla en la respuesta JWT.
+     */
     private List<String> cargarPermisosParaRespuesta(String username, String rolNombre) {
         try {
             return securityAuthorityService.loadAuthorities(username, rolNombre).stream()
