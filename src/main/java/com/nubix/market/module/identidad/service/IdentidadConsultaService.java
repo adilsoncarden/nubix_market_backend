@@ -20,6 +20,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+/**
+ * Servicio encargado de realizar peticiones HTTP hacia la API externa (Apisperu) 
+ * para consultar la validez y los datos de documentos de identidad peruanos (DNI y RUC).
+ * Maneja la construcción dinámica de URLs, la autenticación mediante token, 
+ * y el parseo seguro de las respuestas JSON.
+ */
 @Service
 public class IdentidadConsultaService {
 
@@ -30,6 +36,14 @@ public class IdentidadConsultaService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
 
+    /**
+     * Constructor para la inyección de dependencias y variables de entorno.
+     *
+     * @param apiUrl       URL base de la API externa (inyectada desde application.properties).
+     * @param apiToken     Token de autorización (inyectado desde application.properties).
+     * @param restTemplate Cliente HTTP para realizar las peticiones externas.
+     * @param objectMapper Herramienta para leer y navegar por los árboles de nodos JSON.
+     */
     public IdentidadConsultaService(
             @Value("${dni.ruc.api.url:}") String apiUrl,
             @Value("${dni.ruc.api.token:}") String apiToken,
@@ -41,6 +55,14 @@ public class IdentidadConsultaService {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Valida el formato del documento ingresado y ejecuta la consulta contra la API externa.
+     *
+     * @param documento El número de DNI (8 dígitos) o RUC (11 dígitos).
+     * @return El DTO poblado con los datos extraídos y formateados.
+     * @throws RuntimeException Si el documento es inválido, si la API externa falla, 
+     * o si el documento no es encontrado.
+     */
     public IdentidadConsultaResponse consultar(String documento) {
         String numero = StringUtils.trimToEmpty(documento);
         if (!numero.matches("\\d{8}") && !numero.matches("\\d{11}")) {
@@ -91,9 +113,8 @@ public class IdentidadConsultaService {
     }
 
     /**
-     * Formato estricto apisperu.com:
-     * {apiUrl}/dni/{numero}?token={token}
-     * {apiUrl}/ruc/{numero}?token={token}
+     * Construye dinámicamente la URL completa para el endpoint de Apisperu.
+     * Formato: {apiUrl}/{recurso}/{numero}?token={token}
      */
     private String buildApisperuUrl(String recurso, String numero) {
         String base = apiUrl.trim();
@@ -103,6 +124,10 @@ public class IdentidadConsultaService {
         return base + "/" + recurso + "/" + numero + "?token=" + apiToken.trim();
     }
 
+    /**
+     * Transforma la cadena de texto JSON devuelta por la API en un objeto DTO estructurado.
+     * Busca los campos correctos independientemente de ligeras variaciones en el formato de respuesta.
+     */
     private IdentidadConsultaResponse mapResponse(String documento, String tipo, String body) {
         if (StringUtils.isBlank(body)) {
             throw new RuntimeException("No se encontró el " + tipo + " ingresado.");
@@ -161,7 +186,7 @@ public class IdentidadConsultaService {
     }
 
     /**
-     * DNI Apisperu: nombres, apellidoPaterno, apellidoMaterno
+     * Método auxiliar para extraer y concatenar el nombre completo desde una consulta de DNI.
      */
     private String resolveNombreDni(JsonNode data) {
         if (data == null || data.isNull()) {
@@ -181,6 +206,9 @@ public class IdentidadConsultaService {
                 StringUtils.defaultString(materno)).trim().replaceAll("\\s+", " ");
     }
 
+    /**
+     * Extrae de forma segura mensajes de error embebidos dentro de la estructura JSON.
+     */
     private String extractErrorMessage(JsonNode root) {
         if (root == null) {
             return null;
@@ -202,6 +230,9 @@ public class IdentidadConsultaService {
         return null;
     }
 
+    /**
+     * Intenta resolver el mensaje de error de un cuerpo HTTP fallido.
+     */
     private String resolveApiErrorMessage(String body, String tipo) {
         if (StringUtils.isBlank(body)) {
             return "No se pudo validar el " + tipo + ". Verifica el número e intenta de nuevo.";
@@ -218,6 +249,9 @@ public class IdentidadConsultaService {
         return "No se pudo validar el " + tipo + ". Verifica el número e intenta de nuevo.";
     }
 
+    /**
+     * Busca el primer valor de texto válido entre una lista de posibles nombres de campo dentro del JSON.
+     */
     private String firstText(JsonNode node, String... fields) {
         if (node == null || node.isNull()) {
             return null;
