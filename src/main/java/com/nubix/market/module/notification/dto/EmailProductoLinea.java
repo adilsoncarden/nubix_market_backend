@@ -1,9 +1,18 @@
 package com.nubix.market.module.notification.dto;
 
+/**
+ * Objeto de transferencia de datos (DTO) que representa una línea de producto individual 
+ * dentro del recibo o factura enviada por correo electrónico al cliente.
+ */
 public class EmailProductoLinea {
 
+    /** Nombre del producto comprado. */
     private String nombre;
+
+    /** Cantidad de unidades adquiridas. */
     private int cantidad;
+
+    /** Subtotal calculado para esta línea específica (precio unitario x cantidad). */
     private double subtotal;
 
     public EmailProductoLinea() {
