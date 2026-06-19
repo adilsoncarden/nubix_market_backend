@@ -8,16 +8,22 @@ import com.nubix.market.enums.TipoEntrega;
 import com.nubix.market.module.sale.model.Venta;
 
 /**
- * DAO de ejemplo: consultas personalizadas para reportes.
- * Los repositorios Spring Data ({@code JpaRepository}) son la implementación
- * estándar de acceso a datos;
- * este contrato aísla consultas específicas (p. ej. filtros por rango de
- * fechas) sin sustituir al repositorio.
+ * Interfaz Data Access Object (DAO) especializada en búsquedas complejas del módulo de ventas.
+ * A diferencia del JpaRepository estándar, este contrato está diseñado para manejar 
+ * múltiples combinaciones de filtros dinámicos simultáneos, esenciales para la 
+ * generación de reportes gerenciales.
  */
 public interface VentaDAO {
 
+    /**
+     * Busca todas las ventas registradas dentro de un periodo de tiempo específico.
+     */
     List<Venta> buscarVentasEntreFechas(LocalDate desde, LocalDate hasta);
 
+    /**
+     * Búsqueda avanzada y dinámica. Todos los parámetros son opcionales y se combinarán 
+     * mediante la cláusula AND en la consulta final a la base de datos.
+     */
     List<Venta> buscarConFiltros(
             LocalDate desde,
             LocalDate hasta,

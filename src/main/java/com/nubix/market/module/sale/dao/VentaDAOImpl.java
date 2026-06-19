@@ -13,6 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementación concreta del DAO de ventas utilizando el EntityManager de JPA.
+ * Permite construir una sentencia SQL (JPQL) dinámica "al vuelo", agregando 
+ * fragmentos de la cláusula WHERE únicamente si los parámetros no son nulos.
+ */
 @Repository
 public class VentaDAOImpl implements VentaDAO {
 
@@ -24,6 +29,10 @@ public class VentaDAOImpl implements VentaDAO {
         return buscarConFiltros(desde, hasta, null, null, null, null);
     }
 
+    /**
+     * Construye paso a paso la cadena de consulta (StringBuilder) evaluando 
+     * la presencia de cada filtro solicitado desde la vista.
+     */
     @Override
     public List<Venta> buscarConFiltros(
             LocalDate desde,
