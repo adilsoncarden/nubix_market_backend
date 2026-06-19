@@ -6,36 +6,50 @@ import com.nubix.market.common.jackson.JsonViews;
 import com.nubix.market.module.category.model.Categoria;
 import jakarta.persistence.*;
 
+/**
+ * Entidad JPA principal que representa un ítem comercializable dentro del catálogo de la tienda.
+ */
 @Entity
 @Table(name = "productos")
 public class Producto {
 
+    /** Identificador único autoincremental del producto. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /** Código de barras o SKU identificador interno único del producto. */
     @Column(nullable = false)
     private String codigo;
 
+    /** Nombre comercial del producto. */
     @Column(nullable = false)
     private String nombre;
 
+    /** Descripción detallada o características del producto. */
     @Column(nullable = false)
     private String descripcion;
 
+    /** Costo interno de adquisición (lo que le cuesta a la tienda comprarlo). */
     @Column(nullable = false)
     private Double precioCompra;
 
+    /** Precio final de venta al público (PVP). */
     @Column(nullable = false)
     private Double precioVenta;
 
+    /** Cantidad de unidades físicas disponibles actualmente en el almacén. */
     @Column(nullable = false)
     private Integer stock;
 
+    /** * Relación con la clasificación del producto. 
+     * FetchType.LAZY mejora el rendimiento evitando cargar la categoría si no es solicitada.
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoria_id", nullable = false)
     private Categoria categoria;
 
+    /** URL o ruta hacia la fotografía principal del producto. */
     @Column(name = "url_imagen")
     private String urlImagen;
 
