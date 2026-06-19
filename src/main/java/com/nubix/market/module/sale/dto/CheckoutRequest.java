@@ -6,23 +6,37 @@ import com.nubix.market.enums.TipoEntrega;
 import com.nubix.market.module.sale.dto.VentaRequest.DetalleVentaRequest;
 import java.util.List;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que representa la intención final de compra 
+ * de un cliente en la tienda web (El proceso de Checkout).
+ * Agrupa toda la información logística, financiera y fiscal necesaria para 
+ * generar el pedido y la boleta/factura electrónica.
+ */
+
 public class CheckoutRequest {
     private Integer clienteId;
     private TipoComprobante tipoComprobante;
     private MetodoPago metodoPago;
     private TipoEntrega tipoEntrega;
+
+    // Datos fiscales para la boleta/factura
     private String nombreComprobante;
     private String dni;
     private String ruc;
     private String razonSocial;
     private String emailComprobante;
     private String direccionFiscal;
+
+    // Datos logísticos para el delivery
     private String direccionEntrega;
     private String distrito;
     private String referencia;
     private Double costoEnvio;
+
+    // Lista de productos seleccionados
     private List<DetalleVentaRequest> detalles;
 
+    // Getters y Setters...
     public Integer getClienteId() {
         return clienteId;
     }

@@ -6,8 +6,14 @@ import com.nubix.market.enums.TipoComprobante;
 import com.nubix.market.enums.TipoEntrega;
 import java.util.List;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) general utilizado por el administrador 
+ * para registrar una venta en el sistema (ej. desde el Punto de Venta / POS presencial).
+ */
 public class VentaRequest {
     private Integer clienteId;
+
+    /** El empleado de la tienda que registró la venta. */
     private Integer vendedorId;
     private CanalVenta canal;
     private TipoComprobante tipoComprobante;
@@ -23,8 +29,11 @@ public class VentaRequest {
     private String razonSocial;
     private String emailComprobante;
     private String direccionFiscal;
+
+    /** Lista de productos agregados a la canasta. */
     private List<DetalleVentaRequest> detalles;
 
+    // Getters y Setters...
     public Integer getClienteId() {
         return clienteId;
     }
@@ -161,6 +170,9 @@ public class VentaRequest {
         this.detalles = detalles;
     }
 
+    /**
+     * Sub-clase DTO que representa un producto específico y su cantidad en la venta.
+     */
     public static class DetalleVentaRequest {
         private Integer productoId;
         private Integer cantidad;

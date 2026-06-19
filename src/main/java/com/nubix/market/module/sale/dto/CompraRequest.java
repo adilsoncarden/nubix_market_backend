@@ -2,9 +2,20 @@ package com.nubix.market.module.sale.dto;
 
 import java.util.List;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) para registrar compras a proveedores (Abastecimiento).
+ * NOTA: Aunque este archivo esté en el módulo de 'sale' (ventas), parece ser utilizado 
+ * para el ingreso de mercadería al almacén.
+ */
 public class CompraRequest {
+
+    /** Número de la factura emitida por el proveedor. */
     private String numeroFactura;
+
+    /** Identificador del proveedor en la base de datos. */
     private Integer proveedorId;
+
+    /** Lista de productos adquiridos para reabastecer el stock. */
     private List<DetalleCompraRequest> detalles;
 
     // Getters and Setters
@@ -32,6 +43,9 @@ public class CompraRequest {
         this.detalles = detalles;
     }
 
+    /**
+     * Sub-clase DTO que representa una línea de producto ingresando al inventario.
+     */
     public static class DetalleCompraRequest {
         private String codigoProducto;
         private String nombreProducto;

@@ -6,6 +6,11 @@ import com.nubix.market.enums.EstadoPedido;
 import com.nubix.market.enums.TipoEntrega;
 import java.time.LocalDate;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) utilizado para renderizar la tabla de 
+ * "Historial de Compras" o "Mis Pedidos" en el perfil de un cliente en la tienda web.
+ * Contiene un resumen de la transacción sin sobrecargar la red con toda la lista de productos.
+ */
 public class MisPedidoResponse {
 
     private Integer id;
@@ -14,6 +19,8 @@ public class MisPedidoResponse {
     private EstadoPago estadoPago;
     private Double total;
     private TipoEntrega tipoEntrega;
+
+    /** Código secreto (Fast Lane) para retirar en tienda, si aplica. */
     private String codigoRecojo;
     private CanalVenta canal;
 
