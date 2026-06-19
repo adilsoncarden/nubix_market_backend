@@ -3,13 +3,33 @@ package com.nubix.market.module.auth.dto;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Objeto de transferencia de datos (DTO) que encapsula la respuesta del servidor 
+ * tras un intento de inicio de sesión o registro.
+ * Se encarga de enviar al frontend el resultado de la operación, el token JWT 
+ * y la información de la sesión del usuario (roles y permisos).
+ */
 public class AuthResponse {
+
+    /** Indica si la operación de autenticación fue exitosa. */
     private boolean success;
+
+    /** Mensaje descriptivo sobre el resultado (ej. "Bienvenido", "Credenciales inválidas"). */
     private String message;
+
+    /** Identificador único del usuario en la base de datos. */
     private Integer id;
+
+    /** Nombre de usuario o correo electrónico del usuario autenticado. */
     private String username;
+
+    /** Token de seguridad JWT generado para la sesión. */
     private String token;
+
+    /** Rol principal asignado al usuario (ej. "ADMIN", "CLIENTE"). */
     private String rol;
+
+    /** Lista de permisos específicos (RBAC) concedidos al usuario. */
     private List<String> permisos = new ArrayList<>();
 
     public AuthResponse(boolean success, String message, String username) {

@@ -4,6 +4,12 @@ import com.nubix.market.module.notification.dto.EmailProductoLinea;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DTO utilizado para transportar todos los datos necesarios para construir 
+ * y enviar un correo electrónico de confirmación de compra al cliente.
+ * Agrupa la información de contacto, los detalles financieros de la venta y 
+ * la lista de productos adquiridos.
+ */
 public class EmailConfirmacionRequest {
 
     private String email;
@@ -11,10 +17,20 @@ public class EmailConfirmacionRequest {
     private String numero;
     private String tipo;
     private String codigoRecojo;
+
+    /** Subtotal de la compra antes de aplicar impuestos. */
     private Double subtotal;
+
+    /** Monto correspondiente al Impuesto General a las Ventas (IGV). */
     private Double igv;
+
+    /** Costo adicional en caso de que el tipo de entrega sea por Delivery. */
     private Double costoEnvio;
+
+    /** Monto final total pagado por el cliente. */
     private Double total;
+    
+    /** Lista de productos que componen el pedido. */
     private List<EmailProductoLinea> productos = new ArrayList<>();
 
     public String getEmail() {
