@@ -11,6 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Servicio encargado de la lógica de negocio de la lista de deseos o favoritos.
+ * Permite listar los productos guardados y procesar la acción del botón de favoritos 
+ * desde la tienda web.
+ */
 @Service
 public class FavoritoService {
 
@@ -20,12 +25,28 @@ public class FavoritoService {
     @Autowired
     private ProductoRepository productoRepository;
 
+    /**
+     * Consulta la tabla de favoritos y extrae únicamente la información de los productos 
+     * asociados a un usuario para enviarlos a la vista.
+     *
+     * @param usuarioId El ID del cliente.
+     * @return Lista de entidades Producto guardadas por el usuario.
+     */
     public List<Producto> listarFavoritos(Integer usuarioId) {
         return favoritoRepository.findAllByUsuario_Id(usuarioId).stream()
                 .map(Favorito::getProducto)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Gestiona la lógica del botón "Agregar/Quitar a favoritos" (Toggle).
+     * Revisa si la relación ya existe en BD: si existe la borra, si no existe la crea.
+     *
+     * @param usuario El objeto usuario completo.
+     * @param productoId El identificador del producto en el catálogo.
+     * @return {@code true} si el producto se agregó a la lista, {@code false} si fue removido.
+     * @throws RuntimeException Si se intenta agregar un producto que no existe.
+     */
     @Transactional
     public boolean toggleFavorito(Usuario usuario, Integer productoId) {
         Integer usuarioId = usuario.getId();
@@ -44,6 +65,12 @@ public class FavoritoService {
         return true;
     }
 
+    /**
+     * Remueve de manera directa un producto de la lista de favoritos.
+     *
+     * @param usuarioId El ID del usuario.
+     * @param productoId El ID del producto a eliminar.
+     */
     @Transactional
     public void eliminarFavorito(Integer usuarioId, Integer productoId) {
         favoritoRepository.deleteByUsuario_IdAndProducto_Id(usuarioId, productoId);
