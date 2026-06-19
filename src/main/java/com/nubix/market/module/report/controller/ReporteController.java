@@ -15,6 +15,11 @@ import com.nubix.market.enums.TipoEntrega;
 import com.nubix.market.module.report.service.ReporteExportService;
 import java.time.LocalDate;
 
+/**
+ * Controlador REST diseñado para facilitar la descarga de reportes gerenciales 
+ * desde el panel de administración.
+ * Expone endpoints que construyen y devuelven archivos binarios en formato Excel (.xlsx).
+ */
 @RestController
 @RequestMapping("/api/admin/reportes")
 public class ReporteController {
@@ -25,6 +30,12 @@ public class ReporteController {
         this.reporteExportService = reporteExportService;
     }
 
+    /**
+     * Exporta el catálogo de productos a un archivo Excel, permitiendo aplicar 
+     * filtros dinámicos como categoría, alertas de stock bajo o rangos de precios.
+     *
+     * @return Archivo Excel (bytes) con las cabeceras HTTP configuradas para forzar la descarga.
+     */
     @GetMapping(value = "/productos", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarProductos(
             @RequestParam(required = false) Integer categoriaId,
@@ -40,6 +51,9 @@ public class ReporteController {
                 .body(body);
     }
 
+    /**
+     * Exporta la lista completa de categorías registradas en el sistema a un archivo Excel.
+     */
     @GetMapping(value = "/categorias", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarCategorias() {
         byte[] body = reporteExportService.exportarCategoriasExcel();
@@ -50,6 +64,9 @@ public class ReporteController {
                 .body(body);
     }
 
+    /**
+     * Exporta el directorio de proveedores a un archivo Excel.
+     */
     @GetMapping(value = "/proveedores", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarProveedores() {
         byte[] body = reporteExportService.exportarProveedoresExcel();
@@ -59,7 +76,15 @@ public class ReporteController {
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(body);
     }
-
+    
+    /**
+     * Exporta el historial de ventas dentro de un rango de fechas obligatorio, 
+     * permitiendo añadir filtros avanzados por estado, tipo de entrega o cliente.
+     * El nombre del archivo descargable incluye dinámicamente las fechas seleccionadas.
+     *
+     * @param desde Fecha de inicio del reporte (Obligatoria).
+     * @param hasta Fecha de fin del reporte (Obligatoria).
+     */
     @GetMapping(value = "/ventas", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarVentas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
