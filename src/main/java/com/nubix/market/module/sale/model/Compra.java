@@ -6,26 +6,39 @@ import java.util.ArrayList;
 import java.util.List;
 import com.nubix.market.module.supplier.model.Proveedor;
 
+/**
+ * Entidad JPA que representa una transacción de abastecimiento o ingreso de mercadería.
+ * Registra la compra de productos al por mayor a un proveedor específico para aumentar el stock.
+ */
 @Entity
 @Table(name = "compras")
 public class Compra {
+
+    /** Identificador único autoincremental de la orden de compra. */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /** Número de factura física o electrónica entregada por el proveedor. */
     @Column(nullable = false)
     private String numeroFactura;
 
+    /** Fecha y hora exacta en la que se registró el ingreso de mercadería. */
     @Column(nullable = false)
     private LocalDateTime fecha = LocalDateTime.now();
 
+    /** Costo total de la orden de compra. */
     @Column(nullable = false)
     private Double total;
 
+    /** Relación con la entidad Proveedor que suministró los productos. */
     @ManyToOne
     @JoinColumn(name = "proveedor_id", nullable = false)
     private Proveedor proveedor;
 
+    /** * Lista de los productos específicos adquiridos en esta compra. 
+     * CascadeType.ALL asegura que al guardar la compra, se guarden automáticamente sus detalles.
+     */
     @OneToMany(mappedBy = "compra", cascade = CascadeType.ALL)
     private List<DetalleCompra> detalles = new ArrayList<>();
 

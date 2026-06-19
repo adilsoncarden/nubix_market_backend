@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nubix.market.enums.TipoEntrega;
 import jakarta.persistence.*;
 
+/**
+ * Entidad JPA que encapsula la información logística de una venta.
+ * Almacena dónde y cómo se debe hacer llegar el pedido al cliente.
+ */
 @Entity
 @Table(name = "ventas_entrega")
 public class VentaEntrega {
@@ -12,11 +16,13 @@ public class VentaEntrega {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    /** Relación uno a uno obligatoria con la venta principal. */
     @OneToOne
     @JoinColumn(name = "venta_id", nullable = false, unique = true)
     @JsonIgnore
     private Venta venta;
 
+    /** Modalidad elegida (ej. DELIVERY_MOTO, DELIVERY_AUTO, RECOJO_EN_TIENDA). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoEntrega tipoEntrega;
@@ -30,6 +36,7 @@ public class VentaEntrega {
     @Column(nullable = true)
     private String referencia;
 
+    /** Código auto-generado que el cliente debe mostrar en caja para retirar su pedido. */
     @Column(nullable = true)
     private String codigoRecojo;
 

@@ -17,6 +17,11 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Entidad principal (Cabecera) que representa una transacción de venta a un cliente.
+ * Consolida los montos, el estado de la operación (pagado, pendiente) y enlaza 
+ * la información logística (VentaEntrega) y financiera (Pago).
+ */
 @JsonView(JsonViews.List.class)
 @Entity
 @Table(name = "ventas")
@@ -29,42 +34,53 @@ public class Venta {
     @Column(nullable = false)
     private LocalDate fecha = LocalDate.now();
 
+    /** Monto total final a cobrar al cliente (Subtotal + IGV + Envío). */
     @Column(nullable = false)
     private Double total;
 
+    /** Suma de los precios de los productos, sin impuestos ni extras. */
     @Column(nullable = true)
     private Double subtotal = 0.0;
 
+    /** Impuesto General a las Ventas (18% en Perú) calculado sobre el subtotal. */
     @Column(nullable = true)
     private Double igv = 0.0;
 
+    /** Origen de la transacción (ej. WEB, PRESENCIAL, WHATSAPP). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CanalVenta canal = CanalVenta.PRESENCIAL;
 
+    /** Tipo de documento fiscal emitido (BOLETA, FACTURA, TICKET). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoComprobante tipoComprobante = TipoComprobante.TICKET;
 
+    /** Vía elegida por el cliente para transferir el dinero (YAPE, TARJETA, EFECTIVO). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private MetodoPago metodoPago;
 
+    /** Forma en la que el cliente recibirá los productos (DELIVERY, RECOJO_EN_TIENDA). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoEntrega tipoEntrega;
 
+    /** Etapa operativa actual de la orden (PREPARANDO, EN_CAMINO, ENTREGADO). */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoPedido estadoPedido = EstadoPedido.PENDIENTE;
 
+    /** Situación actual del dinero (PAGADO, PENDIENTE, RECHAZADO). */
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_pago", nullable = false, length = 20)
     private EstadoPago estadoPago;
 
+    /** Código de seguridad auto-generado para el retiro rápido (Fast Lane). */
     @Column(nullable = true)
     private String codigoRecojo;
 
+    /** Copia de seguridad de la dirección en caso de que se borre el registro de entrega. */
     @Column(nullable = true)
     private String direccionEntrega;
 
@@ -89,25 +105,30 @@ public class Venta {
     @Column(nullable = true, length = 255)
     private String direccionFiscal;
 
+    /** Cliente registrado que realizó la compra (Puede ser nulo para ventas a Consumidor Final en caja). */
     @ManyToOne
     @JoinColumn(name = "cliente_id", nullable = true)
     @JsonIgnoreProperties({ "venta", "hibernateLazyInitializer", "handler", "password", "rol" })
     private Usuario cliente;
 
+    /** Cajero o administrador que registró la venta (Aplica principalmente para Canal PRESENCIAL). */
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = true)
     @JsonIgnoreProperties({ "venta", "hibernateLazyInitializer", "handler", "password", "rol" })
     private Usuario vendedor;
 
+    /** Lista de productos que conforman la compra. */
     @OneToMany(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties({ "venta" })
     @JsonIgnore
     private List<DetalleVenta> detalles = new ArrayList<>();
 
+    /** Detalles logísticos asociados a esta venta específica. */
     @OneToOne(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties({ "venta" })
     private VentaEntrega entrega;
 
+    /** Detalle transaccional asociado a esta venta. */
     @OneToOne(mappedBy = "venta", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnoreProperties({ "venta" })
     private Pago pago;
@@ -291,6 +312,7 @@ public class Venta {
         this.vendedor = vendedor;
     }
 
+    /** Exposición controlada de los detalles utilizando la vista 'Detail' de Jackson. */
     @JsonProperty("detalles")
     @JsonView(JsonViews.Detail.class)
     public List<DetalleVenta> getDetalles() {
