@@ -16,6 +16,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+
+/**
+ * Sembrador de datos (Data Seeder) que se ejecuta al iniciar la aplicación.
+ * Garantiza que la base de datos contenga los permisos, roles base (ADMIN, CLIENTE) 
+ * y las asignaciones iniciales necesarias para que el sistema de autorización (RBAC) 
+ * funcione correctamente desde el primer arranque.
+ */
 @Component
 @Order(50)
 public class RbacDataSeeder implements ApplicationRunner {
@@ -25,11 +32,21 @@ public class RbacDataSeeder implements ApplicationRunner {
     private final PermisoRepository permisoRepository;
     private final RolRepository rolRepository;
 
+    /**
+     * Constructor para la inyección de dependencias.
+     *
+     * @param permisoRepository Repositorio para gestionar los permisos en base de datos.
+     * @param rolRepository     Repositorio para gestionar los roles en base de datos.
+     */
     public RbacDataSeeder(PermisoRepository permisoRepository, RolRepository rolRepository) {
         this.permisoRepository = permisoRepository;
         this.rolRepository = rolRepository;
     }
 
+    /**
+     * Diccionario estático que almacena los permisos iniciales requeridos por el sistema.
+     * Estructura: Llave (Nombre del permiso) -> Valor (Arreglo con Descripción y Módulo).
+     */
     private static final Map<String, String[]> PERMISOS_INICIALES = new LinkedHashMap<>();
 
     static {
@@ -54,10 +71,23 @@ public class RbacDataSeeder implements ApplicationRunner {
         seedEntry("gestionar:seguridad", "Gestionar roles, permisos y políticas de acceso", "Seguridad");
     }
 
+    /**
+     * Método auxiliar para registrar un permiso en el diccionario inicial.
+     *
+     * @param nombre      Nombre identificador del permiso (ej. "ver:ventas").
+     * @param descripcion Descripción legible para el usuario.
+     * @param modulo      Módulo al que pertenece (ej. "Ventas").
+     */
     private static void seedEntry(String nombre, String descripcion, String modulo) {
         PERMISOS_INICIALES.put(nombre, new String[] { descripcion, modulo });
     }
 
+    /**
+     * Punto de entrada principal del componente. 
+     * Ejecuta la inserción o actualización de permisos y roles dentro de una transacción.
+     *
+     * @param args Argumentos de inicialización de Spring Boot.
+     */
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
@@ -65,6 +95,10 @@ public class RbacDataSeeder implements ApplicationRunner {
         seedRolesBase();
     }
 
+    /**
+     * Itera sobre los permisos iniciales definidos estáticamente e inserta los faltantes 
+     * en la base de datos o actualiza los existentes si carecen de módulo o descripción.
+     */
     private void seedPermisos() {
         for (Map.Entry<String, String[]> entry : PERMISOS_INICIALES.entrySet()) {
             String nombre = entry.getKey();
@@ -92,13 +126,22 @@ public class RbacDataSeeder implements ApplicationRunner {
         log.info("RBAC: {} permisos base verificados (con módulo)", PERMISOS_INICIALES.size());
     }
 
+    /**
+     * Evalúa si el módulo de un permiso requiere ser actualizado.
+     *
+     * @param modulo El módulo actual a evaluar.
+     * @return {@code true} si está vacío, es nulo o tiene el valor por defecto "General".
+     */
     private static boolean needsModuloUpdate(String modulo) {
         return modulo == null
                 || modulo.isBlank()
                 || "General".equalsIgnoreCase(modulo.trim());
     }
 
-    /** Filas legacy sin módulo correcto (p. ej. quedaron en 'General' tras el ALTER). */
+    /**
+     * Actualiza las filas heredadas (legacy) en la base de datos que quedaron 
+     * con el módulo "General" tras el parche del esquema, infiriendo el módulo correcto.
+     */
     private void backfillModulosPendientes() {
         for (Permiso permiso : permisoRepository.findAll()) {
             if (!needsModuloUpdate(permiso.getModulo())) {
@@ -112,6 +155,12 @@ public class RbacDataSeeder implements ApplicationRunner {
         }
     }
 
+    /**
+     * Infiere la categoría o módulo de un permiso basándose en su nombre utilizando reglas simples.
+     *
+     * @param nombre El nombre del permiso.
+     * @return El nombre del módulo inferido.
+     */
     private static String inferirModuloDesdeNombre(String nombre) {
         if (nombre == null || nombre.isBlank()) {
             return "General";
@@ -137,6 +186,10 @@ public class RbacDataSeeder implements ApplicationRunner {
         return "General";
     }
 
+    /**
+     * Asegura la creación de los roles fundamentales del sistema y sincroniza
+     * sus permisos asociados.
+     */
     private void seedRolesBase() {
         Rol admin = ensureRol(
                 "ADMIN",
@@ -156,6 +209,14 @@ public class RbacDataSeeder implements ApplicationRunner {
         log.info("RBAC: roles base ADMIN y CLIENTE verificados");
     }
 
+    /**
+     * Busca un rol por su nombre y lo crea si no existe. 
+     * Si existe pero carece de descripción, la actualiza.
+     *
+     * @param nombre      El nombre del rol a verificar.
+     * @param descripcion La descripción correspondiente a ese rol.
+     * @return La entidad Rol actualizada o persistida.
+     */
     private Rol ensureRol(String nombre, String descripcion) {
         return rolRepository.findByNombre(nombre).map(existing -> {
             if (existing.getDescripcion() == null || existing.getDescripcion().isBlank()) {
@@ -167,8 +228,9 @@ public class RbacDataSeeder implements ApplicationRunner {
     }
 
     /**
-     * ADMIN debe tener todos los permisos en role_permiso (incl. ver:ventas).
-     * Se re-sincroniza si faltan permisos del catálogo actual.
+     * Garantiza que el rol 'ADMIN' mantenga siempre un acceso absoluto.
+     * Compara los permisos actuales del administrador con la totalidad de permisos 
+     * existentes en la base de datos y le asigna los faltantes.
      */
     private void sincronizarPermisosAdmin() {
         rolRepository.findByNombre("ADMIN").ifPresent(admin -> {

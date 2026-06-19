@@ -7,7 +7,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Asegura que la tabla de tokens de reset tenga ID autoincremental.
+ * Componente que se ejecuta al inicializar la aplicación para aplicar parches
+ * directamente sobre el esquema de la base de datos.
+ * Asegura específicamente que la tabla de tokens de recuperación de contraseña 
+ * (password_reset_tokens) exista y tenga su identificador configurado como autoincremental.
  */
 @Component
 public class PasswordResetSchemaPatch {
@@ -16,10 +19,23 @@ public class PasswordResetSchemaPatch {
 
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Constructor para la inyección de dependencias.
+     *
+     * @param jdbcTemplate Herramienta principal de Spring para ejecutar consultas SQL de forma segura.
+     */
+
     public PasswordResetSchemaPatch(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Método ejecutado automáticamente después de que Spring inicializa este bean (@PostConstruct).
+     * Intenta crear la tabla de tokens si no existe y luego ejecuta un comando ALTER TABLE 
+     * para garantizar que la columna 'id' sea autogenerada por defecto.
+     * Los errores durante este proceso son capturados y registrados en el log para evitar 
+     * que la aplicación deje de arrancar.
+     */
     @PostConstruct
     public void patch() {
         try {

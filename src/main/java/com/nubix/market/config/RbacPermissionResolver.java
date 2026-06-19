@@ -4,9 +4,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
+/**
+ * Componente responsable de mapear las peticiones HTTP (URI y Método) a los permisos específicos (RBAC)
+ * que se requieren para acceder a ellas.
+ * Actúa como un diccionario de reglas de autorización para las distintas rutas de la API administrativa.
+ */
 @Component
 public class RbacPermissionResolver {
 
+    /**
+     * Analiza la solicitud HTTP entrante y determina el nombre del permiso necesario 
+     * para continuar con la ejecución.
+     *
+     * @param request La solicitud HTTP que contiene la URI y el método (GET, POST, PUT, DELETE).
+     * @return El nombre del permiso requerido (ej. "ver:productos", "crear:ventas"), o {@code null} 
+     * si la ruta no requiere un permiso específico gestionado por este resolutor.
+     */
     public String resolve(HttpServletRequest request) {
         String uri = request.getRequestURI();
         String method = request.getMethod();

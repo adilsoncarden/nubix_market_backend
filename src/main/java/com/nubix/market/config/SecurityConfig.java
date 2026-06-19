@@ -18,6 +18,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Clase principal de configuración de seguridad de la aplicación (Spring Security).
+ * Define las políticas de CORS, el manejo de sesiones (Stateless para JWT),
+ * el enrutamiento público/privado y registra los filtros personalizados de autenticación y autorización.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -27,6 +32,13 @@ public class SecurityConfig {
     private final RbacAuthorizationFilter rbacAuthorizationFilter;
     private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
 
+    /**
+     * Constructor para inyectar los filtros personalizados y manejadores de error.
+     *
+     * @param jwtAuthFilter           Filtro que valida el token JWT en cada petición.
+     * @param rbacAuthorizationFilter Filtro que valida los permisos del usuario contra la ruta solicitada.
+     * @param jsonAccessDeniedHandler Manejador que devuelve un JSON cuando se deniega el acceso.
+     */
     public SecurityConfig(
             JwtAuthFilter jwtAuthFilter,
             RbacAuthorizationFilter rbacAuthorizationFilter,
@@ -36,9 +48,20 @@ public class SecurityConfig {
         this.jsonAccessDeniedHandler = jsonAccessDeniedHandler;
     }
 
+    /**
+     * Orígenes permitidos para peticiones CORS, inyectados desde la configuración (application.properties).
+     */
     @Value("${cors.allowed-origins:http://localhost:5173}")
     private String allowedOrigins;
 
+    /**
+     * Configura la cadena de filtros de seguridad (SecurityFilterChain) que interceptará
+     * todas las peticiones HTTP entrantes.
+     *
+     * @param http El constructor de seguridad web de Spring.
+     * @return La cadena de filtros configurada.
+     * @throws Exception Si ocurre un error al construir la configuración.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -82,6 +105,13 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Define la configuración de Cross-Origin Resource Sharing (CORS).
+     * Permite que el frontend (ej. React en el puerto 5173) pueda consumir la API
+     * sin ser bloqueado por las políticas del navegador.
+     *
+     * @return La fuente de configuración CORS.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -104,6 +134,11 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Define el algoritmo de encriptación que se utilizará para hashear y verificar contraseñas.
+     *
+     * @return Una instancia de BCryptPasswordEncoder.
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

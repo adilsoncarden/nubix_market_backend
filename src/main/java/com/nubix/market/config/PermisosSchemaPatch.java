@@ -9,8 +9,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Parche PostgreSQL/Supabase: añade {@code permisos.modulo} con DEFAULT para filas
- * existentes, antes de que Hibernate o el seeder fallen por NOT NULL.
+ * Parche de base de datos ejecutado al iniciar la aplicación para actualizar 
+ * el esquema de la tabla 'permisos'.
+ * Añade la columna 'modulo' con un valor por defecto para las filas existentes, 
+ * evitando errores de restricción NOT NULL antes de que Hibernate o los seeders actúen.
  */
 @Component
 @Order(5)
@@ -20,10 +22,21 @@ public class PermisosSchemaPatch implements ApplicationRunner {
 
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Constructor para inyección de dependencias.
+     *
+     * @param jdbcTemplate Herramienta para ejecutar consultas SQL nativas.
+     */
     public PermisosSchemaPatch(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Punto de entrada del ApplicationRunner.
+     * Verifica la existencia de la tabla antes de proceder con el parche.
+     *
+     * @param args Argumentos de la línea de comandos con los que se inició la aplicación.
+     */
     @Override
     public void run(ApplicationArguments args) {
         if (!tableExists("permisos")) {
@@ -33,6 +46,12 @@ public class PermisosSchemaPatch implements ApplicationRunner {
         patchModuloColumn();
     }
 
+    /**
+     * Verifica si una tabla específica existe en el esquema actual de la base de datos.
+     *
+     * @param tableName El nombre de la tabla a verificar.
+     * @return {@code true} si la tabla existe, {@code false} en caso contrario o si ocurre un error.
+     */
     private boolean tableExists(String tableName) {
         try {
             Integer count = jdbcTemplate.queryForObject(
@@ -50,6 +69,13 @@ public class PermisosSchemaPatch implements ApplicationRunner {
         }
     }
 
+    /**
+     * Verifica si una columna específica existe dentro de una tabla determinada.
+     *
+     * @param tableName  El nombre de la tabla.
+     * @param columnName El nombre de la columna a buscar.
+     * @return {@code true} si la columna existe en la tabla, {@code false} en caso contrario.
+     */
     private boolean columnExists(String tableName, String columnName) {
         try {
             Integer count = jdbcTemplate.queryForObject(
@@ -68,6 +94,12 @@ public class PermisosSchemaPatch implements ApplicationRunner {
         }
     }
 
+    /**
+     * Aplica la lógica principal del parche:
+     * 1. Crea la columna 'modulo' si no existe.
+     * 2. Asigna módulos específicos (Dashboard, Productos, etc.) basados en el nombre del permiso.
+     * 3. Configura la columna como NOT NULL con un valor por defecto ('General').
+     */
     private void patchModuloColumn() {
         try {
             if (!columnExists("permisos", "modulo")) {
