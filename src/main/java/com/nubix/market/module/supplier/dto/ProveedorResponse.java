@@ -1,5 +1,9 @@
 package com.nubix.market.module.supplier.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que moldea la información 
+ * de un proveedor para ser mostrada en la vista del panel administrativo.
+ */
 public class ProveedorResponse {
     private Integer id;
     private String ruc;
