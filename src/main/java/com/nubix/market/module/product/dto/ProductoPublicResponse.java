@@ -1,5 +1,10 @@
 package com.nubix.market.module.product.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) diseñado específicamente para la vista pública (Tienda).
+ * Contiene únicamente la información comercial del producto, excluyendo deliberadamente 
+ * datos sensibles como el precio de compra o los márgenes de ganancia.
+ */
 public class ProductoPublicResponse {
     private Integer id;
     private String codigo;
