@@ -4,13 +4,20 @@ import com.nubix.market.module.product.model.Producto;
 import java.util.List;
 
 /**
- * DAO de consultas compuestas para productos.
- * Complementa {@code ProductoRepository} en escenarios de reportes y alertas de stock.
+ * Interfaz Data Access Object (DAO) para consultas complejas de productos.
+ * Complementa al repositorio estándar de Spring Data JPA (ProductoRepository) 
+ * ofreciendo métodos especializados para reportes y alertas gerenciales, 
+ * como el análisis de inventario.
  */
 public interface ProductoDAO {
 
     /**
-     * Productos con stock menor al umbral, opcionalmente filtrados por categoría.
+     * Recupera una lista de productos cuyo stock actual haya caído por debajo de un umbral crítico.
+     * Permite opcionalmente filtrar la alerta por una categoría específica.
+     *
+     * @param umbral      El límite mínimo de stock aceptable (ej. 5 o 10 unidades).
+     * @param categoriaId (Opcional) Filtro para evaluar solo los productos de una categoría concreta.
+     * @return Lista de productos en riesgo de agotamiento, listos para generar reportes.
      */
     List<Producto> buscarConStockBajo(int umbral, Integer categoriaId);
 }
