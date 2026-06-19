@@ -8,19 +8,36 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio encargado de gestionar el ciclo de vida y las reglas de negocio de los proveedores.
+ * Asegura la calidad de los datos de contacto y la unicidad tributaria de los registros.
+ */
 @Service
 public class ProveedorService {
     @Autowired
     private ProveedorRepository proveedorRepository;
 
+    /**
+     * Retorna todo el directorio de proveedores.
+     */
     public List<Proveedor> obtenerTodos() {
         return proveedorRepository.findAll();
     }
 
+    /**
+     * Busca un proveedor en específico.
+     */
     public Optional<Proveedor> obtenerPorId(Integer id) {
         return proveedorRepository.findById(id);
     }
 
+    /**
+     * Registra un nuevo proveedor validando previamente el formato de su RUC, 
+     * la estructura del teléfono y la integridad del correo.
+     *
+     * @param request Formulario de creación del frontend.
+     * @return Proveedor persistido en BD.
+     */
     public Proveedor guardar(ProveedorRequest request) {
         validarProveedor(request);
         if (proveedorRepository.existsByRuc(request.getRuc())) {
@@ -36,6 +53,10 @@ public class ProveedorService {
         return proveedorRepository.save(proveedor);
     }
 
+    /**
+     * Edita los datos de un proveedor, asegurándose de que si el usuario decide 
+     * modificar el RUC, el nuevo número no pertenezca ya a otra empresa.
+     */
     public Proveedor actualizar(Integer id, ProveedorRequest detalles) {
         validarProveedor(detalles);
         Proveedor proveedor = proveedorRepository.findById(id)
@@ -53,12 +74,23 @@ public class ProveedorService {
         return proveedorRepository.save(proveedor);
     }
 
+    /**
+     * Elimina el registro del proveedor de forma definitiva.
+     */
+
     public void eliminar(Integer id) {
         Proveedor proveedor = proveedorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));
         proveedorRepository.delete(proveedor);
     }
 
+    /**
+     * Método utilitario privado que aplica expresiones regulares (Regex) para garantizar 
+     * que la base de datos no se llene de información basura ("dirty data").
+     *
+     * @param request El objeto a validar y limpiar (trim).
+     * @throws RuntimeException Si alguna validación de formato falla.
+     */
     private void validarProveedor(ProveedorRequest request) {
         if (request.getRuc() != null) {
             request.setRuc(request.getRuc().trim());
