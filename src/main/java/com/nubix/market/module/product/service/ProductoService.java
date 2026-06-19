@@ -14,9 +14,15 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servicio encargado de la lógica de negocio central del inventario de productos.
+ * Aplica reglas estrictas de validación de datos, verificación de códigos duplicados 
+ * y prevención de valores negativos para precios y stock.
+ */
 @Service
 public class ProductoService {
 
+    /** Umbral por defecto para considerar que un producto tiene bajo stock (10 unidades). */
     public static final int STOCK_BAJO_UMBRAL = 10;
 
     private static final Logger log = LoggerFactory.getLogger(ProductoService.class);
@@ -34,19 +40,35 @@ public class ProductoService {
         this.productoDAO = productoDAO;
     }
 
+    /**
+     * Recupera el listado completo de productos del catálogo.
+     */
     public List<Producto> obtenerTodos() {
         return productoRepository.findAllWithCategoria();
     }
 
+    /**
+     * Genera un reporte de productos cuyo stock está por debajo del umbral de seguridad.
+     */
     public List<Producto> obtenerConStockBajo(Integer categoriaId) {
         return productoDAO.buscarConStockBajo(STOCK_BAJO_UMBRAL, categoriaId);
     }
 
+    /**
+     * Busca un producto específico por su ID.
+     */
     public Optional<Producto> obtenerPorId(Integer id) {
         Preconditions.checkArgument(id != null && id > 0, "El id del producto es obligatorio");
         return productoRepository.findByIdWithRelations(id);
     }
 
+    /**
+     * Procesa la creación de un nuevo producto validando la integridad de los datos.
+     *
+     * @param request Datos del formulario de creación.
+     * @return El producto persistido en la BD.
+     * @throws RuntimeException Si el código ya existe o si algún valor es negativo.
+     */
     public Producto guardar(ProductoRequest request) {
         Preconditions.checkNotNull(request, "La solicitud de producto es obligatoria");
         validarPreciosYStock(request);
@@ -77,6 +99,10 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
+    /**
+     * Procesa la actualización de un producto existente garantizando que el nuevo código, 
+     * si cambió, no colisione con el de otro producto.
+     */
     public Producto actualizar(Integer id, ProductoRequest detalles) {
         Preconditions.checkNotNull(id, "El id del producto es obligatorio");
         Preconditions.checkNotNull(detalles, "La solicitud de actualización es obligatoria");
@@ -111,6 +137,9 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
+    /**
+     * Elimina permanentemente un producto.
+     */
     public void eliminar(Integer id) {
         Preconditions.checkNotNull(id, "El id del producto es obligatorio");
         Producto producto = productoRepository.findById(id)
@@ -120,10 +149,16 @@ public class ProductoService {
         productoRepository.delete(producto);
     }
 
+    /**
+     * Sanea la URL de la imagen evitando espacios en blanco que puedan romper el frontend.
+     */
     private String normalizarUrlImagen(String urlImagen) {
         return StringUtils.trimToNull(urlImagen);
     }
 
+    /**
+     * Regla de negocio estricta: Impide la inserción de valores ilógicos en las finanzas y el inventario.
+     */
     private void validarPreciosYStock(ProductoRequest request) {
         if (request.getPrecioCompra() != null) {
             Preconditions.checkArgument(
