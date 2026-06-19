@@ -14,6 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador REST público (sin autenticación obligatoria) diseñado para alimentar 
+ * la vista de la tienda virtual (vitrina de productos).
+ * Devuelve únicamente la información segura y necesaria para que los clientes 
+ * puedan navegar por el catálogo.
+ */
 @RestController
 @RequestMapping("/api/catalogo")
 public class CatoloWebController {
@@ -25,6 +31,13 @@ public class CatoloWebController {
     @Autowired
     private ProductoMapper productoMapper;
 
+    /**
+     * Lista todos los productos disponibles en la tienda.
+     * Utiliza un DTO específico (ProductoPublicResponse) para ocultar datos sensibles 
+     * como el costo interno o márgenes de ganancia.
+     *
+     * @return Respuesta HTTP 200 (OK) con la lista de productos públicos.
+     */
     @GetMapping("/productos")
     public ResponseEntity<List<ProductoPublicResponse>> listarProductos() {
         List<ProductoPublicResponse> productos = productoService.obtenerTodos().stream()
@@ -33,6 +46,13 @@ public class CatoloWebController {
         return ResponseEntity.ok(productos);
     }
 
+    /**
+     * Devuelve el detalle completo y público de un solo producto.
+     * Ideal para la página de "Detalle de Producto" cuando el cliente hace clic en una tarjeta.
+     *
+     * @param id El identificador único del producto solicitado.
+     * @return Respuesta HTTP 200 con el DTO público, o 404 (Not Found) si el producto no existe.
+     */
     @GetMapping("/productos/{id}")
     public ResponseEntity<ProductoPublicResponse> obtenerProducto(@PathVariable Integer id) {
         return productoService.obtenerPorId(id)
@@ -41,6 +61,12 @@ public class CatoloWebController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Lista todas las categorías para construir los menús de navegación o filtros 
+     * en la parte lateral de la tienda web.
+     *
+     * @return Respuesta HTTP 200 (OK) con la lista de categorías.
+     */
     @GetMapping("/categorias")
     public ResponseEntity<List<CategoriaResponse>> listarCategorias() {
         List<CategoriaResponse> categorias = categoriaService.obtenerTodas().stream()
