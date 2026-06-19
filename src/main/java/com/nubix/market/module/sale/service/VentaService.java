@@ -35,10 +35,22 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio principal y orquestador del módulo de ventas.
+ * Maneja la lógica de negocio más crítica de la aplicación: el procesamiento de compras.
+ * Coordina la reducción de stock, cálculos financieros (IGV, envíos), generación de códigos 
+ * de recojo (Fast Lane), emisión de alertas y la limpieza del carrito.
+ */
 @Service
 public class VentaService {
+
+    /** Tasa impositiva de Perú (13% en este contexto específico de negocio, normalmente 18%). */
     private static final double IGV_RATE = 0.13;
+
+    /** Monto mínimo de compra para que el envío a domicilio sea gratuito. */
     private static final double ENVIO_GRATIS_DESDE = 100.0;
+
+    /** Tarifa plana estándar para el servicio de delivery. */
     private static final double COSTO_ENVIO_DEFAULT = 8.0;
 
     private static final Logger log = LoggerFactory.getLogger(VentaService.class);
@@ -49,6 +61,9 @@ public class VentaService {
     private final NotificacionService notificacionService;
     private final CarritoService carritoService;
 
+    /**
+     * Recupera el historial completo de ventas registradas.
+     */
     public VentaService(
             VentaRepository ventaRepository,
             UsuarioRepository usuarioRepository,
@@ -67,6 +82,9 @@ public class VentaService {
         return ventaRepository.findAllForList();
     }
 
+    /**
+     * Busca los detalles profundos de una venta específica mediante su identificador.
+     */
     @Transactional(readOnly = true)
     public Venta obtenerPorId(Integer id) {
         Preconditions.checkArgument(id != null && id > 0, "El id de la venta es obligatorio");
@@ -74,6 +92,14 @@ public class VentaService {
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
     }
 
+    /**
+     * Procesa una venta generada físicamente en la tienda (Punto de Venta / POS).
+     * El estado del pedido nace por defecto como ENTREGADO, asumiendo que el cliente 
+     * se lleva el producto inmediatamente.
+     *
+     * @param request Datos de la venta ingresados por el cajero/administrador.
+     * @return La venta persistida en la base de datos.
+     */
     @Transactional
     public Venta crearVenta(VentaRequest request) {
         // Forzar siempre venta presencial tipo cajero
@@ -112,6 +138,14 @@ public class VentaService {
         return saved;
     }
 
+    /**
+     * Orquesta el proceso completo de compra (Checkout) de un cliente a través de la tienda virtual.
+     * Genera la transacción, descuenta el stock, asigna la modalidad de entrega, 
+     * notifica a los involucrados y vacía el carrito de compras.
+     *
+     * @param request Datos del formulario de pago y envío de la web.
+     * @return La venta completamente procesada.
+     */
     @Transactional
     public Venta checkoutWeb(CheckoutRequest request) {
         Usuario usuarioActual = obtenerUsuarioActual();
@@ -149,10 +183,16 @@ public class VentaService {
                     "recojo",
                     "Pedido Fast Lane #" + saved.getId() + " registrado. Código de recojo: " + saved.getCodigoRecojo());
         }
+
+        // Acción clave: Limpiar el carrito tras el éxito de la compra
         carritoService.vaciarCarrito(usuarioActual.getId());
         return saved;
     }
 
+    /**
+     * Recupera el historial de compras exclusivo para el perfil del cliente logueado, 
+     * aplicando filtros de tiempo (ej. "este mes", "este año").
+     */
     @Transactional(readOnly = true)
     public List<MisPedidoResponse> listarMisPedidosWeb(
             String mes, LocalDate fechaInicio, LocalDate fechaFin) {
@@ -173,8 +213,8 @@ public class VentaService {
     }
 
     /**
-     * Sin parámetros o con {@code mes=actual}: mes en curso.
-     * {@code mes=todos} / {@code all}: sin filtro de fecha.
+     * Resuelve los rangos de fechas dinámicos basándose en palabras clave ("trimestre", "anio") 
+     * enviadas desde el frontend.
      */
     private LocalDate[] resolverRangoMisPedidos(String mes, LocalDate fechaInicio, LocalDate fechaFin) {
         if (fechaInicio != null && fechaFin != null) {
@@ -210,6 +250,10 @@ public class VentaService {
         return dto;
     }
 
+    /**
+     * Avanza o retrocede la etapa operativa de un pedido (ej. PENDIENTE -> PREPARANDO -> EN_CAMINO).
+     * Valida mediante OrderStatusFlow que la transición solicitada sea lógicamente correcta.
+     */
     @Transactional
     public Venta actualizarEstadoPedido(Integer ventaId, EstadoPedido nuevoEstado) {
         Venta venta = ventaRepository.findById(ventaId)
@@ -227,6 +271,9 @@ public class VentaService {
         return saved;
     }
 
+    /**
+     * Aprueba financieramente una venta que originalmente se despachó bajo la modalidad de CRÉDITO.
+     */
     @Transactional
     public Venta registrarCredito(Integer ventaId) {
         Venta venta = ventaRepository.findById(ventaId)
@@ -390,6 +437,11 @@ public class VentaService {
         venta.setDireccionFiscal(direccionFiscal);
     }
 
+    /**
+     * Aplica la sustracción de productos del inventario. Utiliza un bloqueo pesimista 
+     * en el repositorio para evitar que se venda stock fantasma por concurrencia.
+     * Emite una notificación interna si el producto baja de 5 unidades.
+     */
     private double procesarDetallesYStock(Venta venta, List<VentaRequest.DetalleVentaRequest> items) {
         double total = 0.0;
         for (VentaRequest.DetalleVentaRequest item : items) {
@@ -460,6 +512,10 @@ public class VentaService {
         return COSTO_ENVIO_DEFAULT;
     }
 
+    /**
+     * Configura el objeto VentaEntrega y, en caso de la modalidad FAST_LANE, 
+     * auto-genera el código alfanumérico que el cliente presentará.
+     */
     private void configurarEntrega(Venta venta, TipoEntrega tipo, String direccion,
             String distrito, String referencia) {
         TipoEntrega tipoEntrega = tipo != null ? tipo : TipoEntrega.PRESENCIAL;
