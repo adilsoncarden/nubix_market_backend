@@ -1,13 +1,31 @@
 package com.nubix.market.module.identidad.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que estandariza la respuesta de identidad 
+ * enviada al frontend. Sirve como un "molde" limpio que oculta las diferencias y 
+ * complejidades del JSON original devuelto por la API externa (Apisperu).
+ */
 public class IdentidadConsultaResponse {
 
+    /** El número de documento consultado (DNI o RUC). */
     private String documento;
+
+    /** El tipo de documento detectado ("DNI" o "RUC"). */
     private String tipo;
+
+    /** Nombre completo de la persona (para DNI) o Razón Social (para RUC). */
     private String nombreRazonSocial;
+
+    /** Departamento fiscal asociado al RUC (nulo para DNI). */
     private String departamento;
+
+    /** Provincia fiscal asociada al RUC (nulo para DNI). */
     private String provincia;
+
+    /** Distrito fiscal asociado al RUC (nulo para DNI). */
     private String distrito;
+
+    /** Dirección completa o domicilio fiscal (principalmente para RUC). */
     private String direccion;
 
     public String getDocumento() {
