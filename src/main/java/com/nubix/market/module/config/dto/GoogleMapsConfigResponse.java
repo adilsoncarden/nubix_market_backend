@@ -1,8 +1,15 @@
 package com.nubix.market.module.config.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que encapsula la respuesta del servidor 
+ * al solicitar la configuración del servicio de Google Maps.
+ */
 public class GoogleMapsConfigResponse {
 
+    /** La clave alfanumérica (API Key) necesaria para inicializar el mapa en el frontend. */
     private String apiKey;
+
+    /** Bandera que indica si la clave proporcionada es válida y el servicio está listo para usarse. */
     private boolean configured;
 
     public GoogleMapsConfigResponse() {
