@@ -14,12 +14,25 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Componente estructurador (Builder) encargado de recopilar, transformar y ensamblar 
+ * todos los datos necesarios antes de inyectarlos en la plantilla del correo electrónico 
+ * de confirmación de compra.
+ */
 @Component
 public class EmailConfirmacionBuilder {
 
     @Autowired
     private VentaRepository ventaRepository;
 
+    /**
+     * Ensambla el contexto completo del correo. Si la petición incluye un ID de venta, 
+     * busca la venta en la base de datos y extrae los datos reales. De lo contrario, 
+     * utiliza los datos provistos en el request directamente.
+     *
+     * @param request Datos básicos iniciales de la confirmación solicitada.
+     * @return El contexto del correo listo para ser procesado por el motor de plantillas.
+     */
     public EmailConfirmacionContext build(EmailConfirmacionRequest request) {
         EmailConfirmacionContext context = new EmailConfirmacionContext();
         context.setEmail(request.getEmail());
@@ -42,6 +55,9 @@ public class EmailConfirmacionBuilder {
         return context;
     }
 
+    /**
+     * Mapea los atributos principales de la entidad Venta al contexto del correo.
+     */
     private void mapFromVenta(EmailConfirmacionContext context, Venta venta) {
         context.setNumero("V-" + String.format("%05d", venta.getId()));
         context.setTipoComprobante(resolveTipoLabel(null, venta.getTipoComprobante()));
@@ -53,6 +69,9 @@ public class EmailConfirmacionBuilder {
         context.setProductos(mapProductosFromVenta(venta));
     }
 
+    /**
+     * Convierte la lista de Detalles de Venta (BD) a un formato simplificado y amigable para el correo.
+     */
     private List<EmailProductoLinea> mapProductosFromVenta(Venta venta) {
         List<EmailProductoLinea> lineas = new ArrayList<>();
         if (venta.getDetalles() == null) {
@@ -71,6 +90,9 @@ public class EmailConfirmacionBuilder {
         return lineas;
     }
 
+    /**
+     * Convierte los productos enviados crudos en la petición HTTP al formato del correo.
+     */
     private List<EmailProductoLinea> mapProductosFromRequest(EmailConfirmacionRequest request) {
         if (request.getProductos() == null || request.getProductos().isEmpty()) {
             return new ArrayList<>();
@@ -83,6 +105,9 @@ public class EmailConfirmacionBuilder {
                 .toList();
     }
 
+    /**
+     * Resuelve el nombre visual amigable para el cliente dependiendo del tipo de comprobante.
+     */
     private String resolveTipoLabel(String tipoRequest, TipoComprobante tipoVenta) {
         if (tipoVenta != null) {
             return switch (tipoVenta) {
@@ -103,6 +128,10 @@ public class EmailConfirmacionBuilder {
         return tipoRequest;
     }
 
+    /**
+     * Multiplica el precio por la cantidad asegurando que no existan valores nulos 
+     * que rompan la aplicación (NullPointerException).
+     */
     private static double safeMultiply(Double precio, int cantidad) {
         if (precio == null || cantidad <= 0) {
             return 0.0;

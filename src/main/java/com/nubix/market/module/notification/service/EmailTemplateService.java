@@ -6,6 +6,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Servicio encargado de generar dinámicamente el código HTML para los correos electrónicos.
+ * Utiliza los colores corporativos de Nubix Market y el formato Text Blocks (Java 15+) 
+ * para renderizar vistas atractivas sin necesidad de librerías externas.
+ */
 @Component
 public class EmailTemplateService {
 
@@ -15,6 +20,12 @@ public class EmailTemplateService {
     private static final String MUTED = "#6b7280";
     private static final String BORDER = "#e5e7eb";
 
+    /**
+     * Construye la plantilla HTML para el correo de recuperación de contraseña.
+     *
+     * @param codigo El código numérico de 6 dígitos para recuperar la cuenta.
+     * @return String con el código HTML listo para ser enviado.
+     */
     public String recuperacionContrasena(String codigo) {
         String safeCodigo = escape(codigo);
 
@@ -50,6 +61,13 @@ public class EmailTemplateService {
                         MUTED));
     }
 
+    /**
+     * Construye la plantilla HTML para el recibo de compra.
+     * Invoca métodos privados para generar las tablas internas de productos y totales.
+     *
+     * @param ctx El objeto de contexto que contiene toda la información de la venta.
+     * @return String con el código HTML de la factura/boleta digital.
+     */
     public String confirmacionCompra(EmailConfirmacionContext ctx) {
         String safeNumero = escape(ctx.getNumero() != null ? ctx.getNumero() : "-");
         String safeTipo = escape(ctx.getTipoComprobante() != null ? ctx.getTipoComprobante() : "Comprobante");
@@ -93,6 +111,10 @@ public class EmailTemplateService {
                         MUTED));
     }
 
+    /**
+     * Construye la tabla HTML (<tr> y <td>) que lista todos los productos comprados.
+     */
+
     private String buildProductosTable(List<EmailProductoLinea> productos) {
         if (productos == null || productos.isEmpty()) {
             return """
@@ -132,6 +154,10 @@ public class EmailTemplateService {
                 """.formatted(BORDER, BRAND_LIGHT, BRAND, BRAND, BRAND, rows.toString());
     }
 
+    /**
+     * Construye la tabla de desglose financiero (Subtotal, IGV, Envío, Total).
+     */
+
     private String buildTotalesTable(EmailConfirmacionContext ctx) {
         StringBuilder rows = new StringBuilder();
 
@@ -153,6 +179,9 @@ public class EmailTemplateService {
                 """.formatted(BORDER, rows.toString());
     }
 
+    /**
+     * Método auxiliar para generar las filas de la tabla de totales con soporte para destacar el Total final.
+     */
     private String totalRow(String label, String value, boolean highlight) {
         String valueStyle = highlight
                 ? "color:%s;font-weight:700;font-size:16px;".formatted(BRAND)
@@ -166,6 +195,9 @@ public class EmailTemplateService {
                 """.formatted(MUTED, labelWeight, BORDER, escape(label), valueStyle, BORDER, value);
     }
 
+    /**
+     * Construye el recuadro verde con el código Fast Lane si el cliente eligió recoger en tienda.
+     */
     private String buildCodigoRecojoBlock(String codigoRecojo) {
         if (codigoRecojo == null || codigoRecojo.isBlank()) {
             return "";
@@ -194,6 +226,10 @@ public class EmailTemplateService {
         return baseLayout(title, bodyHtml, "");
     }
 
+    /**
+     * Envoltura global (Wrapper) de todos los correos. Define el <body>, los estilos base, 
+     * el encabezado corporativo de Nubix Market y el footer con el copyright.
+     */
     private String baseLayout(String title, String bodyHtml, String extraHeadHtml) {
         return """
                 <!DOCTYPE html>
@@ -227,6 +263,10 @@ public class EmailTemplateService {
                 """.formatted(extraHeadHtml, BRAND, escape(title), bodyHtml, BORDER, MUTED);
     }
 
+    /**
+     * Escapa caracteres especiales de HTML para prevenir ataques XSS si el contenido 
+     * viene de una fuente no confiable (ej. nombres de usuarios extraños).
+     */
     private static String escape(String value) {
         if (value == null) {
             return "";

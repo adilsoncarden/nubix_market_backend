@@ -12,6 +12,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Servicio encargado de la lógica de negocio de las alertas internas (in-app) de la plataforma.
+ */
 @Service
 public class NotificacionService {
 
@@ -21,16 +24,34 @@ public class NotificacionService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Busca las últimas 30 notificaciones asociadas al usuario logueado en la sesión.
+     *
+     * @return Lista de objetos Notificacion.
+     */
     public List<Notificacion> obtenerMisNotificaciones() {
         Usuario actual = obtenerUsuarioActual();
         return notificacionRepository.findTop30ByUsuario_IdOrderByFechaDesc(actual.getId());
     }
 
+    /**
+     * Calcula la cantidad de alertas pendientes (no leídas) del usuario actual.
+     *
+     * @return Número de notificaciones no leídas.
+     */
     public Long contarNoLeidas() {
         Usuario actual = obtenerUsuarioActual();
         return notificacionRepository.countByUsuario_IdAndLeidoFalse(actual.getId());
     }
 
+    /**
+     * Método público utilizado mediante un Controller REST para generar nuevas alertas.
+     * Si no se especifica un destino, se asume que la alerta es para el usuario creador.
+     *
+     * @param request Datos de la notificación solicitada.
+     * @return Entidad Notificacion creada.
+     * @throws RuntimeException Si falta el mensaje o el usuario destino no existe.
+     */
     @Transactional
     public Notificacion crear(NotificacionRequest request) {
         if (request.getMensaje() == null || request.getMensaje().isBlank()) {
@@ -47,6 +68,14 @@ public class NotificacionService {
                 request.getMensaje());
     }
 
+    /**
+     * Cambia el estado de una alerta específica de "no leída" a "leída".
+     * Bloquea intentos de marcar como leídas las notificaciones de otros usuarios por seguridad.
+     *
+     * @param id Identificador de la alerta.
+     * @return Entidad Notificacion modificada.
+     * @throws RuntimeException Si el usuario intenta leer una alerta que no le pertenece.
+     */
     @Transactional
     public Notificacion marcarLeida(Integer id) {
         Usuario actual = obtenerUsuarioActual();
@@ -59,6 +88,15 @@ public class NotificacionService {
         return notificacionRepository.save(n);
     }
 
+    /**
+     * Método interno utilitario utilizado por otros servicios (como Ventas o Productos) 
+     * para inyectar alertas automáticamente en el sistema sin pasar por un Controller HTTP.
+     *
+     * @param usuario Destinatario final.
+     * @param tipo Categoría o icono de la alerta.
+     * @param mensaje Texto descriptivo de la alerta.
+     * @return Entidad persistida en BD.
+     */
     @Transactional
     public Notificacion crearInterna(Usuario usuario, String tipo, String mensaje) {
         Notificacion n = new Notificacion();
@@ -70,6 +108,9 @@ public class NotificacionService {
         return notificacionRepository.save(n);
     }
 
+    /**
+     * Obtiene de forma segura al usuario autenticado consultando el contexto de Spring Security.
+     */
     private Usuario obtenerUsuarioActual() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return usuarioRepository.findByUsername(username)
