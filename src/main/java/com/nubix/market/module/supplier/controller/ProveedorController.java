@@ -11,12 +11,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador REST diseñado para gestionar el directorio de proveedores de la empresa.
+ * Expone operaciones CRUD exclusivamente para el panel de administración.
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class ProveedorController {
     @Autowired
     private ProveedorService proveedorService;
 
+    /**
+     * Mapeador manual interno para transformar entidades de BD en DTOs de respuesta.
+     */
     private ProveedorResponse mapToResponse(Proveedor proveedor) {
         return new ProveedorResponse(
                 proveedor.getId(),
@@ -26,6 +33,9 @@ public class ProveedorController {
                 proveedor.getEmail());
     }
 
+    /**
+     * Obtiene el listado completo de los proveedores registrados en el sistema.
+     */
     @GetMapping("/proveedores")
     public ResponseEntity<List<ProveedorResponse>> obtenerTodos() {
         List<Proveedor> proveedores = proveedorService.obtenerTodos();
@@ -35,12 +45,18 @@ public class ProveedorController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Registra un nuevo proveedor en la base de datos tras validar sus datos fiscales.
+     */
     @PostMapping("/proveedores/create")
     public ResponseEntity<?> crearProveedor(@RequestBody ProveedorRequest request) {
         Proveedor proveedor = proveedorService.guardar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(proveedor));
     }
 
+    /**
+     * Busca los detalles específicos de un proveedor utilizando su ID.
+     */
     @GetMapping("/proveedores/{id}")
     public ResponseEntity<?> obtenerProveedorPorId(@PathVariable Integer id) {
         return proveedorService.obtenerPorId(id)
@@ -49,6 +65,9 @@ public class ProveedorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Actualiza la información de contacto o el nombre comercial de un proveedor existente.
+     */
     @PostMapping("/proveedores/{id}/update")
     public ResponseEntity<?> actualizarProveedor(@PathVariable Integer id, @RequestBody ProveedorRequest request) {
         try {
@@ -62,6 +81,9 @@ public class ProveedorController {
         }
     }
 
+    /**
+     * Elimina a un proveedor del registro del sistema.
+     */
     @DeleteMapping("/proveedores/{id}/delete")
     public ResponseEntity<?> eliminarProveedor(@PathVariable Integer id) {
         try {
