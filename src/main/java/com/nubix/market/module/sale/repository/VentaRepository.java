@@ -10,9 +10,18 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio avanzado para la entidad Venta.
+ * Utiliza sentencias JPQL personalizadas con 'LEFT JOIN FETCH' para optimizar la extracción 
+ * masiva de datos y evitar el problema de consultas en cascada (N+1 Selects).
+ */
 @Repository
 public interface VentaRepository extends JpaRepository<Venta, Integer> {
 
+     /**
+     * Extrae el listado completo de ventas junto con TODAS sus tablas relacionadas.
+     * Utilizado para reportes pesados o exportaciones completas.
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.detalles d
@@ -25,6 +34,11 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
             """)
     List<Venta> findAllWithRelations();
 
+
+     /**
+     * Extrae una versión ligera de las ventas (solo cabecera y usuarios).
+     * Ideal para llenar las tablas principales del panel administrativo rápidamente.
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.cliente
@@ -33,6 +47,9 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
             """)
     List<Venta> findAllForList();
 
+     /**
+     * Busca los detalles completos de una venta específica por su ID.
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.detalles d
@@ -45,6 +62,9 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
             """)
     Optional<Venta> findByIdWithRelations(Integer id);
 
+     /**
+     * Historial de compras resumido para un cliente en específico filtrando por canal.
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.entrega
@@ -56,6 +76,10 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
             @Param("clienteId") Integer clienteId,
             @Param("canal") CanalVenta canal);
 
+
+     /**
+     * Historial de compras resumido para un cliente, acotado a un rango de fechas específico.
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.entrega
