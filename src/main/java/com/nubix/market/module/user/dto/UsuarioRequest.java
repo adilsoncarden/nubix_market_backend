@@ -1,5 +1,10 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * DTO para la creación de usuarios desde el panel administrativo.
+ * Incluye la contraseña en texto plano (que luego será encriptada en el servicio) 
+ * y el ID del Rol al que pertenecerá.
+ */
 public class UsuarioRequest {
     private String username;
     private String email;

@@ -1,5 +1,8 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * DTO utilizado al crear o editar el nombre de un Rol.
+ */
 public class RolRequest {
 
     private String nombre;

@@ -1,11 +1,18 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que envía al frontend la información 
+ * completa del perfil de un usuario logueado. Incluye sus datos de acceso 
+ * y su información fiscal o logística si ya fue llenada previamente.
+ */
 public class PerfilResponse {
 
     private Integer id;
     private String username;
     private String email;
     private String rolNombre;
+
+    // Datos de contacto y ubicación (Pueden ser nulos si el usuario es nuevo)
     private String telefono;
     private String direccion;
     private String departamento;
@@ -15,6 +22,8 @@ public class PerfilResponse {
     private Double latitud;
     private Double longitud;
     private String googlePlaceId;
+
+    // Datos de facturación
     private String dniRuc;
     private String nombreRazonSocial;
 

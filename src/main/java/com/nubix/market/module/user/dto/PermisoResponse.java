@@ -1,5 +1,8 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * DTO para enviar la información de un permiso hacia la vista.
+ */
 public class PermisoResponse {
 
     private Integer id;

@@ -1,10 +1,16 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * DTO seguro para listar los usuarios en la vista.
+ * Nunca envía la contraseña al cliente web.
+ */
 public class UsuarioResponse {
     private Integer id;
     private String username;
     private String email;
-    private String rolNombre; // Devolvemos el nombre del rol (ej. "ADMIN") para que el frontend lo lea fácil
+
+    /** Devolvemos el nombre del rol (ej. "ADMIN") para que el frontend lo lea fácil. */
+    private String rolNombre; 
 
     // Constructores, Getters y Setters
     public UsuarioResponse() {

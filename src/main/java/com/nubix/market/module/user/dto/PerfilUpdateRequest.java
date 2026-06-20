@@ -1,5 +1,9 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * Objeto de Transferencia de Datos (DTO) que recibe la información del usuario 
+ * cuando este decide actualizar su propia información personal desde su panel (Autogestión).
+ */
 public class PerfilUpdateRequest {
 
     private String telefono;

@@ -1,5 +1,8 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * DTO para mostrar el nombre y descripción de un Rol en el panel administrativo.
+ */
 public class RolResponse {
 
     private Integer id;
