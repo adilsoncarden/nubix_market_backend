@@ -10,6 +10,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 
+/**
+ * Entidad JPA central que gestiona la autenticación e información personal de quien usa el sistema.
+ * Reúne credenciales de acceso, configuración del rol y metadatos operativos/logísticos.
+ */
 @Entity
 @Table(name = "usuario")
 public class Usuario {
@@ -25,6 +29,7 @@ public class Usuario {
     @Column(nullable = false, unique = true, length = 100)
     private String email;
 
+    /** La contraseña siempre se ignora en la serialización JSON por seguridad. */
     @Column(nullable = false)
     @JsonIgnore
     private String password;
@@ -76,7 +81,7 @@ public class Usuario {
         this.password = password;
     }
 
-    // Getters and Setters
+    // Getters and Setters...
 
     public Integer getId() {
         return id;

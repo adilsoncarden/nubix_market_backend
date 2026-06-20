@@ -3,6 +3,10 @@ package com.nubix.market.module.user.model;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * Entidad JPA que representa una autorización o permiso individual en el sistema.
+ * Es la base del sistema RBAC (Role-Based Access Control).
+ */
 @Entity
 @Table(name = "permisos")
 public class Permiso {

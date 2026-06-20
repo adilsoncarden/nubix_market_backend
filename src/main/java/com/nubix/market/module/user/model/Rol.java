@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Entidad JPA que representa una agrupación de permisos asignable a usuarios.
+ * Contiene una relación Muchos a Muchos (ManyToMany) con la entidad Permiso.
+ */
 @Entity
 @Table(name = "roles")
 public class Rol {
