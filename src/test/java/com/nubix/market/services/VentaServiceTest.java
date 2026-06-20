@@ -35,6 +35,11 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+/**
+ * Pruebas unitarias robustas para el motor principal de ventas.
+ * Simula el contexto de seguridad de Spring Security para validar que 
+ * la creación de ventas presenciales funcione correctamente bajo el perfil de un empleado.
+ */
 @ExtendWith(MockitoExtension.class)
 class VentaServiceTest {
 
@@ -52,6 +57,10 @@ class VentaServiceTest {
     @InjectMocks
     private VentaService ventaService;
 
+    /**
+     * Inyecta un usuario simulado ("vendedor1") en el contexto de seguridad 
+     * antes de ejecutar cada prueba, imitando un login real.
+     */
     @BeforeEach
     void setVendorInSecurityContext() {
         SecurityContextHolder.getContext().setAuthentication(
@@ -61,11 +70,17 @@ class VentaServiceTest {
                         List.of(new SimpleGrantedAuthority("ROLE_EMPLEADO"))));
     }
 
+    /** Limpia el contexto de seguridad al terminar para no contaminar otras pruebas. */
     @AfterEach
     void clearSecurity() {
         SecurityContextHolder.clearContext();
     }
 
+    /**
+     * Simula el flujo completo de una venta en tienda física (Punto de Venta).
+     * Valida que al enviar un producto válido, el servicio procese la compra, 
+     * asigne el comprobante tipo TICKET y retorne el ID generado.
+     */
     @Test
     void crearVenta_presencial_ticket_unLinea_exito() {
         Usuario vendedor = new Usuario();

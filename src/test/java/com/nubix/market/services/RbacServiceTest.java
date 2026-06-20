@@ -20,6 +20,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Pruebas unitarias para el Control de Acceso Basado en Roles (RBAC).
+ * Garantiza que las reglas de negocio críticas, como no permitir nombres de permisos 
+ * duplicados, se respeten de forma inquebrantable en el servicio.
+ */
 @ExtendWith(MockitoExtension.class)
 class RbacServiceTest {
 

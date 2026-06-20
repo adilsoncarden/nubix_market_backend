@@ -23,6 +23,11 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+/**
+ * Pruebas unitarias para el servicio de autenticación.
+ * Verifica mediante Mocks que el proceso de login genere correctamente el token JWT 
+ * cuando las credenciales son válidas, y que rechace el acceso cuando la contraseña es incorrecta.
+ */
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 

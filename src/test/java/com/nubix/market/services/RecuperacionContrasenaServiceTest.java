@@ -24,6 +24,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+/**
+ * Pruebas unitarias para el servicio de recuperación de contraseñas.
+ * Asegura que el sistema de seguridad detecte e invalide correctamente 
+ * los códigos de recuperación expirados o tipeados incorrectamente por el usuario.
+ */
 @ExtendWith(MockitoExtension.class)
 class RecuperacionContrasenaServiceTest {
 
@@ -42,6 +47,10 @@ class RecuperacionContrasenaServiceTest {
     @InjectMocks
     private RecuperaciónContraseñaService service;
 
+    /**
+     * Valida que el servicio lance una excepción específica (CODE_EXPIRED) 
+     * si el usuario intenta usar un token de recuperación cuya fecha límite ya pasó.
+     */
     @Test
     void verificarCodigo_expiredToken_returnsCodeExpired() {
         Usuario usuario = new Usuario();
@@ -65,6 +74,10 @@ class RecuperacionContrasenaServiceTest {
         verify(reseteoContraseñaRepository).save(token);
     }
 
+    /**
+     * Verifica que el servicio rechace la operación (INVALID_CODE) si el usuario 
+     * ingresa un código que no coincide con el generado en la base de datos.
+     */
     @Test
     void verificarCodigo_wrongCode_returnsInvalidCode() {
         Usuario usuario = new Usuario();

@@ -20,6 +20,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+/**
+ * Pruebas unitarias para la lógica central del catálogo de productos.
+ * Asegura que las validaciones de precios negativos lancen excepciones y que 
+ * la consulta de stock bajo se delegue correctamente a la capa DAO.
+ */
 @ExtendWith(MockitoExtension.class)
 class ProductoServiceTest {
 
