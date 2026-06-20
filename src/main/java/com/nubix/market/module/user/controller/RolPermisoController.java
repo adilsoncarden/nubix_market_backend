@@ -9,6 +9,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST que gestiona los Roles de usuario (ej. ADMIN, EMPLEADO, CLIENTE) 
+ * y la asignación masiva de permisos a dichos roles.
+ */
 @RestController
 @RequestMapping("/api/roles")
 public class RolPermisoController {
@@ -16,11 +20,17 @@ public class RolPermisoController {
     @Autowired
     private RbacService rbacService;
 
+    /**
+     * Devuelve el catálogo de todos los roles configurados en la plataforma.
+     */
     @GetMapping
     public ResponseEntity<?> listarRoles() {
         return ResponseEntity.ok(rbacService.listarRoles());
     }
 
+    /**
+     * Busca los detalles específicos de un rol por su ID.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerRol(@PathVariable Integer id) {
         try {
@@ -30,6 +40,9 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Crea una nueva agrupación o "Rol" vacío.
+     */
     @PostMapping
     public ResponseEntity<?> crearRol(@RequestBody RolRequest request) {
         try {
@@ -39,6 +52,9 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Modifica el nombre o descripción de un rol existente.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizarRol(
             @PathVariable Integer id,
@@ -53,6 +69,10 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Elimina un rol del sistema. Existen reglas de negocio (protegidas en el servicio) 
+     * que impiden borrar roles críticos como el "Administrador Supremo" o "Cliente".
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarRol(@PathVariable Integer id) {
         try {
@@ -69,6 +89,10 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Obtiene únicamente el listado de los IDs de los permisos asociados a un rol.
+     * Muy útil para pre-cargar los "checkboxes" marcados en la interfaz de configuración.
+     */
     @GetMapping("/{id}/permisos")
     public ResponseEntity<?> permisosDeRol(@PathVariable Integer id) {
         try {
@@ -79,6 +103,10 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Aplica la tabla de permisos a un rol. Recibe una lista de IDs y sobreescribe 
+     * completamente los permisos anteriores del rol con los nuevos seleccionados.
+     */
     @PostMapping("/{id}/permisos")
     public ResponseEntity<?> sincronizarPermisos(
             @PathVariable Integer id,

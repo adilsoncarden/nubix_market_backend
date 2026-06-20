@@ -11,16 +11,26 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador REST privado y administrativo para gestionar las cuentas de la plataforma.
+ * Mantiene lógicamente separados a los Clientes de los Empleados/Admins para 
+ * facilitar las interfaces de gestión.
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
+    /** Mapeador interno para ocultar las contraseñas hasheadas en las respuestas. */
     private UsuarioResponse mapToResponse(com.nubix.market.module.user.model.Usuario usuario) {
         return new UsuarioResponse(usuario.getId(), usuario.getUsername(), usuario.getEmail(),
                 usuario.getRol().getNombre());
     }
+
+    // ==========================================
+    // SECCIÓN DE CLIENTES (Compradores web)
+    // ==========================================
 
     @GetMapping("/clientes")
     public ResponseEntity<List<UsuarioResponse>> obtenerClientes() {
@@ -51,6 +61,10 @@ public class UsuarioController {
         }
     }
 
+    // ==========================================
+    // SECCIÓN DE EMPLEADOS Y ADMINISTRADORES
+    // ==========================================
+    
     @GetMapping("/empleados")
     public ResponseEntity<List<UsuarioResponse>> obtenerEmpleadosYAdmins() {
         List<UsuarioResponse> usuarios = usuarioService.obtenerEmpleadosYAdmins().stream()

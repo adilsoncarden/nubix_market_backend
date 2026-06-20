@@ -8,6 +8,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST encargado de la gestión de los permisos individuales del sistema.
+ * Permite listar, crear, editar y eliminar las "acciones" específicas que luego 
+ * serán agrupadas y asignadas a los roles.
+ */
 @RestController
 @RequestMapping("/api/permisos")
 public class PermisoController {
@@ -15,17 +20,27 @@ public class PermisoController {
     @Autowired
     private RbacService rbacService;
 
+    /**
+     * Devuelve una lista de todos los "módulos" registrados (ej. VENTAS, PRODUCTOS, REPORTES) 
+     * para facilitar la agrupación visual de los permisos en el frontend.
+     */
     @GetMapping("/modulos")
     public ResponseEntity<?> listarModulos() {
         return ResponseEntity.ok(rbacService.listarModulosPermisos());
     }
 
+    /**
+     * Lista todos los permisos del sistema. Opcionalmente se puede filtrar por un módulo específico.
+     */
     @GetMapping
     public ResponseEntity<?> listar(
             @RequestParam(required = false) String modulo) {
         return ResponseEntity.ok(rbacService.listarPermisos(modulo));
     }
 
+    /**
+     * Obtiene el detalle de un permiso específico por su identificador.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<?> obtener(@PathVariable Integer id) {
         try {
@@ -35,6 +50,9 @@ public class PermisoController {
         }
     }
 
+    /**
+     * Registra un nuevo permiso en el sistema.
+     */
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody PermisoRequest request) {
         try {
@@ -45,6 +63,9 @@ public class PermisoController {
         }
     }
 
+    /**
+     * Modifica los datos descriptivos de un permiso existente.
+     */
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizar(
             @PathVariable Integer id,
@@ -59,6 +80,10 @@ public class PermisoController {
         }
     }
 
+    /**
+     * Elimina un permiso del sistema, retirándolo automáticamente de cualquier 
+     * rol que lo tuviera asignado.
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminar(@PathVariable Integer id) {
         try {
