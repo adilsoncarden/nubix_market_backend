@@ -10,8 +10,18 @@ import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Pruebas unitarias para validar la correcta serialización de objetos utilizando 
+ * la anotación @JsonView. Asegura que los datos sensibles o pesados se oculten 
+ * o se muestren dependiendo de la vista solicitada (List vs Detail).
+ */
 class VentaJsonViewSerializationTest {
 
+    /**
+     * Verifica que al utilizar la vista 'Detail', el motor de Jackson incluya 
+     * explícitamente la lista de detalles de venta y los datos del producto, 
+     * ignorando los campos que no pertenezcan a esa vista.
+     */
     @Test
     void detailViewIncludesSaleLineFieldsWhenDefaultViewInclusionIsDisabled() throws Exception {
         JsonMapper mapper = JsonMapper.builder()

@@ -20,6 +20,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Clase de pruebas unitarias para el controlador de productos.
+ * Utiliza Mockito y MockMvc para simular peticiones HTTP sin necesidad de 
+ * levantar el servidor completo ni conectarse a una base de datos real.
+ */
 @ExtendWith(MockitoExtension.class)
 class ProductoControllerMvcTest {
 
@@ -39,6 +44,10 @@ class ProductoControllerMvcTest {
         mockMvc = MockMvcBuilders.standaloneSetup(productoController).build();
     }
 
+    /**
+     * Valida que el endpoint de listar productos responda con un estado HTTP 200 (OK) 
+     * y un arreglo JSON vacío cuando no hay datos registrados en el servicio.
+     */
     @Test
     void listarProductos_vacio_ok() throws Exception {
         when(productoService.obtenerTodos()).thenReturn(Collections.emptyList());
