@@ -17,6 +17,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio central para el Control de Acceso Basado en Roles (RBAC).
+ * Gestiona de forma segura todo el ciclo de vida de los Roles, los Permisos 
+ * y la asignación entre ambos (La Matriz de Seguridad).
+ */
 @Service
 public class RbacService {
 
@@ -35,10 +40,12 @@ public class RbacService {
 
     // ─── Permisos CRUD ───
 
+    /** Devuelve la lista única de agrupadores lógicos (Módulos) de permisos. */
     public List<String> listarModulosPermisos() {
         return permisoRepository.findDistinctModulos();
     }
 
+    /** Lista todos los permisos. Si se provee un módulo, filtra la lista. */
     public List<PermisoResponse> listarPermisos(String modulo) {
         List<Permiso> lista;
         if (modulo == null || modulo.isBlank()) {
@@ -49,12 +56,16 @@ public class RbacService {
         return lista.stream().map(this::mapPermiso).collect(Collectors.toList());
     }
 
+    /** Recupera un permiso por su ID. */
     public PermisoResponse obtenerPermiso(Integer id) {
         Permiso permiso = permisoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Permiso no encontrado"));
         return mapPermiso(permiso);
     }
 
+    /**
+     * Da de alta un nuevo permiso validando que no exista otro con el mismo nombre.
+     */
     @Transactional
     public PermisoResponse crearPermiso(PermisoRequest request) {
         validarPermisoRequest(request);
@@ -68,6 +79,10 @@ public class RbacService {
         return mapPermiso(permisoRepository.save(permiso));
     }
 
+    /**
+     * Actualiza los datos de un permiso garantizando que el nuevo nombre (si se cambia) 
+     * no colisione con el de otro permiso existente.
+     */
     @Transactional
     public PermisoResponse actualizarPermiso(Integer id, PermisoRequest request) {
         validarPermisoRequest(request);
@@ -84,6 +99,7 @@ public class RbacService {
         return mapPermiso(permisoRepository.save(permiso));
     }
 
+    /** Elimina permanentemente un permiso del sistema. */
     @Transactional
     public void eliminarPermiso(Integer id) {
         if (!permisoRepository.existsById(id)) {
@@ -94,18 +110,24 @@ public class RbacService {
 
     // ─── Roles CRUD ───
 
+    /** Devuelve el catálogo completo de Roles disponibles. */
     public List<RolResponse> listarRoles() {
         return rolRepository.findAllByOrderByNombreAsc().stream()
                 .map(this::mapRol)
                 .collect(Collectors.toList());
     }
 
+    /** Recupera un Rol específico por ID. */
     public RolResponse obtenerRol(Integer id) {
         Rol rol = rolRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Rol no encontrado"));
         return mapRol(rol);
     }
 
+    /**
+     * Crea un nuevo Rol en la plataforma forzando su nombre a mayúsculas 
+     * para mantener estandarización en la base de datos.
+     */
     @Transactional
     public RolResponse crearRol(RolRequest request) {
         validarRolRequest(request);
@@ -118,6 +140,9 @@ public class RbacService {
         return mapRol(rolRepository.save(rol));
     }
 
+    /**
+     * Edita los metadatos de un rol, cuidando de no generar nombres duplicados.
+     */
     @Transactional
     public RolResponse actualizarRol(Integer id, RolRequest request) {
         validarRolRequest(request);
@@ -135,6 +160,12 @@ public class RbacService {
         return mapRol(rolRepository.save(rol));
     }
 
+    /**
+     * Intenta eliminar un rol aplicando fuertes reglas de seguridad de negocio:
+     * 1. No se puede borrar al super-administrador.
+     * 2. No se puede borrar el rol base de los clientes.
+     * 3. No se puede borrar un rol que todavía tenga cuentas de usuario activas.
+     */
     @Transactional
     public void eliminarRol(Integer id) {
         Rol rol = rolRepository.findById(id)
@@ -154,6 +185,9 @@ public class RbacService {
 
     // ─── Asignación permisos ↔ rol ───
 
+    /**
+     * Devuelve únicamente un arreglo con los IDs de los permisos que posee un Rol.
+     */
     @Transactional(readOnly = true)
     public RolPermisoIdsResponse idsPermisosDeRol(Integer rolId) {
         Rol rol = rolRepository.findByIdWithPermisos(rolId)
@@ -165,6 +199,10 @@ public class RbacService {
         return new RolPermisoIdsResponse(ids);
     }
 
+    /**
+     * Sobreescribe por completo la tabla intermedia Role_Permiso para un rol específico.
+     * Recibe una nueva lista de IDs desde la vista y la aplica en cascada.
+     */
     @Transactional
     public RolPermisoIdsResponse sincronizarPermisosRol(Integer rolId, RolPermisoSyncRequest request) {
         Rol rol = rolRepository.findByIdWithPermisos(rolId)
@@ -183,6 +221,8 @@ public class RbacService {
         rolRepository.save(rol);
         return idsPermisosDeRol(rolId);
     }
+
+    // ─── Utilidades Privadas ───
 
     private void validarPermisoRequest(PermisoRequest request) {
         if (request == null
@@ -215,6 +255,10 @@ public class RbacService {
         return new RolResponse(rol.getId(), rol.getNombre(), rol.getDescripcion());
     }
 
+    /**
+     * Validacion dura: Evita que el primer rol creado (ID 1) o los roles 
+     * explícitamente nombrados ADMIN sean eliminados por error.
+     */
     private boolean esRolAdministradorSupremo(Rol rol) {
         if (rol == null) {
             return false;

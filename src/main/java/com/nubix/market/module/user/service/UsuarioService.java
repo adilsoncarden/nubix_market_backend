@@ -11,6 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio encargado de la gestión integral de cuentas de usuario.
+ * Controla la encriptación de contraseñas (BCrypt), la validación de duplicados 
+ * (correos y usernames) y aplica reglas estrictas para proteger los roles administrativos.
+ */
 @Service
 public class UsuarioService {
     @Autowired
@@ -20,14 +25,24 @@ public class UsuarioService {
     @Autowired
     private RolRepository rolRepository;
 
+    /**
+     * Obtiene exclusivamente a los usuarios que tienen el rol de 'CLIENTE'.
+     */
     public List<Usuario> obtenerClientes() {
         return usuarioRepository.findByRol_Nombre("CLIENTE");
     }
 
+    /**
+     * Busca a cualquier usuario por su ID interno.
+     */
     public Optional<Usuario> obtenerPorId(Integer id) {
         return usuarioRepository.findById(id);
     }
 
+    /**
+     * Actualiza los datos de un Cliente. Si se envía una nueva contraseña, 
+     * esta es encriptada automáticamente antes de guardarse en la BD.
+     */
     public Usuario actualizar(Integer id, UsuarioRequest request) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -49,11 +64,17 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    /** Personal interno: todos los usuarios excepto clientes de la tienda. */
+    /** * Personal interno: Obtiene a todos los usuarios del sistema EXCEPTO a los clientes 
+     * de la tienda (ej. Administradores, Cajeros, Empleados). 
+     */
     public List<Usuario> obtenerEmpleadosYAdmins() {
         return usuarioRepository.findByRol_NombreNot("CLIENTE");
     }
 
+    /**
+     * Da de alta a un nuevo empleado en el sistema.
+     * Encripta su contraseña y le asigna un rol interno de forma segura.
+     */
     public Usuario guardarEmpleado(UsuarioRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("El nombre del usuario ya está en uso");
@@ -72,6 +93,10 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    /**
+     * Actualiza la cuenta de un empleado. 
+     * Protege al Administrador Supremo impidiendo que otros le cambien el rol y lo dejen sin acceso.
+     */
     public Usuario actualizarEmpleado(Integer id, UsuarioRequest request) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -100,6 +125,9 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    /**
+     * Elimina permanentemente una cuenta. Bloquea cualquier intento de borrar al Admin principal.
+     */
     public Usuario eliminar(Integer id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -110,6 +138,10 @@ public class UsuarioService {
         return usuario;
     }
 
+    /**
+     * Lógica interna para determinar qué rol otorgar a un empleado nuevo.
+     * Si no se especifica ninguno válido, asigna 'EMPLEADO' por defecto.
+     */
     private Rol resolverRolAsignable(UsuarioRequest request) {
         Rol rol;
         if (request.getRolId() != null) {
@@ -126,6 +158,11 @@ public class UsuarioService {
         return rol;
     }
 
+    /**
+     * Barrera de seguridad (Firewall interno): 
+     * Evita que un administrador asigne el rol 'ADMIN' a cualquiera, o que un 
+     * empleado interno sea catalogado erróneamente como 'CLIENTE'.
+     */
     private void validarRolAsignable(Rol rol) {
         if (esRolAdministradorSupremo(rol)) {
             throw new RuntimeException(

@@ -10,17 +10,30 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Servicio encargado de gestionar los datos personales del usuario logueado.
+ * Asegura que un usuario solo pueda editar su propia información, extrayendo 
+ * su identidad de forma segura desde el contexto de Spring Security (JWT).
+ */
 @Service
 public class UsuarioPerfilService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Consulta la base de datos para devolver el perfil completo del usuario 
+     * que originó la petición HTTP actual.
+     */
     @Transactional(readOnly = true)
     public PerfilResponse obtenerPerfilActual() {
         return toResponse(obtenerUsuarioActual());
     }
 
+    /**
+     * Permite al usuario actualizar sus propios datos logísticos y de facturación.
+     * Actualiza parcialmente la entidad ignorando campos que lleguen nulos.
+     */
     @Transactional
     public PerfilResponse actualizarPerfilActual(PerfilUpdateRequest request) {
         Usuario usuario = obtenerUsuarioActual();
@@ -60,12 +73,20 @@ public class UsuarioPerfilService {
         return toResponse(usuarioRepository.save(usuario));
     }
 
+    /**
+     * Obtiene el nombre de usuario desde el token JWT interceptado por SecurityContextHolder, 
+     * garantizando que no se puedan suplantar identidades.
+     */
     private Usuario obtenerUsuarioActual() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return usuarioRepository.findByUsernameWithRol(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no autenticado"));
     }
 
+    /**
+     * Utilidad para evitar guardar strings vacíos ("   ") en la base de datos,
+     * reemplazándolos limpiamente por nulos reales.
+     */
     private static String blankToNull(String value) {
         return StringUtils.isBlank(value) ? null : value.trim();
     }
