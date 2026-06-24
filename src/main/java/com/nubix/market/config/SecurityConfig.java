@@ -88,6 +88,7 @@ public class SecurityConfig {
                         .authenticated()
                         .requestMatchers(
                                 "/api/ventas/checkout",
+                                "/api/ventas/cargo",
                                 "/api/ventas/mis-pedidos",
                                 "/api/usuarios/perfil",
                                 "/api/config/google-maps-key",

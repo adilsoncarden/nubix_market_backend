@@ -11,8 +11,11 @@ import com.nubix.market.module.notification.service.NotificacionService;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
 import com.nubix.market.module.sale.dto.CheckoutRequest;
+import com.nubix.market.module.sale.dto.StripeCargoRequest;
+import com.nubix.market.module.sale.dto.StripeCargoResponse;
 import com.nubix.market.module.sale.dto.MisPedidoResponse;
 import com.nubix.market.module.sale.dto.VentaRequest;
+import com.nubix.market.module.sale.exception.StripePaymentException;
 import com.nubix.market.module.sale.model.DetalleVenta;
 import com.nubix.market.module.sale.model.Pago;
 import com.nubix.market.module.sale.model.Venta;
@@ -55,6 +58,7 @@ public class VentaService {
     private final ProductoRepository productoRepository;
     private final NotificacionService notificacionService;
     private final CarritoService carritoService;
+    private final StripeService stripeService;
 
     /**
      * Crea el servicio con las dependencias necesarias para ventas.
@@ -64,18 +68,21 @@ public class VentaService {
      * @param productoRepository   repositorio de productos
      * @param notificacionService  servicio de notificaciones internas
      * @param carritoService       servicio de carrito web
+     * @param stripeService        cliente de cargos Stripe
      */
     public VentaService(
             VentaRepository ventaRepository,
             UsuarioRepository usuarioRepository,
             ProductoRepository productoRepository,
             NotificacionService notificacionService,
-            CarritoService carritoService) {
+            CarritoService carritoService,
+            StripeService stripeService) {
         this.ventaRepository = ventaRepository;
         this.usuarioRepository = usuarioRepository;
         this.productoRepository = productoRepository;
         this.notificacionService = notificacionService;
         this.carritoService = carritoService;
+        this.stripeService = stripeService;
     }
 
     /**
@@ -194,6 +201,40 @@ public class VentaService {
         }
         carritoService.vaciarCarrito(usuarioActual.getId());
         return saved;
+    }
+
+    /**
+     * Procesa un cargo con tarjeta en Stripe y, si la captura es exitosa, registra el pedido web.
+     *
+     * @param request PaymentMethod Stripe, correo, monto y datos de checkout
+     * @return respuesta con el id del PaymentIntent y la venta creada
+     * @throws StripePaymentException si Stripe rechaza el pago o el monto no es válido
+     * @throws RuntimeException       si falla la validación o creación del pedido tras el cobro
+     */
+    @Transactional
+    public StripeCargoResponse procesarCargoTarjetaStripe(StripeCargoRequest request) {
+        CheckoutRequest checkout = request.getCheckout();
+        checkout.setMetodoPago(MetodoPago.TARJETA);
+
+        Usuario usuarioActual = obtenerUsuarioActual();
+        if ("CLIENTE".equals(usuarioActual.getRol().getNombre())) {
+            checkout.setClienteId(usuarioActual.getId());
+        }
+
+        validarCheckout(checkout);
+
+        long amountCentavos = Math.round(request.getMonto() * 100);
+        if (amountCentavos <= 0) {
+            throw new StripePaymentException("El monto del pago debe ser mayor a cero.");
+        }
+
+        String paymentIntentId = stripeService.createAndConfirmPayment(
+                request.getPaymentMethodId(),
+                request.getEmail(),
+                amountCentavos);
+
+        Venta venta = checkoutWeb(checkout);
+        return new StripeCargoResponse(paymentIntentId, venta);
     }
 
     /**

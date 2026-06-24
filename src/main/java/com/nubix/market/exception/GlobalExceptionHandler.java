@@ -3,6 +3,7 @@ package com.nubix.market.exception;
 import com.nubix.market.config.ApiErrorResponse;
 import com.nubix.market.module.auth.AuthMessages;
 import com.nubix.market.module.auth.exception.PasswordResetCodeException;
+import com.nubix.market.module.sale.exception.StripePaymentException;
 import java.util.HashMap;
 import java.util.Map;
 import org.hibernate.LazyInitializationException;
@@ -111,6 +112,23 @@ public class GlobalExceptionHandler {
         log.warn("Validación de recuperación de contraseña: {}", ex.getErrorCode());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("code", ex.getErrorCode(), "message", ex.getMessage()));
+    }
+
+    /**
+     * Maneja rechazos o fallos del procesador Stripe.
+     *
+     * @param ex excepción con mensaje amigable para el cliente
+     * @return respuesta HTTP 402 con mensaje y código Stripe opcional
+     */
+    @ExceptionHandler(StripePaymentException.class)
+    public ResponseEntity<Map<String, String>> handleStripePayment(StripePaymentException ex) {
+        log.warn("Pago Stripe rechazado: {} ({})", ex.getMessage(), ex.getStripeCode());
+        Map<String, String> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        if (ex.getStripeCode() != null && !ex.getStripeCode().isBlank()) {
+            body.put("code", ex.getStripeCode());
+        }
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(body);
     }
 
     /**

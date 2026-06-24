@@ -2,6 +2,8 @@ package com.nubix.market.module.sale.controller;
 
 import com.nubix.market.enums.TipoComprobante;
 import com.nubix.market.module.sale.dto.CheckoutRequest;
+import com.nubix.market.module.sale.dto.StripeCargoRequest;
+import com.nubix.market.module.sale.dto.StripeCargoResponse;
 import com.nubix.market.module.sale.dto.MisPedidoResponse;
 import com.nubix.market.module.sale.model.Venta;
 import com.nubix.market.module.sale.service.VentaService;
@@ -45,6 +47,22 @@ public class VentaWebController {
         }
         Venta venta = ventaService.checkoutWeb(request);
         return ResponseEntity.ok(venta);
+    }
+
+    /**
+     * Procesa un cargo con tarjeta vía Stripe y crea el pedido web si el PaymentIntent es exitoso.
+     *
+     * @param request PaymentMethod Stripe, correo, monto y datos del checkout
+     * @return respuesta HTTP 200 con el PaymentIntent y la venta registrada
+     */
+    @PostMapping("/cargo")
+    public ResponseEntity<StripeCargoResponse> procesarCargoStripe(
+            @Valid @RequestBody StripeCargoRequest request) {
+        if (request.getCheckout().getTipoComprobante() == null) {
+            request.getCheckout().setTipoComprobante(TipoComprobante.BOLETA);
+        }
+        StripeCargoResponse response = ventaService.procesarCargoTarjetaStripe(request);
+        return ResponseEntity.ok(response);
     }
 
     /**
