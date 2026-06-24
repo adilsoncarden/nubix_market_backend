@@ -10,17 +10,44 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Servicio de consulta y actualización del perfil del usuario autenticado.
+ * <p>
+ * Obtiene el usuario desde el contexto de seguridad de Spring y expone sus datos
+ * de contacto, ubicación y facturación mediante DTOs de perfil.
+ * </p>
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class UsuarioPerfilService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Obtiene el perfil del usuario actualmente autenticado.
+     *
+     * @return DTO {@link PerfilResponse} con los datos del perfil
+     * @throws RuntimeException si no hay usuario autenticado en el contexto de seguridad
+     */
     @Transactional(readOnly = true)
     public PerfilResponse obtenerPerfilActual() {
         return toResponse(obtenerUsuarioActual());
     }
 
+    /**
+     * Actualiza parcialmente el perfil del usuario autenticado.
+     * <p>
+     * Solo se modifican los campos presentes en la solicitud; los valores en blanco
+     * se normalizan a {@code null}.
+     * </p>
+     *
+     * @param request datos de perfil a actualizar (campos opcionales)
+     * @return DTO {@link PerfilResponse} con el perfil actualizado
+     * @throws RuntimeException si no hay usuario autenticado en el contexto de seguridad
+     */
     @Transactional
     public PerfilResponse actualizarPerfilActual(PerfilUpdateRequest request) {
         Usuario usuario = obtenerUsuarioActual();
@@ -60,16 +87,34 @@ public class UsuarioPerfilService {
         return toResponse(usuarioRepository.save(usuario));
     }
 
+    /**
+     * Obtiene la entidad del usuario autenticado desde el contexto de Spring Security.
+     *
+     * @return entidad {@link Usuario} con su rol cargado
+     * @throws RuntimeException si el usuario no está autenticado o no existe en base de datos
+     */
     private Usuario obtenerUsuarioActual() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return usuarioRepository.findByUsernameWithRol(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no autenticado"));
     }
 
+    /**
+     * Convierte una cadena en blanco o solo espacios a {@code null}; en caso contrario la recorta.
+     *
+     * @param value valor de entrada
+     * @return valor recortado o {@code null} si está en blanco
+     */
     private static String blankToNull(String value) {
         return StringUtils.isBlank(value) ? null : value.trim();
     }
 
+    /**
+     * Mapea una entidad {@link Usuario} a su representación de perfil para la API.
+     *
+     * @param usuario entidad de usuario con datos de perfil
+     * @return DTO {@link PerfilResponse} poblado con los datos del usuario
+     */
     private static PerfilResponse toResponse(Usuario usuario) {
         PerfilResponse r = new PerfilResponse();
         r.setId(usuario.getId());

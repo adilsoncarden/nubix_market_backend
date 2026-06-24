@@ -9,6 +9,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST de roles y asignación de permisos.
+ * <p>
+ * Expone endpoints bajo {@code /api/roles} para el CRUD de roles y la
+ * sincronización de permisos asociados a cada rol.
+ * </p>
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/roles")
 public class RolPermisoController {
@@ -16,11 +26,22 @@ public class RolPermisoController {
     @Autowired
     private RbacService rbacService;
 
+    /**
+     * Lista todos los roles del sistema.
+     *
+     * @return respuesta HTTP 200 con la lista de roles
+     */
     @GetMapping
     public ResponseEntity<?> listarRoles() {
         return ResponseEntity.ok(rbacService.listarRoles());
     }
 
+    /**
+     * Obtiene un rol por su identificador.
+     *
+     * @param id identificador del rol
+     * @return respuesta HTTP 200 con el rol, o 404 si no existe
+     */
     @GetMapping("/{id}")
     public ResponseEntity<?> obtenerRol(@PathVariable Integer id) {
         try {
@@ -30,6 +51,12 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Crea un nuevo rol.
+     *
+     * @param request datos del rol a crear
+     * @return respuesta HTTP 201 con el rol creado, o 400 con mensaje de error
+     */
     @PostMapping
     public ResponseEntity<?> crearRol(@RequestBody RolRequest request) {
         try {
@@ -39,6 +66,14 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Actualiza un rol existente.
+     *
+     * @param id      identificador del rol
+     * @param request nuevos datos del rol
+     * @return respuesta HTTP 200 con el rol actualizado, 404 si no existe,
+     *         o 400 con mensaje de error
+     */
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizarRol(
             @PathVariable Integer id,
@@ -53,6 +88,13 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Elimina un rol del sistema.
+     *
+     * @param id identificador del rol a eliminar
+     * @return respuesta HTTP 200 si se eliminó, 404 si no existe, 403 si es rol protegido,
+     *         o 400 con mensaje de error
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<?> eliminarRol(@PathVariable Integer id) {
         try {
@@ -69,6 +111,12 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Obtiene los identificadores de permisos asignados a un rol.
+     *
+     * @param id identificador del rol
+     * @return respuesta HTTP 200 con la lista de ids de permiso, o 404 si el rol no existe
+     */
     @GetMapping("/{id}/permisos")
     public ResponseEntity<?> permisosDeRol(@PathVariable Integer id) {
         try {
@@ -79,6 +127,13 @@ public class RolPermisoController {
         }
     }
 
+    /**
+     * Sincroniza los permisos asignados a un rol.
+     *
+     * @param id      identificador del rol
+     * @param request lista de ids de permiso deseada
+     * @return respuesta HTTP 200 con los ids asignados, o 400 con mensaje de error
+     */
     @PostMapping("/{id}/permisos")
     public ResponseEntity<?> sincronizarPermisos(
             @PathVariable Integer id,

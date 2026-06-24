@@ -14,12 +14,23 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Constructor del contexto de email de confirmación de compra.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Component
 public class EmailConfirmacionBuilder {
 
     @Autowired
     private VentaRepository ventaRepository;
 
+    /**
+     * Construye contexto de confirmación de compra.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     public EmailConfirmacionContext build(EmailConfirmacionRequest request) {
         EmailConfirmacionContext context = new EmailConfirmacionContext();
         context.setEmail(request.getEmail());

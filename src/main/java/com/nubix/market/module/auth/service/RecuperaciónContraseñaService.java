@@ -15,6 +15,12 @@ import com.nubix.market.module.notification.service.EmailService;
 import com.nubix.market.module.user.model.Usuario;
 import com.nubix.market.module.user.repository.UsuarioRepository;
 
+/**
+ * Servicio de recuperación de contraseña mediante código de verificación por email.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class RecuperaciónContraseñaService {
 
@@ -38,6 +44,10 @@ public class RecuperaciónContraseñaService {
         this.emailService = emailService;
     }
 
+    /**
+     * Inicia recuperación de contraseña enviando código por email.
+     * @param email Correo electrónico.
+     */
     public void contraseñaOlvidada(String email) {
         if (StringUtils.isBlank(email)) {
             return;
@@ -62,12 +72,23 @@ public class RecuperaciónContraseñaService {
         emailService.enviarCodigoRecuperacion(email, codigo);
     }
 
+    /**
+     * Verifica el código de recuperación de contraseña.
+     * @param email Correo electrónico.
+     * @param codigo Código interno.
+     */
     public void verificarCodigo(String email, String codigo) {
         ContraseñaResetToken token = resolveTokenForValidation(email);
         assertTokenNotExpired(token);
         assertCodeMatches(token, codigo);
     }
 
+    /**
+     * Actualiza la contraseña tras validar el código.
+     * @param email Correo electrónico.
+     * @param nuevaContraseña Nueva contraseña a establecer.
+     * @param codigo Código interno.
+     */
     public void resetearContraseña(String email, String nuevaContraseña, String codigo) {
         ContraseñaResetToken token = resolveTokenForValidation(email);
         assertTokenNotExpired(token);

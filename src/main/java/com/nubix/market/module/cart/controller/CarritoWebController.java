@@ -10,6 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST del carrito de compras del cliente web.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/carrito")
 public class CarritoWebController {
@@ -19,6 +25,10 @@ public class CarritoWebController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Obtiene el carrito del usuario autenticado.
+     * @return resultado de la operación
+     */
     @GetMapping
     public ResponseEntity<?> obtenerCarrito() {
         try {
@@ -28,6 +38,11 @@ public class CarritoWebController {
         }
     }
 
+    /**
+     * Agrega un producto al carrito.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/items")
     public ResponseEntity<?> agregarItem(@RequestBody CarritoItemRequest request) {
         try {
@@ -38,6 +53,12 @@ public class CarritoWebController {
         }
     }
 
+    /**
+     * Actualiza cantidad en carrito.
+     * @param productoId valor del parámetro
+     * @param cantidad Cantidad de unidades.
+     * @return resultado de la operación
+     */
     @PutMapping("/items/{productoId}")
     public ResponseEntity<?> actualizarItem(
             @PathVariable Integer productoId,
@@ -51,6 +72,11 @@ public class CarritoWebController {
         }
     }
 
+    /**
+     * Elimina un producto del carrito.
+     * @param productoId valor del parámetro
+     * @return resultado de la operación
+     */
     @DeleteMapping("/items/{productoId}")
     public ResponseEntity<?> eliminarItem(@PathVariable Integer productoId) {
         try {
@@ -61,6 +87,10 @@ public class CarritoWebController {
         }
     }
 
+    /**
+     * Vacía el carrito.
+     * @return resultado de la operación
+     */
     @DeleteMapping
     public ResponseEntity<?> vaciarCarrito() {
         try {

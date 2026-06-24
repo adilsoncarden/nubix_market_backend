@@ -19,6 +19,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador REST para registro, autenticación y recuperación de contraseña.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -27,6 +33,11 @@ public class AuthController {
     @Autowired
     private RecuperaciónContraseñaService recuperaciónContraseñaService;
 
+    /**
+     * Registra un nuevo usuario cliente.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthResponse response = authService.register(request);
@@ -37,6 +48,11 @@ public class AuthController {
         }
     }
 
+    /**
+     * Autentica un usuario y devuelve JWT.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
@@ -47,6 +63,11 @@ public class AuthController {
         }
     }
 
+    /**
+     * Autentica un usuario con acceso al panel administrativo.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/admin-login")
     public ResponseEntity<AuthResponse> adminLogin(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.adminLogin(request);
@@ -57,6 +78,10 @@ public class AuthController {
         }
     }
 
+    /**
+     * Obtiene permisos de la sesión administrativa actual.
+     * @return resultado de la operación
+     */
     @GetMapping("/admin-permisos")
     public ResponseEntity<List<String>> adminPermisosSesion() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -72,18 +97,33 @@ public class AuthController {
         return ResponseEntity.ok(permisos);
     }
 
+    /**
+     * Inicia recuperación de contraseña enviando código por email.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/forgot-password")
     public ResponseEntity<?> contraseñaOlvidada(@RequestBody ContraseñaOlvidadaRequest request) {
         recuperaciónContraseñaService.contraseñaOlvidada(request.getEmail());
         return ResponseEntity.ok().build();
     }
 
+    /**
+     * Verifica el código de recuperación de contraseña.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/verify-code")
     public ResponseEntity<?> verificarCodigo(@RequestBody VerficarCodigoRequest request) {
         recuperaciónContraseñaService.verificarCodigo(request.getEmail(), request.getCodigo());
         return ResponseEntity.ok(java.util.Map.of("message", "Código verificado exitosamente"));
     }
 
+    /**
+     * Establece nueva contraseña tras validar el código.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@Valid @RequestBody NuevaContraseñaRequest request) {
         recuperaciónContraseñaService.resetearContraseña(

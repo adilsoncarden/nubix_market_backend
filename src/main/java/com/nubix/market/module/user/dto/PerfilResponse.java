@@ -1,21 +1,59 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * DTO de respuesta con los datos del perfil del usuario autenticado.
+ * <p>
+ * Incluye credenciales básicas, rol, contacto, ubicación geográfica y datos de facturación.
+ * </p>
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 public class PerfilResponse {
 
+    /** Identificador único del usuario. */
     private Integer id;
+
+    /** Nombre de usuario para autenticación. */
     private String username;
+
+    /** Correo electrónico del usuario. */
     private String email;
+
+    /** Nombre del rol asignado al usuario. */
     private String rolNombre;
+
+    /** Número de teléfono de contacto. */
     private String telefono;
+
+    /** Dirección textual de entrega o residencia. */
     private String direccion;
+
+    /** Departamento de la ubicación. */
     private String departamento;
+
+    /** Provincia de la ubicación. */
     private String provincia;
+
+    /** Distrito de la ubicación. */
     private String distrito;
+
+    /** Referencia adicional para ubicar la dirección. */
     private String referencia;
+
+    /** Latitud geográfica de la dirección. */
     private Double latitud;
+
+    /** Longitud geográfica de la dirección. */
     private Double longitud;
+
+    /** Identificador de lugar de Google Maps. */
     private String googlePlaceId;
+
+    /** DNI o RUC para facturación. */
     private String dniRuc;
+
+    /** Nombre o razón social para comprobantes. */
     private String nombreRazonSocial;
 
     public Integer getId() {

@@ -6,6 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST para notificaciones del usuario autenticado.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/notificaciones")
 public class NotificacionController {
@@ -13,6 +19,10 @@ public class NotificacionController {
     @Autowired
     private NotificacionService notificacionService;
 
+    /**
+     * Obtiene notificaciones del usuario autenticado.
+     * @return resultado de la operación
+     */
     @GetMapping
     public ResponseEntity<?> obtenerMisNotificaciones() {
         try {
@@ -22,6 +32,10 @@ public class NotificacionController {
         }
     }
 
+    /**
+     * Cuenta notificaciones no leídas.
+     * @return resultado de la operación
+     */
     @GetMapping("/count-no-leidas")
     public ResponseEntity<?> contarNoLeidas() {
         try {
@@ -31,6 +45,11 @@ public class NotificacionController {
         }
     }
 
+    /**
+     * Crea una nueva notificación.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody NotificacionRequest request) {
         try {
@@ -40,6 +59,11 @@ public class NotificacionController {
         }
     }
 
+    /**
+     * Marca notificación como leída.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @PutMapping("/{id}/leer")
     public ResponseEntity<?> marcarLeida(@PathVariable Integer id) {
         try {

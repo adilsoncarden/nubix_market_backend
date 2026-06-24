@@ -10,6 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controlador REST para gestión de productos favoritos.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/favoritos")
 public class FavoritoController {
@@ -20,6 +26,10 @@ public class FavoritoController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Lista favoritos del usuario autenticado.
+     * @return resultado de la operación
+     */
     @GetMapping
     public ResponseEntity<?> listar() {
         try {
@@ -31,6 +41,11 @@ public class FavoritoController {
         }
     }
 
+    /**
+     * Alterna favorito de un producto.
+     * @param productoId valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/{productoId}/toggle")
     public ResponseEntity<?> toggle(@PathVariable Integer productoId) {
         try {
@@ -42,6 +57,11 @@ public class FavoritoController {
         }
     }
 
+    /**
+     * Elimina un recurso.
+     * @param productoId valor del parámetro
+     * @return resultado de la operación
+     */
     @DeleteMapping("/{productoId}")
     public ResponseEntity<?> eliminar(@PathVariable Integer productoId) {
         try {

@@ -8,6 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controlador REST de configuración pública de la aplicación.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/config")
 public class AppConfigController {
@@ -17,6 +23,10 @@ public class AppConfigController {
     @Value("${google.maps.api-key:}")
     private String googleMapsApiKey;
 
+    /**
+     * Expone clave de Google Maps si está configurada.
+     * @return resultado de la operación
+     */
     @GetMapping("/google-maps-key")
     public ResponseEntity<GoogleMapsConfigResponse> obtenerGoogleMapsApiKey() {
         boolean configured = StringUtils.isNotBlank(googleMapsApiKey)

@@ -7,7 +7,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Asegura que la tabla de tokens de reset tenga ID autoincremental.
+ * Parche de esquema al arranque que asegura que la tabla de tokens de restablecimiento
+ * de contraseña exista y tenga un identificador autoincremental en PostgreSQL/Supabase.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
  */
 @Component
 public class PasswordResetSchemaPatch {
@@ -16,10 +20,19 @@ public class PasswordResetSchemaPatch {
 
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Inyecta el template JDBC para ejecutar DDL idempotente al iniciar la aplicación.
+     *
+     * @param jdbcTemplate acceso JDBC de Spring
+     */
     public PasswordResetSchemaPatch(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Crea la tabla {@code password_reset_tokens} si no existe y ajusta la columna
+     * {@code id} como identidad generada cuando el motor lo permite.
+     */
     @PostConstruct
     public void patch() {
         try {

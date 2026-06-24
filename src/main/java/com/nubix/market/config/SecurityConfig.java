@@ -18,6 +18,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Configuración central de Spring Security para Nubix Market: CORS, sesión stateless,
+ * cadena de filtros JWT/RBAC, rutas públicas y codificación de contraseñas BCrypt.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -27,6 +34,13 @@ public class SecurityConfig {
     private final RbacAuthorizationFilter rbacAuthorizationFilter;
     private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
 
+    /**
+     * Inyecta los filtros de autenticación/autorización y el manejador de acceso denegado JSON.
+     *
+     * @param jwtAuthFilter              filtro que valida tokens Bearer JWT
+     * @param rbacAuthorizationFilter    filtro que aplica permisos granulares por ruta
+     * @param jsonAccessDeniedHandler    respuestas 403 en JSON para acceso denegado
+     */
     public SecurityConfig(
             JwtAuthFilter jwtAuthFilter,
             RbacAuthorizationFilter rbacAuthorizationFilter,
@@ -36,9 +50,18 @@ public class SecurityConfig {
         this.jsonAccessDeniedHandler = jsonAccessDeniedHandler;
     }
 
+    /** Orígenes permitidos para CORS, separados por coma ({@code cors.allowed-origins}). */
     @Value("${cors.allowed-origins:http://localhost:5173}")
     private String allowedOrigins;
 
+    /**
+     * Define la cadena de filtros HTTP: CSRF deshabilitado, sin sesión, reglas de
+     * autorización por ruta y filtros JWT/RBAC antes del filtro de autenticación por usuario.
+     *
+     * @param http configurador de seguridad HTTP de Spring
+     * @return cadena de filtros de seguridad construida
+     * @throws Exception si la configuración de {@link HttpSecurity} falla
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -82,6 +105,11 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Registra la configuración CORS global a partir de {@link #allowedOrigins}.
+     *
+     * @return fuente de configuración CORS aplicada a todas las rutas ({@code /**})
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
@@ -104,6 +132,11 @@ public class SecurityConfig {
         return source;
     }
 
+    /**
+     * Codificador de contraseñas BCrypt para registro y autenticación de usuarios.
+     *
+     * @return implementación {@link BCryptPasswordEncoder} de {@link PasswordEncoder}
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

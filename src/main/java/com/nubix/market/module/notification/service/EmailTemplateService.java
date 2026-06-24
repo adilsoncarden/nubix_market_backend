@@ -6,6 +6,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+/**
+ * Generador de plantillas HTML para correos transaccionales.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Component
 public class EmailTemplateService {
 
@@ -15,6 +21,11 @@ public class EmailTemplateService {
     private static final String MUTED = "#6b7280";
     private static final String BORDER = "#e5e7eb";
 
+    /**
+     * Genera HTML de recuperación de contraseña.
+     * @param codigo Código interno.
+     * @return resultado de la operación
+     */
     public String recuperacionContrasena(String codigo) {
         String safeCodigo = escape(codigo);
 
@@ -50,6 +61,11 @@ public class EmailTemplateService {
                         MUTED));
     }
 
+    /**
+     * Genera HTML de confirmación de compra.
+     * @param ctx valor del parámetro
+     * @return resultado de la operación
+     */
     public String confirmacionCompra(EmailConfirmacionContext ctx) {
         String safeNumero = escape(ctx.getNumero() != null ? ctx.getNumero() : "-");
         String safeTipo = escape(ctx.getTipoComprobante() != null ? ctx.getTipoComprobante() : "Comprobante");

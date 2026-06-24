@@ -15,6 +15,12 @@ import com.nubix.market.enums.TipoEntrega;
 import com.nubix.market.module.report.service.ReporteExportService;
 import java.time.LocalDate;
 
+/**
+ * Controlador REST para exportación de reportes en Excel.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/admin/reportes")
 public class ReporteController {
@@ -25,6 +31,11 @@ public class ReporteController {
         this.reporteExportService = reporteExportService;
     }
 
+    /**
+     * Exporta reporte de productos en Excel.
+     * @param false valor del parámetro
+     * @return resultado de la operación
+     */
     @GetMapping(value = "/productos", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarProductos(
             @RequestParam(required = false) Integer categoriaId,
@@ -40,6 +51,10 @@ public class ReporteController {
                 .body(body);
     }
 
+    /**
+     * Exporta reporte de categorías en Excel.
+     * @return resultado de la operación
+     */
     @GetMapping(value = "/categorias", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarCategorias() {
         byte[] body = reporteExportService.exportarCategoriasExcel();
@@ -50,6 +65,10 @@ public class ReporteController {
                 .body(body);
     }
 
+    /**
+     * Exporta reporte de proveedores en Excel.
+     * @return resultado de la operación
+     */
     @GetMapping(value = "/proveedores", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarProveedores() {
         byte[] body = reporteExportService.exportarProveedoresExcel();
@@ -60,6 +79,11 @@ public class ReporteController {
                 .body(body);
     }
 
+    /**
+     * Exporta reporte de ventas en Excel.
+     * @param DateTimeFormat.ISO.DATE valor del parámetro
+     * @return resultado de la operación
+     */
     @GetMapping(value = "/ventas", produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     public ResponseEntity<byte[]> exportarVentas(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,

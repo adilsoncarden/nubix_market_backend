@@ -1,17 +1,47 @@
 package com.nubix.market.module.user.dto;
 
+/**
+ * DTO de solicitud para actualización parcial del perfil del usuario autenticado.
+ * <p>
+ * Todos los campos son opcionales; solo se actualizan los presentes en la petición.
+ * </p>
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 public class PerfilUpdateRequest {
 
+    /** Número de teléfono de contacto. */
     private String telefono;
+
+    /** Dirección textual de entrega o residencia. */
     private String direccion;
+
+    /** Departamento de la ubicación. */
     private String departamento;
+
+    /** Provincia de la ubicación. */
     private String provincia;
+
+    /** Distrito de la ubicación. */
     private String distrito;
+
+    /** Referencia adicional para ubicar la dirección. */
     private String referencia;
+
+    /** Latitud geográfica de la dirección. */
     private Double latitud;
+
+    /** Longitud geográfica de la dirección. */
     private Double longitud;
+
+    /** Identificador de lugar de Google Maps. */
     private String googlePlaceId;
+
+    /** DNI o RUC para facturación. */
     private String dniRuc;
+
+    /** Nombre o razón social para comprobantes. */
     private String nombreRazonSocial;
 
     public String getTelefono() {

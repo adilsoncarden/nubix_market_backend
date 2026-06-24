@@ -16,6 +16,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Seeder de datos RBAC que garantiza al arranque el catálogo base de permisos,
+ * los roles ADMIN y CLIENTE, y la sincronización de permisos del administrador
+ * en el ecosistema de Nubix Market.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Component
 @Order(50)
 public class RbacDataSeeder implements ApplicationRunner {
@@ -25,11 +33,18 @@ public class RbacDataSeeder implements ApplicationRunner {
     private final PermisoRepository permisoRepository;
     private final RolRepository rolRepository;
 
+    /**
+     * Inyecta los repositorios de permisos y roles necesarios para el sembrado idempotente.
+     *
+     * @param permisoRepository repositorio de entidades {@link Permiso}
+     * @param rolRepository     repositorio de entidades {@link Rol}
+     */
     public RbacDataSeeder(PermisoRepository permisoRepository, RolRepository rolRepository) {
         this.permisoRepository = permisoRepository;
         this.rolRepository = rolRepository;
     }
 
+    /** Catálogo inicial de permisos: clave nombre, valor [descripción, módulo]. */
     private static final Map<String, String[]> PERMISOS_INICIALES = new LinkedHashMap<>();
 
     static {
@@ -58,6 +73,11 @@ public class RbacDataSeeder implements ApplicationRunner {
         PERMISOS_INICIALES.put(nombre, new String[] { descripcion, modulo });
     }
 
+    /**
+     * Ejecuta el sembrado de permisos base y roles ADMIN/CLIENTE al iniciar la aplicación.
+     *
+     * @param args argumentos de arranque de Spring Boot (no utilizados)
+     */
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
@@ -98,7 +118,9 @@ public class RbacDataSeeder implements ApplicationRunner {
                 || "General".equalsIgnoreCase(modulo.trim());
     }
 
-    /** Filas legacy sin módulo correcto (p. ej. quedaron en 'General' tras el ALTER). */
+    /**
+     * Filas legacy sin módulo correcto (p. ej. quedaron en 'General' tras el ALTER).
+     */
     private void backfillModulosPendientes() {
         for (Permiso permiso : permisoRepository.findAll()) {
             if (!needsModuloUpdate(permiso.getModulo())) {

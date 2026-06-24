@@ -13,6 +13,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Servicio que materializa las autoridades de Spring Security (rol y permisos RBAC)
+ * a partir del usuario en base de datos y la claim de rol del token JWT.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class SecurityAuthorityService {
 
@@ -20,6 +27,13 @@ public class SecurityAuthorityService {
     private final RolRepository rolRepository;
     private final PermisoRepository permisoRepository;
 
+    /**
+     * Inyecta los repositorios necesarios para resolver rol y permisos del usuario.
+     *
+     * @param usuarioRepository repositorio de usuarios
+     * @param rolRepository     repositorio de roles con permisos
+     * @param permisoRepository repositorio del catálogo completo de permisos
+     */
     public SecurityAuthorityService(
             UsuarioRepository usuarioRepository,
             RolRepository rolRepository,
@@ -29,6 +43,14 @@ public class SecurityAuthorityService {
         this.permisoRepository = permisoRepository;
     }
 
+    /**
+     * Carga las autoridades efectivas del usuario: prefijo {@code ROLE_} más cada
+     * permiso del rol; los administradores reciben el catálogo completo de permisos.
+     *
+     * @param username nombre de usuario autenticado
+     * @param rolClaim valor de la claim {@code rol} del JWT (puede refinarse desde BD)
+     * @return lista de {@link SimpleGrantedAuthority} para el contexto de seguridad
+     */
     @Transactional(readOnly = true)
     public List<SimpleGrantedAuthority> loadAuthorities(String username, String rolClaim) {
         Set<String> permisoNames = new LinkedHashSet<>();
