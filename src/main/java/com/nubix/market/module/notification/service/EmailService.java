@@ -15,6 +15,12 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.io.UnsupportedEncodingException;
 
+/**
+ * Servicio de envío de correos electrónicos HTML.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class EmailService {
 
@@ -30,11 +36,20 @@ public class EmailService {
     @Value("${spring.mail.from:${spring.mail.username:}}")
     private String fromAddress;
 
+    /**
+     * Envía código de recuperación por email.
+     * @param email Correo electrónico.
+     * @param codigo Código interno.
+     */
     public void enviarCodigoRecuperacion(String email, String codigo) {
         String html = emailTemplateService.recuperacionContrasena(codigo);
         enviarHtml(email, "Recuperación de contraseña — Nubix Market", html);
     }
 
+    /**
+     * Envía correo de confirmación de compra.
+     * @param context valor del parámetro
+     */
     public void enviarConfirmacionCompra(EmailConfirmacionContext context) {
         String html = emailTemplateService.confirmacionCompra(context);
         String numero = context.getNumero() != null ? context.getNumero() : "Nubix Market";

@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador REST de administración de proveedores.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class ProveedorController {
@@ -26,6 +32,10 @@ public class ProveedorController {
                 proveedor.getEmail());
     }
 
+    /**
+     * Obtiene todos los registros.
+     * @return resultado de la operación
+     */
     @GetMapping("/proveedores")
     public ResponseEntity<List<ProveedorResponse>> obtenerTodos() {
         List<Proveedor> proveedores = proveedorService.obtenerTodos();
@@ -35,12 +45,22 @@ public class ProveedorController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Crea un nuevo proveedor.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/proveedores/create")
     public ResponseEntity<?> crearProveedor(@RequestBody ProveedorRequest request) {
         Proveedor proveedor = proveedorService.guardar(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(mapToResponse(proveedor));
     }
 
+    /**
+     * Obtiene proveedor por id.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @GetMapping("/proveedores/{id}")
     public ResponseEntity<?> obtenerProveedorPorId(@PathVariable Integer id) {
         return proveedorService.obtenerPorId(id)
@@ -49,6 +69,12 @@ public class ProveedorController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Actualiza un proveedor.
+     * @param id Identificador único.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/proveedores/{id}/update")
     public ResponseEntity<?> actualizarProveedor(@PathVariable Integer id, @RequestBody ProveedorRequest request) {
         try {
@@ -62,6 +88,11 @@ public class ProveedorController {
         }
     }
 
+    /**
+     * Elimina un proveedor.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @DeleteMapping("/proveedores/{id}/delete")
     public ResponseEntity<?> eliminarProveedor(@PathVariable Integer id) {
         try {

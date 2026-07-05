@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador REST de administración de productos.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class ProductoController {
@@ -23,6 +29,10 @@ public class ProductoController {
         this.productoMapper = productoMapper;
     }
 
+    /**
+     * Lista todos los recursos.
+     * @return resultado de la operación
+     */
     @GetMapping("/productos")
     public ResponseEntity<List<ProductoResponse>> index() {
         List<ProductoResponse> productos = productoService.obtenerTodos().stream()
@@ -31,6 +41,11 @@ public class ProductoController {
         return ResponseEntity.ok(productos);
     }
 
+    /**
+     * Crea un nuevo recurso.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/productos/create")
     public ResponseEntity<?> create(@RequestBody ProductoRequest request) {
         try {
@@ -41,6 +56,11 @@ public class ProductoController {
         }
     }
 
+    /**
+     * Obtiene un recurso por id.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @GetMapping("/productos/{id}")
     public ResponseEntity<ProductoResponse> show(@PathVariable Integer id) {
         if (id == null || id <= 0) {
@@ -52,6 +72,12 @@ public class ProductoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Actualiza un recurso existente.
+     * @param id Identificador único.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PutMapping("/productos/{id}/update")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody ProductoRequest request) {
         try {
@@ -64,6 +90,11 @@ public class ProductoController {
         }
     }
 
+    /**
+     * Elimina un recurso por id.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @DeleteMapping("/productos/{id}/delete")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         try {

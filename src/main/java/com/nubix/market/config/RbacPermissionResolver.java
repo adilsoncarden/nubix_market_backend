@@ -4,9 +4,24 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 
+/**
+ * Resolvedor que traduce la URI y el método HTTP de una petición al nombre del permiso
+ * RBAC requerido para rutas administrativas y de gestión de seguridad en Nubix Market.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Component
 public class RbacPermissionResolver {
 
+    /**
+     * Determina el permiso RBAC exigido para la petición, o {@code null} si la ruta
+     * no está sujeta a autorización por permiso granular.
+     *
+     * @param request petición HTTP con URI y método a evaluar
+     * @return nombre del permiso requerido (por ejemplo, {@code ver:productos}),
+     *         o {@code null} si no aplica control RBAC por permiso
+     */
     public String resolve(HttpServletRequest request) {
         String uri = request.getRequestURI();
         String method = request.getMethod();

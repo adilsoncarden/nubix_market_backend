@@ -12,6 +12,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.web.bind.annotation.GetMapping;
 
+/**
+ * Controlador REST de administración de categorías.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/admin")
 public class CategoriaController {
@@ -24,6 +30,10 @@ public class CategoriaController {
     }
 
     // GET: Listar todas las categorías
+    /**
+     * Lista todos los recursos.
+     * @return resultado de la operación
+     */
     @GetMapping("/categorias")
     public ResponseEntity<List<CategoriaResponse>> index() {
         List<CategoriaResponse> categorias = categoriaService.obtenerTodas()
@@ -34,6 +44,11 @@ public class CategoriaController {
     }
 
     // POST: Crear una nueva categoría
+    /**
+     * Crea un nuevo recurso.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/categorias/create")
     public ResponseEntity<?> create(@RequestBody CategoriaRequest request) {
         try {
@@ -45,6 +60,11 @@ public class CategoriaController {
     }
 
     // GET: Obtener una categoría por ID
+    /**
+     * Obtiene un recurso por id.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @GetMapping("/categorias/{id}")
     public ResponseEntity<CategoriaResponse> show(@PathVariable Integer id) {
         return categoriaService.obtenerPorId(id)
@@ -53,6 +73,12 @@ public class CategoriaController {
     }
 
     // POST: Actualizar una categoría existente
+    /**
+     * Actualiza un recurso existente.
+     * @param id Identificador único.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @PostMapping("/categorias/{id}/update")
     public ResponseEntity<?> update(@PathVariable Integer id, @RequestBody CategoriaRequest request) {
         try {
@@ -67,6 +93,11 @@ public class CategoriaController {
     }
 
     // DELETE: Eliminar una categoría por ID
+    /**
+     * Elimina un recurso por id.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @DeleteMapping("/categorias/{id}/delete")
     public ResponseEntity<?> delete(@PathVariable Integer id) {
         try {

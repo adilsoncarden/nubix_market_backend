@@ -11,6 +11,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio de gestión de usuarios del sistema Nubix Market.
+ * <p>
+ * Proporciona operaciones CRUD para clientes de la tienda y personal interno
+ * (empleados y administradores), incluyendo validación de unicidad de credenciales
+ * y restricciones sobre roles protegidos del sistema.
+ * </p>
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class UsuarioService {
     @Autowired
@@ -20,14 +31,37 @@ public class UsuarioService {
     @Autowired
     private RolRepository rolRepository;
 
+    /**
+     * Obtiene todos los usuarios con rol {@code CLIENTE}.
+     *
+     * @return lista de usuarios clientes de la tienda
+     */
     public List<Usuario> obtenerClientes() {
         return usuarioRepository.findByRol_Nombre("CLIENTE");
     }
 
+    /**
+     * Busca un usuario por su identificador.
+     *
+     * @param id identificador único del usuario
+     * @return {@link Optional} con el usuario si existe, o vacío en caso contrario
+     */
     public Optional<Usuario> obtenerPorId(Integer id) {
         return usuarioRepository.findById(id);
     }
 
+    /**
+     * Actualiza los datos de un cliente existente.
+     * <p>
+     * Valida unicidad de nombre de usuario y correo electrónico. La contraseña
+     * solo se modifica si se proporciona un valor no vacío en la solicitud.
+     * </p>
+     *
+     * @param id      identificador del usuario a actualizar
+     * @param request datos actualizados del cliente
+     * @return entidad {@link Usuario} persistida con los cambios aplicados
+     * @throws RuntimeException si el usuario no existe, o si el username o email ya están en uso
+     */
     public Usuario actualizar(Integer id, UsuarioRequest request) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -49,11 +83,27 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    /** Personal interno: todos los usuarios excepto clientes de la tienda. */
+    /**
+     * Obtiene el personal interno: todos los usuarios cuyo rol no es {@code CLIENTE}.
+     *
+     * @return lista de empleados y administradores del sistema
+     */
     public List<Usuario> obtenerEmpleadosYAdmins() {
         return usuarioRepository.findByRol_NombreNot("CLIENTE");
     }
 
+    /**
+     * Crea un nuevo usuario de personal interno (empleado o administrador asignable).
+     * <p>
+     * Codifica la contraseña y asigna el rol indicado en la solicitud, o {@code EMPLEADO}
+     * por defecto si no se especifica rol.
+     * </p>
+     *
+     * @param request datos del nuevo empleado, incluyendo credenciales y rol opcional
+     * @return entidad {@link Usuario} persistida
+     * @throws RuntimeException si el username o email ya existen, el rol no se encuentra,
+     *                          o el rol no es asignable (ADMIN o CLIENTE)
+     */
     public Usuario guardarEmpleado(UsuarioRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("El nombre del usuario ya está en uso");
@@ -72,6 +122,19 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    /**
+     * Actualiza los datos de un empleado o administrador existente.
+     * <p>
+     * No permite modificar el rol del Administrador Supremo ni reasignar roles protegidos.
+     * </p>
+     *
+     * @param id      identificador del usuario a actualizar
+     * @param request datos actualizados, incluyendo rol opcional
+     * @return entidad {@link Usuario} persistida con los cambios aplicados
+     * @throws RuntimeException si el usuario no existe, las credenciales duplican otro usuario,
+     *                          el rol no se encuentra, el rol no es asignable, o se intenta
+     *                          modificar el rol del Administrador Supremo
+     */
     public Usuario actualizarEmpleado(Integer id, UsuarioRequest request) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -100,6 +163,13 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
+    /**
+     * Elimina un usuario de personal interno por su identificador.
+     *
+     * @param id identificador del usuario a eliminar
+     * @return entidad {@link Usuario} eliminada
+     * @throws RuntimeException si el usuario no existe o es el Administrador Supremo
+     */
     public Usuario eliminar(Integer id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
@@ -110,6 +180,16 @@ public class UsuarioService {
         return usuario;
     }
 
+    /**
+     * Resuelve el rol a asignar a un empleado a partir de la solicitud.
+     * <p>
+     * Prioridad: {@code rolId}, luego {@code rolNombre}, y por defecto {@code EMPLEADO}.
+     * </p>
+     *
+     * @param request solicitud con identificador o nombre de rol opcional
+     * @return entidad {@link Rol} validada y asignable
+     * @throws RuntimeException si el rol no existe o no es asignable
+     */
     private Rol resolverRolAsignable(UsuarioRequest request) {
         Rol rol;
         if (request.getRolId() != null) {
@@ -126,6 +206,12 @@ public class UsuarioService {
         return rol;
     }
 
+    /**
+     * Valida que el rol pueda asignarse a personal interno.
+     *
+     * @param rol rol candidato a asignación
+     * @throws RuntimeException si el rol es Administrador Supremo o CLIENTE
+     */
     private void validarRolAsignable(Rol rol) {
         if (esRolAdministradorSupremo(rol)) {
             throw new RuntimeException(
@@ -136,6 +222,16 @@ public class UsuarioService {
         }
     }
 
+    /**
+     * Determina si el rol corresponde al Administrador Supremo del sistema.
+     * <p>
+     * Se considera supremo si su id es {@code 1} o su nombre es {@code ADMIN}
+     * o {@code ADMINISTRADOR}.
+     * </p>
+     *
+     * @param rol rol a evaluar
+     * @return {@code true} si es el Administrador Supremo; {@code false} en caso contrario
+     */
     private boolean esRolAdministradorSupremo(Rol rol) {
         if (rol == null || rol.getNombre() == null) {
             return false;

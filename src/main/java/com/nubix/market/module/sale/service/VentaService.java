@@ -11,8 +11,11 @@ import com.nubix.market.module.notification.service.NotificacionService;
 import com.nubix.market.module.product.model.Producto;
 import com.nubix.market.module.product.repository.ProductoRepository;
 import com.nubix.market.module.sale.dto.CheckoutRequest;
+import com.nubix.market.module.sale.dto.StripeCargoRequest;
+import com.nubix.market.module.sale.dto.StripeCargoResponse;
 import com.nubix.market.module.sale.dto.MisPedidoResponse;
 import com.nubix.market.module.sale.dto.VentaRequest;
+import com.nubix.market.module.sale.exception.StripePaymentException;
 import com.nubix.market.module.sale.model.DetalleVenta;
 import com.nubix.market.module.sale.model.Pago;
 import com.nubix.market.module.sale.model.Venta;
@@ -35,6 +38,13 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio de dominio para la gestión de ventas presenciales y pedidos web.
+ * Orquesta validaciones, cálculo de totales, control de stock, entrega, pago y notificaciones.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class VentaService {
     private static final double IGV_RATE = 0.13;
@@ -48,25 +58,51 @@ public class VentaService {
     private final ProductoRepository productoRepository;
     private final NotificacionService notificacionService;
     private final CarritoService carritoService;
+    private final StripeService stripeService;
 
+    /**
+     * Crea el servicio con las dependencias necesarias para ventas.
+     *
+     * @param ventaRepository      repositorio de ventas
+     * @param usuarioRepository    repositorio de usuarios
+     * @param productoRepository   repositorio de productos
+     * @param notificacionService  servicio de notificaciones internas
+     * @param carritoService       servicio de carrito web
+     * @param stripeService        cliente de cargos Stripe
+     */
     public VentaService(
             VentaRepository ventaRepository,
             UsuarioRepository usuarioRepository,
             ProductoRepository productoRepository,
             NotificacionService notificacionService,
-            CarritoService carritoService) {
+            CarritoService carritoService,
+            StripeService stripeService) {
         this.ventaRepository = ventaRepository;
         this.usuarioRepository = usuarioRepository;
         this.productoRepository = productoRepository;
         this.notificacionService = notificacionService;
         this.carritoService = carritoService;
+        this.stripeService = stripeService;
     }
 
+    /**
+     * Obtiene todas las ventas para listados administrativos.
+     *
+     * @return lista de ventas con cliente y vendedor cargados
+     */
     @Transactional(readOnly = true)
     public List<Venta> obtenerTodasLasVentas() {
         return ventaRepository.findAllForList();
     }
 
+    /**
+     * Busca una venta por identificador con todas sus relaciones.
+     *
+     * @param id identificador de la venta
+     * @return venta encontrada con detalles, entrega y pago
+     * @throws IllegalArgumentException si el id es nulo o no positivo
+     * @throws RuntimeException         si la venta no existe
+     */
     @Transactional(readOnly = true)
     public Venta obtenerPorId(Integer id) {
         Preconditions.checkArgument(id != null && id > 0, "El id de la venta es obligatorio");
@@ -74,6 +110,13 @@ public class VentaService {
                 .orElseThrow(() -> new RuntimeException("Venta no encontrada con ID: " + id));
     }
 
+    /**
+     * Registra una venta presencial desde caja, descontando stock y emitiendo notificaciones.
+     *
+     * @param request datos de la venta presencial
+     * @return venta persistida con estado entregado
+     * @throws RuntimeException si la validación, el stock o el comprobante no son válidos
+     */
     @Transactional
     public Venta crearVenta(VentaRequest request) {
         // Forzar siempre venta presencial tipo cajero
@@ -112,6 +155,13 @@ public class VentaService {
         return saved;
     }
 
+    /**
+     * Procesa el checkout de un pedido web, vacía el carrito y genera notificaciones.
+     *
+     * @param request datos del checkout web
+     * @return venta web creada en estado pendiente
+     * @throws RuntimeException si el carrito está vacío o falla alguna validación de negocio
+     */
     @Transactional
     public Venta checkoutWeb(CheckoutRequest request) {
         Usuario usuarioActual = obtenerUsuarioActual();
@@ -153,6 +203,48 @@ public class VentaService {
         return saved;
     }
 
+    /**
+     * Procesa un cargo con tarjeta en Stripe y, si la captura es exitosa, registra el pedido web.
+     *
+     * @param request PaymentMethod Stripe, correo, monto y datos de checkout
+     * @return respuesta con el id del PaymentIntent y la venta creada
+     * @throws StripePaymentException si Stripe rechaza el pago o el monto no es válido
+     * @throws RuntimeException       si falla la validación o creación del pedido tras el cobro
+     */
+    @Transactional
+    public StripeCargoResponse procesarCargoTarjetaStripe(StripeCargoRequest request) {
+        CheckoutRequest checkout = request.getCheckout();
+        checkout.setMetodoPago(MetodoPago.TARJETA);
+
+        Usuario usuarioActual = obtenerUsuarioActual();
+        if ("CLIENTE".equals(usuarioActual.getRol().getNombre())) {
+            checkout.setClienteId(usuarioActual.getId());
+        }
+
+        validarCheckout(checkout);
+
+        long amountCentavos = Math.round(request.getMonto() * 100);
+        if (amountCentavos <= 0) {
+            throw new StripePaymentException("El monto del pago debe ser mayor a cero.");
+        }
+
+        String paymentIntentId = stripeService.createAndConfirmPayment(
+                request.getPaymentMethodId(),
+                request.getEmail(),
+                amountCentavos);
+
+        Venta venta = checkoutWeb(checkout);
+        return new StripeCargoResponse(paymentIntentId, venta);
+    }
+
+    /**
+     * Lista los pedidos web del cliente autenticado con filtro opcional por período.
+     *
+     * @param mes          período predefinido ({@code actual}, {@code todos}, {@code trimestre}, etc.)
+     * @param fechaInicio  fecha inicial del rango personalizado
+     * @param fechaFin     fecha final del rango personalizado
+     * @return lista resumida de pedidos del cliente en canal web
+     */
     @Transactional(readOnly = true)
     public List<MisPedidoResponse> listarMisPedidosWeb(
             String mes, LocalDate fechaInicio, LocalDate fechaFin) {
@@ -173,8 +265,14 @@ public class VentaService {
     }
 
     /**
+     * Resuelve el rango de fechas para filtrar los pedidos del cliente.
      * Sin parámetros o con {@code mes=actual}: mes en curso.
      * {@code mes=todos} / {@code all}: sin filtro de fecha.
+     *
+     * @param mes          alias de período predefinido
+     * @param fechaInicio  fecha inicial explícita
+     * @param fechaFin     fecha final explícita
+     * @return arreglo con inicio y fin inclusive, o {@code null} si no hay filtro de fecha
      */
     private LocalDate[] resolverRangoMisPedidos(String mes, LocalDate fechaInicio, LocalDate fechaFin) {
         if (fechaInicio != null && fechaFin != null) {
@@ -197,6 +295,12 @@ public class VentaService {
         };
     }
 
+    /**
+     * Convierte una entidad {@link Venta} al DTO de respuesta para mis pedidos.
+     *
+     * @param venta entidad de venta
+     * @return DTO resumido del pedido
+     */
     private MisPedidoResponse toMisPedidoResponse(Venta venta) {
         MisPedidoResponse dto = new MisPedidoResponse();
         dto.setId(venta.getId());
@@ -210,6 +314,14 @@ public class VentaService {
         return dto;
     }
 
+    /**
+     * Actualiza el estado de un pedido validando la transición según su tipo de entrega.
+     *
+     * @param ventaId     identificador de la venta
+     * @param nuevoEstado estado destino del pedido
+     * @return venta actualizada
+     * @throws RuntimeException si la venta no existe o la transición no es válida
+     */
     @Transactional
     public Venta actualizarEstadoPedido(Integer ventaId, EstadoPedido nuevoEstado) {
         Venta venta = ventaRepository.findById(ventaId)
@@ -227,6 +339,13 @@ public class VentaService {
         return saved;
     }
 
+    /**
+     * Marca como aprobado el pago de una venta realizada a crédito.
+     *
+     * @param ventaId identificador de la venta a crédito
+     * @return venta con pago aprobado
+     * @throws RuntimeException si la venta no existe, no es a crédito o ya fue pagada
+     */
     @Transactional
     public Venta registrarCredito(Integer ventaId) {
         Venta venta = ventaRepository.findById(ventaId)
@@ -251,6 +370,12 @@ public class VentaService {
         return saved;
     }
 
+    /**
+     * Construye una venta base con valores iniciales de comprobante, entrega y pago.
+     *
+     * @param request solicitud con datos de la venta
+     * @return entidad venta sin persistir
+     */
     private Venta construirVentaBase(VentaRequest request) {
         Venta venta = new Venta();
         TipoComprobante comprobante = request.getTipoComprobante() != null
@@ -267,6 +392,12 @@ public class VentaService {
         return venta;
     }
 
+    /**
+     * Determina el estado inicial del pago según el método seleccionado.
+     *
+     * @param metodoPago método de pago de la venta
+     * @return {@link EstadoPago#PENDIENTE} para crédito; {@link EstadoPago#APROBADO} en otros casos
+     */
     private EstadoPago resolverEstadoPagoInicial(MetodoPago metodoPago) {
         if (metodoPago == MetodoPago.CREDITO) {
             return EstadoPago.PENDIENTE;
@@ -274,6 +405,12 @@ public class VentaService {
         return EstadoPago.APROBADO;
     }
 
+    /**
+     * Valida los datos mínimos de una venta presencial.
+     *
+     * @param request solicitud de venta presencial
+     * @throws RuntimeException si faltan productos, datos de comprobante o dirección de delivery
+     */
     private void validarRequestPresencial(VentaRequest request) {
         if (ObjectUtils.isEmpty(request.getDetalles())) {
             throw new RuntimeException("La venta debe tener al menos un producto");
@@ -289,6 +426,12 @@ public class VentaService {
         }
     }
 
+    /**
+     * Valida y normaliza los datos del checkout web.
+     *
+     * @param request solicitud de checkout
+     * @throws RuntimeException si el carrito está vacío o faltan datos obligatorios
+     */
     private void validarCheckout(CheckoutRequest request) {
         if (ObjectUtils.isEmpty(request.getDetalles())) {
             throw new RuntimeException("El carrito está vacío");
@@ -311,6 +454,18 @@ public class VentaService {
         }
     }
 
+    /**
+     * Valida los datos requeridos según el tipo de comprobante fiscal.
+     *
+     * @param tipo             tipo de comprobante
+     * @param clienteId        id del cliente registrado, si existe
+     * @param nombre           nombre del titular
+     * @param dni              DNI del titular
+     * @param ruc              RUC del titular
+     * @param razonSocial      razón social
+     * @param direccionFiscal  dirección fiscal
+     * @throws RuntimeException si faltan datos obligatorios para el comprobante
+     */
     private void validarComprobante(
             TipoComprobante tipo,
             Integer clienteId,
@@ -348,23 +503,48 @@ public class VentaService {
         }
     }
 
+    /**
+     * Obtiene el usuario autenticado en el contexto de seguridad actual.
+     *
+     * @return usuario autenticado
+     * @throws RuntimeException si no hay sesión válida
+     */
     private Usuario obtenerUsuarioActual() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return usuarioRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no autenticado"));
     }
 
+    /**
+     * Obtiene un usuario del sistema para usar como destinatario de notificaciones internas.
+     *
+     * @return primer usuario ADMIN o EMPLEADO disponible
+     * @throws RuntimeException si no existe un vendedor del sistema configurado
+     */
     private Usuario obtenerVendedorSistema() {
         return usuarioRepository.findFirstByRol_Nombre("ADMIN")
                 .or(() -> usuarioRepository.findFirstByRol_Nombre("EMPLEADO"))
                 .orElseThrow(() -> new RuntimeException("No hay vendedor del sistema configurado"));
     }
 
-    /** Destinatario de notificaciones internas cuando la venta web no tiene vendedor. */
+    /**
+     * Determina el destinatario de notificaciones internas para una venta.
+     *
+     * @param venta venta que originó la notificación
+     * @return vendedor de la venta o, si no existe, un usuario del sistema
+     */
     private Usuario destinatarioNotificacion(Venta venta) {
         return venta.getVendedor() != null ? venta.getVendedor() : obtenerVendedorSistema();
     }
 
+    /**
+     * Asocia el cliente a la venta cuando el tipo de comprobante lo requiere.
+     *
+     * @param venta     venta en construcción
+     * @param clienteId identificador del cliente, si aplica
+     * @param tipo      tipo de comprobante
+     * @throws RuntimeException si el cliente indicado no existe
+     */
     private void asignarClienteSiCorresponde(Venta venta, Integer clienteId, TipoComprobante tipo) {
         if (tipo == TipoComprobante.TICKET) {
             venta.setCliente(null);
@@ -379,6 +559,18 @@ public class VentaService {
         }
     }
 
+    /**
+     * Copia los datos fiscales del comprobante a la entidad venta.
+     *
+     * @param venta            venta en construcción
+     * @param tipo             tipo de comprobante
+     * @param nombre           nombre del titular
+     * @param dni              DNI del titular
+     * @param ruc              RUC del titular
+     * @param razonSocial      razón social
+     * @param email            correo del comprobante
+     * @param direccionFiscal  dirección fiscal
+     */
     private void aplicarComprobante(Venta venta, TipoComprobante tipo, String nombre,
             String dni, String ruc, String razonSocial, String email, String direccionFiscal) {
         venta.setTipoComprobante(tipo != null ? tipo : TipoComprobante.TICKET);
@@ -390,6 +582,14 @@ public class VentaService {
         venta.setDireccionFiscal(direccionFiscal);
     }
 
+    /**
+     * Procesa las líneas de venta, descuenta stock y calcula el subtotal base.
+     *
+     * @param venta entidad venta en construcción
+     * @param items líneas solicitadas
+     * @return subtotal base sin IGV ni envío
+     * @throws RuntimeException si un producto no existe, la cantidad es inválida o no hay stock
+     */
     private double procesarDetallesYStock(Venta venta, List<VentaRequest.DetalleVentaRequest> items) {
         double total = 0.0;
         for (VentaRequest.DetalleVentaRequest item : items) {
@@ -432,12 +632,23 @@ public class VentaService {
         return total;
     }
 
+    /**
+     * Redondea un valor monetario a dos decimales.
+     *
+     * @param value valor a redondear
+     * @return valor redondeado
+     */
     private static double round2(double value) {
         return Math.round(value * 100.0) / 100.0;
     }
 
     /**
+     * Calcula y asigna subtotal, IGV, costo de envío y total a la venta.
      * Subtotal = suma de precios base (sin IGV). Total = subtotal + IGV + envío.
+     *
+     * @param venta         venta en construcción
+     * @param subtotalBase  subtotal sin impuestos ni envío
+     * @param tipoEntrega   modalidad de entrega para calcular envío
      */
     private void aplicarTotalesFinancieros(Venta venta, double subtotalBase, TipoEntrega tipoEntrega) {
         double base = round2(subtotalBase);
@@ -450,6 +661,13 @@ public class VentaService {
         venta.setTotal(total);
     }
 
+    /**
+     * Calcula el costo de envío según el subtotal y el tipo de entrega.
+     *
+     * @param subtotal    subtotal base de la venta
+     * @param tipoEntrega modalidad de entrega
+     * @return costo de envío; cero si no aplica o califica para envío gratis
+     */
     private double calcularCostoEnvio(double subtotal, TipoEntrega tipoEntrega) {
         if (tipoEntrega != TipoEntrega.DELIVERY) {
             return 0.0;
@@ -460,6 +678,15 @@ public class VentaService {
         return COSTO_ENVIO_DEFAULT;
     }
 
+    /**
+     * Configura la entidad de entrega y los campos desnormalizados de la venta.
+     *
+     * @param venta      venta en construcción
+     * @param tipo       modalidad de entrega
+     * @param direccion  dirección para delivery
+     * @param distrito   distrito para delivery
+     * @param referencia referencia de entrega
+     */
     private void configurarEntrega(Venta venta, TipoEntrega tipo, String direccion,
             String distrito, String referencia) {
         TipoEntrega tipoEntrega = tipo != null ? tipo : TipoEntrega.PRESENCIAL;
@@ -489,6 +716,13 @@ public class VentaService {
         venta.setEntrega(entrega);
     }
 
+    /**
+     * Crea y asocia el registro de pago a la venta.
+     *
+     * @param venta      venta en construcción
+     * @param metodoPago método de pago seleccionado
+     * @param monto      monto total a registrar en el pago
+     */
     private void configurarPago(Venta venta, MetodoPago metodoPago, double monto) {
         EstadoPago estado = resolverEstadoPagoInicial(metodoPago);
         venta.setMetodoPago(metodoPago);
@@ -502,6 +736,12 @@ public class VentaService {
         venta.setPago(pago);
     }
 
+    /**
+     * Convierte un {@link CheckoutRequest} en {@link VentaRequest} para reutilizar el flujo común.
+     *
+     * @param checkout solicitud de checkout web
+     * @return solicitud de venta equivalente
+     */
     private VentaRequest mapearCheckout(CheckoutRequest checkout) {
         VentaRequest request = new VentaRequest();
         request.setClienteId(checkout.getClienteId());

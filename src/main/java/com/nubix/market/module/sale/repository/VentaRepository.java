@@ -10,9 +10,21 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repositorio Spring Data JPA para la entidad {@link Venta}.
+ * Incluye consultas con carga ansiosa de relaciones para listados y detalle.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Repository
 public interface VentaRepository extends JpaRepository<Venta, Integer> {
 
+    /**
+     * Obtiene todas las ventas con detalles, productos, cliente, vendedor, entrega y pago.
+     *
+     * @return lista completa de ventas con relaciones cargadas
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.detalles d
@@ -25,6 +37,11 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
             """)
     List<Venta> findAllWithRelations();
 
+    /**
+     * Obtiene todas las ventas con cliente y vendedor para vistas de listado.
+     *
+     * @return lista de ventas optimizada para listado
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.cliente
@@ -33,6 +50,12 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
             """)
     List<Venta> findAllForList();
 
+    /**
+     * Busca una venta por id cargando todas sus relaciones.
+     *
+     * @param id identificador de la venta
+     * @return venta encontrada con relaciones, o vacío si no existe
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.detalles d
@@ -45,6 +68,13 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
             """)
     Optional<Venta> findByIdWithRelations(Integer id);
 
+    /**
+     * Lista pedidos de un cliente en un canal determinado, ordenados por id descendente.
+     *
+     * @param clienteId identificador del cliente
+     * @param canal     canal de venta (p. ej. web)
+     * @return lista de ventas del cliente en ese canal
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.entrega
@@ -56,6 +86,15 @@ public interface VentaRepository extends JpaRepository<Venta, Integer> {
             @Param("clienteId") Integer clienteId,
             @Param("canal") CanalVenta canal);
 
+    /**
+     * Lista pedidos de un cliente en un canal dentro de un rango de fechas.
+     *
+     * @param clienteId   identificador del cliente
+     * @param canal       canal de venta
+     * @param fechaInicio fecha inicial del rango (inclusive)
+     * @param fechaFin    fecha final del rango (inclusive)
+     * @return lista de ventas del cliente en el período indicado
+     */
     @Query("""
             SELECT DISTINCT v FROM Venta v
             LEFT JOIN FETCH v.entrega

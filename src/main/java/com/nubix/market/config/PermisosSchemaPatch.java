@@ -9,8 +9,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Parche PostgreSQL/Supabase: añade {@code permisos.modulo} con DEFAULT para filas
- * existentes, antes de que Hibernate o el seeder fallen por NOT NULL.
+ * Parche PostgreSQL/Supabase que añade la columna {@code permisos.modulo} con valor
+ * por defecto para filas existentes, antes de que Hibernate o el seeder fallen por NOT NULL.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
  */
 @Component
 @Order(5)
@@ -20,10 +23,20 @@ public class PermisosSchemaPatch implements ApplicationRunner {
 
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Inyecta el template JDBC usado para consultar el catálogo y aplicar ALTER TABLE.
+     *
+     * @param jdbcTemplate acceso JDBC de Spring
+     */
     public PermisosSchemaPatch(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Ejecuta el parche de la columna {@code modulo} si la tabla {@code permisos} ya existe.
+     *
+     * @param args argumentos de arranque de Spring Boot (no utilizados)
+     */
     @Override
     public void run(ApplicationArguments args) {
         if (!tableExists("permisos")) {

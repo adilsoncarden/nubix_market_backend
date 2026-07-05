@@ -8,19 +8,39 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servicio de negocio para proveedores.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class ProveedorService {
     @Autowired
     private ProveedorRepository proveedorRepository;
 
+    /**
+     * Obtiene todos los registros.
+     * @return resultado de la operación
+     */
     public List<Proveedor> obtenerTodos() {
         return proveedorRepository.findAll();
     }
 
+    /**
+     * Obtiene un recurso por identificador.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     public Optional<Proveedor> obtenerPorId(Integer id) {
         return proveedorRepository.findById(id);
     }
 
+    /**
+     * Persiste un nuevo recurso.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     public Proveedor guardar(ProveedorRequest request) {
         validarProveedor(request);
         if (proveedorRepository.existsByRuc(request.getRuc())) {
@@ -36,6 +56,12 @@ public class ProveedorService {
         return proveedorRepository.save(proveedor);
     }
 
+    /**
+     * Actualiza un recurso existente.
+     * @param id Identificador único.
+     * @param detalles valor del parámetro
+     * @return resultado de la operación
+     */
     public Proveedor actualizar(Integer id, ProveedorRequest detalles) {
         validarProveedor(detalles);
         Proveedor proveedor = proveedorRepository.findById(id)
@@ -53,6 +79,10 @@ public class ProveedorService {
         return proveedorRepository.save(proveedor);
     }
 
+    /**
+     * Elimina un recurso.
+     * @param id Identificador único.
+     */
     public void eliminar(Integer id) {
         Proveedor proveedor = proveedorRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Proveedor no encontrado"));

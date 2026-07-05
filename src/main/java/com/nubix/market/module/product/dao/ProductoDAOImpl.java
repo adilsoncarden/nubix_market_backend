@@ -9,12 +9,24 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Implementación JPA del DAO de productos.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Repository
 public class ProductoDAOImpl implements ProductoDAO {
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * Busca productos con stock menor al umbral.
+     * @param umbral valor del parámetro
+     * @param categoriaId Identificador de categoría.
+     * @return resultado de la operación
+     */
     @Override
     public List<Producto> buscarConStockBajo(int umbral, Integer categoriaId) {
         StringBuilder jpql = new StringBuilder(

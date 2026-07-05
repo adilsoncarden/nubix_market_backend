@@ -13,6 +13,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 
+/**
+ * Servicio de gestión del carrito de compras por usuario.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class CarritoService {
 
@@ -23,11 +29,22 @@ public class CarritoService {
     @Autowired
     private ProductoRepository productoRepository;
 
+    /**
+     * Obtiene o crea el carrito de un usuario.
+     * @param usuarioId Id del usuario destino.
+     * @return resultado de la operación
+     */
     public Carrito obtenerCarritoUsuario(Integer usuarioId) {
         return carritoRepository.findByUsuarioIdWithItems(usuarioId)
                 .orElseGet(() -> crearCarrito(usuarioId));
     }
 
+    /**
+     * Agrega un producto al carrito.
+     * @param usuarioId Id del usuario destino.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @Transactional
     public Carrito agregarItem(Integer usuarioId, CarritoItemRequest request) {
         if (request.getProductoId() == null || request.getCantidad() == null || request.getCantidad() < 1) {
@@ -68,6 +85,13 @@ public class CarritoService {
         return carritoRepository.save(carrito);
     }
 
+    /**
+     * Actualiza cantidad de un ítem del carrito.
+     * @param usuarioId Id del usuario destino.
+     * @param productoId valor del parámetro
+     * @param cantidad Cantidad de unidades.
+     * @return resultado de la operación
+     */
     @Transactional
     public Carrito actualizarCantidad(Integer usuarioId, Integer productoId, Integer cantidad) {
         Carrito carrito = obtenerCarritoUsuario(usuarioId);
@@ -93,6 +117,12 @@ public class CarritoService {
         return carritoRepository.save(carrito);
     }
 
+    /**
+     * Elimina un producto del carrito.
+     * @param usuarioId Id del usuario destino.
+     * @param productoId valor del parámetro
+     * @return resultado de la operación
+     */
     @Transactional
     public Carrito eliminarItem(Integer usuarioId, Integer productoId) {
         Carrito carrito = obtenerCarritoUsuario(usuarioId);
@@ -101,6 +131,10 @@ public class CarritoService {
         return carritoRepository.save(carrito);
     }
 
+    /**
+     * Vacía el carrito.
+     * @param usuarioId Id del usuario destino.
+     */
     @Transactional
     public void vaciarCarrito(Integer usuarioId) {
         Carrito carrito = obtenerCarritoUsuario(usuarioId);

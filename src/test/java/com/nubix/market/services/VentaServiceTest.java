@@ -48,6 +48,8 @@ class VentaServiceTest {
     private NotificacionService notificacionService;
     @Mock
     private CarritoService carritoService;
+    @Mock
+    private com.nubix.market.module.sale.service.StripeService stripeService;
 
     @InjectMocks
     private VentaService ventaService;

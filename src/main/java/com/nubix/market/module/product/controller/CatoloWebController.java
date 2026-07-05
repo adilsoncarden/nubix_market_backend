@@ -14,6 +14,12 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Controlador REST del catálogo público web de productos y categorías.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestController
 @RequestMapping("/api/catalogo")
 public class CatoloWebController {
@@ -25,6 +31,10 @@ public class CatoloWebController {
     @Autowired
     private ProductoMapper productoMapper;
 
+    /**
+     * Lista productos del catálogo público.
+     * @return resultado de la operación
+     */
     @GetMapping("/productos")
     public ResponseEntity<List<ProductoPublicResponse>> listarProductos() {
         List<ProductoPublicResponse> productos = productoService.obtenerTodos().stream()
@@ -33,6 +43,11 @@ public class CatoloWebController {
         return ResponseEntity.ok(productos);
     }
 
+    /**
+     * Obtiene detalle público de un producto.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @GetMapping("/productos/{id}")
     public ResponseEntity<ProductoPublicResponse> obtenerProducto(@PathVariable Integer id) {
         return productoService.obtenerPorId(id)
@@ -41,6 +56,10 @@ public class CatoloWebController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Lista categorías del catálogo público.
+     * @return resultado de la operación
+     */
     @GetMapping("/categorias")
     public ResponseEntity<List<CategoriaResponse>> listarCategorias() {
         List<CategoriaResponse> categorias = categoriaService.obtenerTodas().stream()

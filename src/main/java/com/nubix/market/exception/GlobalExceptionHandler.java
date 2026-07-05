@@ -3,6 +3,7 @@ package com.nubix.market.exception;
 import com.nubix.market.config.ApiErrorResponse;
 import com.nubix.market.module.auth.AuthMessages;
 import com.nubix.market.module.auth.exception.PasswordResetCodeException;
+import com.nubix.market.module.sale.exception.StripePaymentException;
 import java.util.HashMap;
 import java.util.Map;
 import org.hibernate.LazyInitializationException;
@@ -19,10 +20,22 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/**
+ * Manejador global de excepciones para la API REST.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    /**
+     * Maneja errores de validación de argumentos de entrada.
+     *
+     * @param ex excepción con los errores de validación por campo
+     * @return mapa de campo a mensaje de error
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -33,12 +46,24 @@ public class GlobalExceptionHandler {
         return errors;
     }
 
+    /**
+     * Maneja intentos de acceso a recursos sin permisos suficientes.
+     *
+     * @param ex excepción de acceso denegado
+     * @return respuesta HTTP 403 con cuerpo de error estandarizado
+     */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Map<String, Object>> handleAccessDenied(AccessDeniedException ex) {
         log.warn("Acceso denegado: {}", ex.getMessage());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ApiErrorResponse.forbidden());
     }
 
+    /**
+     * Maneja credenciales inválidas o usuario inexistente.
+     *
+     * @param ex excepción de autenticación por credenciales incorrectas
+     * @return respuesta HTTP 401 con mensaje genérico de credenciales inválidas
+     */
     @ExceptionHandler({BadCredentialsException.class, UsernameNotFoundException.class})
     public ResponseEntity<Map<String, String>> handleBadCredentials(AuthenticationException ex) {
         log.warn("Autenticación fallida: {}", ex.getClass().getSimpleName());
@@ -46,6 +71,12 @@ public class GlobalExceptionHandler {
                 .body(Map.of("message", AuthMessages.CREDENCIALES_INVALIDAS));
     }
 
+    /**
+     * Maneja fallos generales de autenticación.
+     *
+     * @param ex excepción de autenticación
+     * @return respuesta HTTP 401 con mensaje genérico de credenciales inválidas
+     */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Map<String, String>> handleAuthentication(AuthenticationException ex) {
         log.warn("Autenticación fallida: {}", ex.getMessage());
@@ -53,6 +84,12 @@ public class GlobalExceptionHandler {
                 .body(Map.of("message", AuthMessages.CREDENCIALES_INVALIDAS));
     }
 
+    /**
+     * Maneja errores de carga perezosa de entidades Hibernate.
+     *
+     * @param ex excepción de inicialización perezosa fuera de sesión
+     * @return respuesta HTTP 500 con mensaje orientado al usuario
+     */
     @ExceptionHandler(LazyInitializationException.class)
     public ResponseEntity<Map<String, String>> handleLazyInitialization(
             LazyInitializationException ex) {
@@ -63,6 +100,12 @@ public class GlobalExceptionHandler {
                         "Error al cargar los datos de la cuenta. Inténtelo de nuevo o contacte al administrador."));
     }
 
+    /**
+     * Maneja errores del flujo de recuperación de contraseña.
+     *
+     * @param ex excepción con código y mensaje de error de negocio
+     * @return respuesta HTTP 400 con código y mensaje de error
+     */
     @ExceptionHandler(PasswordResetCodeException.class)
     public ResponseEntity<Map<String, String>> handlePasswordResetCode(
             PasswordResetCodeException ex) {
@@ -71,12 +114,41 @@ public class GlobalExceptionHandler {
                 .body(Map.of("code", ex.getErrorCode(), "message", ex.getMessage()));
     }
 
+    /**
+     * Maneja rechazos o fallos del procesador Stripe.
+     *
+     * @param ex excepción con mensaje amigable para el cliente
+     * @return respuesta HTTP 402 con mensaje y código Stripe opcional
+     */
+    @ExceptionHandler(StripePaymentException.class)
+    public ResponseEntity<Map<String, String>> handleStripePayment(StripePaymentException ex) {
+        log.warn("Pago Stripe rechazado: {} ({})", ex.getMessage(), ex.getStripeCode());
+        Map<String, String> body = new HashMap<>();
+        body.put("message", ex.getMessage());
+        if (ex.getStripeCode() != null && !ex.getStripeCode().isBlank()) {
+            body.put("code", ex.getStripeCode());
+        }
+        return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(body);
+    }
+
+    /**
+     * Maneja excepciones de negocio en tiempo de ejecución.
+     *
+     * @param ex excepción con mensaje de error de negocio
+     * @return respuesta HTTP 400 con el mensaje de la excepción
+     */
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, String>> handleRuntime(RuntimeException ex) {
         log.warn("Error de negocio: {}", ex.getMessage());
         return ResponseEntity.badRequest().body(Map.of("message", ex.getMessage()));
     }
 
+    /**
+     * Maneja excepciones no controladas.
+     *
+     * @param ex excepción inesperada
+     * @return respuesta HTTP 500 con mensaje genérico de error interno
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneral(Exception ex) {
         log.error("Error no controlado", ex);

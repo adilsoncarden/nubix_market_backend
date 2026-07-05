@@ -13,17 +13,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Implementación JPA del contrato {@link VentaDAO} mediante consultas dinámicas JPQL.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Repository
 public class VentaDAOImpl implements VentaDAO {
 
     @PersistenceContext
     private EntityManager entityManager;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Venta> buscarVentasEntreFechas(LocalDate desde, LocalDate hasta) {
         return buscarConFiltros(desde, hasta, null, null, null, null);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Venta> buscarConFiltros(
             LocalDate desde,

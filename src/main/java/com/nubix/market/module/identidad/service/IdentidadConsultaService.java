@@ -20,6 +20,12 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
+/**
+ * Servicio de consulta de identidad mediante API externa Apisperu.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class IdentidadConsultaService {
 
@@ -41,6 +47,11 @@ public class IdentidadConsultaService {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Consulta identidad por número de documento.
+     * @param documento Número de documento (DNI o RUC).
+     * @return resultado de la operación
+     */
     public IdentidadConsultaResponse consultar(String documento) {
         String numero = StringUtils.trimToEmpty(documento);
         if (!numero.matches("\\d{8}") && !numero.matches("\\d{11}")) {

@@ -23,6 +23,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Servicio de autenticación, registro de usuarios y emisión de tokens JWT.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class AuthService {
 
@@ -50,6 +56,11 @@ public class AuthService {
         this.securityAuthorityService = securityAuthorityService;
     }
 
+    /**
+     * Registra un nuevo usuario cliente.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     public AuthResponse register(RegisterRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
             return new AuthResponse(false, "El nombre de usuario ya existe", null);
@@ -72,6 +83,11 @@ public class AuthService {
         return new AuthResponse(true, "Usuario registrado exitosamente", nuevoUsuario.getUsername());
     }
 
+    /**
+     * Autentica un usuario y devuelve JWT.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         Optional<Usuario> usuarioOpt = buscarPorCredenciales(request);
@@ -106,6 +122,11 @@ public class AuthService {
                 rolNombre);
     }
 
+    /**
+     * Autentica un usuario con acceso al panel administrativo.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @Transactional(readOnly = true)
     public AuthResponse adminLogin(LoginRequest request) {
         Optional<Usuario> usuarioOpt = buscarPorCredenciales(request);

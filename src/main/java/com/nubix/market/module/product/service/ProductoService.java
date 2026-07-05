@@ -14,6 +14,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Servicio de negocio para productos.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class ProductoService {
 
@@ -34,19 +40,38 @@ public class ProductoService {
         this.productoDAO = productoDAO;
     }
 
+    /**
+     * Obtiene todos los registros.
+     * @return resultado de la operación
+     */
     public List<Producto> obtenerTodos() {
         return productoRepository.findAllWithCategoria();
     }
 
+    /**
+     * Obtiene productos con stock bajo.
+     * @param categoriaId Identificador de categoría.
+     * @return resultado de la operación
+     */
     public List<Producto> obtenerConStockBajo(Integer categoriaId) {
         return productoDAO.buscarConStockBajo(STOCK_BAJO_UMBRAL, categoriaId);
     }
 
+    /**
+     * Obtiene un recurso por identificador.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     public Optional<Producto> obtenerPorId(Integer id) {
         Preconditions.checkArgument(id != null && id > 0, "El id del producto es obligatorio");
         return productoRepository.findByIdWithRelations(id);
     }
 
+    /**
+     * Persiste un nuevo recurso.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     public Producto guardar(ProductoRequest request) {
         Preconditions.checkNotNull(request, "La solicitud de producto es obligatoria");
         validarPreciosYStock(request);
@@ -77,6 +102,12 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
+    /**
+     * Actualiza un recurso existente.
+     * @param id Identificador único.
+     * @param detalles valor del parámetro
+     * @return resultado de la operación
+     */
     public Producto actualizar(Integer id, ProductoRequest detalles) {
         Preconditions.checkNotNull(id, "El id del producto es obligatorio");
         Preconditions.checkNotNull(detalles, "La solicitud de actualización es obligatoria");
@@ -111,6 +142,10 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
+    /**
+     * Elimina un recurso.
+     * @param id Identificador único.
+     */
     public void eliminar(Integer id) {
         Preconditions.checkNotNull(id, "El id del producto es obligatorio");
         Producto producto = productoRepository.findById(id)

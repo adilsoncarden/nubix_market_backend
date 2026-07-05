@@ -12,6 +12,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Servicio de creación y consulta de notificaciones.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class NotificacionService {
 
@@ -21,16 +27,29 @@ public class NotificacionService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Obtiene notificaciones del usuario autenticado.
+     * @return resultado de la operación
+     */
     public List<Notificacion> obtenerMisNotificaciones() {
         Usuario actual = obtenerUsuarioActual();
         return notificacionRepository.findTop30ByUsuario_IdOrderByFechaDesc(actual.getId());
     }
 
+    /**
+     * Cuenta notificaciones no leídas.
+     * @return resultado de la operación
+     */
     public Long contarNoLeidas() {
         Usuario actual = obtenerUsuarioActual();
         return notificacionRepository.countByUsuario_IdAndLeidoFalse(actual.getId());
     }
 
+    /**
+     * Crea una nueva notificación.
+     * @param request valor del parámetro
+     * @return resultado de la operación
+     */
     @Transactional
     public Notificacion crear(NotificacionRequest request) {
         if (request.getMensaje() == null || request.getMensaje().isBlank()) {
@@ -47,6 +66,11 @@ public class NotificacionService {
                 request.getMensaje());
     }
 
+    /**
+     * Marca notificación como leída.
+     * @param id Identificador único.
+     * @return resultado de la operación
+     */
     @Transactional
     public Notificacion marcarLeida(Integer id) {
         Usuario actual = obtenerUsuarioActual();
@@ -59,6 +83,13 @@ public class NotificacionService {
         return notificacionRepository.save(n);
     }
 
+    /**
+     * Crea notificación internamente.
+     * @param usuario Usuario propietario.
+     * @param tipo Tipo del recurso.
+     * @param mensaje Contenido del mensaje.
+     * @return resultado de la operación
+     */
     @Transactional
     public Notificacion crearInterna(Usuario usuario, String tipo, String mensaje) {
         Notificacion n = new Notificacion();

@@ -8,8 +8,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Alinea el esquema de ventas/pagos con el módulo actual (cliente_id nullable,
- * estado_pago VARCHAR).
+ * Parche de esquema al arranque que alinea las tablas de ventas y pagos con el módulo
+ * actual de Nubix Market ({@code cliente_id} nullable, {@code estado_pago} como VARCHAR).
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
  */
 @Component
 public class VentasSchemaPatch implements ApplicationRunner {
@@ -18,10 +21,20 @@ public class VentasSchemaPatch implements ApplicationRunner {
 
     private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Inyecta el template JDBC para consultar el catálogo y aplicar ALTER TABLE.
+     *
+     * @param jdbcTemplate acceso JDBC de Spring
+     */
     public VentasSchemaPatch(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Aplica los parches de {@code ventas.cliente_id} y {@code estado_pago} en ventas y pagos.
+     *
+     * @param args argumentos de arranque de Spring Boot (no utilizados)
+     */
     @Override
     public void run(ApplicationArguments args) {
         patchClienteIdNullable();

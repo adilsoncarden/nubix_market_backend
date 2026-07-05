@@ -28,6 +28,12 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Servicio de generación de reportes exportables en formato Excel.
+ *
+ * @author Grupo de Desarrollo Nubix Market
+ * @version 1.0.0 (2026)
+ */
 @Service
 public class ReporteExportService {
 
@@ -64,6 +70,14 @@ public class ReporteExportService {
         this.ventaDAO = ventaDAO;
     }
 
+    /**
+     * Genera Excel de productos.
+     * @param categoriaId Identificador de categoría.
+     * @param stockBajo valor del parámetro
+     * @param precioMin valor del parámetro
+     * @param precioMax valor del parámetro
+     * @return resultado de la operación
+     */
     public byte[] exportarProductosExcel(
             Integer categoriaId,
             Boolean stockBajo,
@@ -132,6 +146,10 @@ public class ReporteExportService {
         }
     }
 
+    /**
+     * Genera Excel de categorías.
+     * @return resultado de la operación
+     */
     public byte[] exportarCategoriasExcel() {
         List<Categoria> categorias = categoriaRepository.findAll();
         log.info("Exportando categorías a Excel ({} registros)", categorias.size());
@@ -163,6 +181,10 @@ public class ReporteExportService {
         }
     }
 
+    /**
+     * Genera Excel de proveedores.
+     * @return resultado de la operación
+     */
     public byte[] exportarProveedoresExcel() {
         List<Proveedor> proveedores = proveedorRepository.findAll();
         log.info("Exportando proveedores a Excel ({} registros)", proveedores.size());
@@ -197,6 +219,16 @@ public class ReporteExportService {
         }
     }
 
+    /**
+     * Genera Excel de ventas.
+     * @param desde valor del parámetro
+     * @param hasta valor del parámetro
+     * @param tipoEntrega valor del parámetro
+     * @param clienteId valor del parámetro
+     * @param estadoPedido valor del parámetro
+     * @param estadoPago valor del parámetro
+     * @return resultado de la operación
+     */
     public byte[] exportarVentasExcel(
             LocalDate desde,
             LocalDate hasta,
