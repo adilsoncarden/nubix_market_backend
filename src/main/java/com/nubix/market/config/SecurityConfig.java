@@ -78,7 +78,8 @@ public class SecurityConfig {
                                 "/api/auth/reset-password",
                                 "/api/catalogo/**",
                                 "/api/public/**",
-                                "/error")
+                                "/error",
+                                "/actuator/prometheus") // Endpoint público para el recolector
                         .permitAll()
                         .requestMatchers("/api/auth/admin-permisos")
                         .authenticated()

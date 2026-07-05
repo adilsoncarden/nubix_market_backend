@@ -1,0 +1,14 @@
+global:
+    scrape_interval: 15s
+
+scrape_configs:
+    - job_name: "prometheus"
+      static_configs:
+          - targets: ["localhost:9090"]
+
+    - job_name: "spring-boot-app"
+      metrics_path: "/actuator/prometheus"
+      static_configs:
+          # Usamos host.docker.internal para que el contenedor salga de Docker
+          # y mire el puerto 8080 de tu computadora (donde corre tu backend)
+          - targets: ["host.docker.internal:8080"]
